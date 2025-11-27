@@ -12,11 +12,6 @@ type TemplateRenderer interface {
 	RenderModuleFile(template *domain.Template, data *domain.TemplateData) (string, error)
 }
 
-// FileWriter defines the interface for file writing
-type FileWriter interface {
-	WriteFile(path, content string) error
-}
-
 // TemplateService handles template generation operations
 type TemplateService struct {
 	renderer TemplateRenderer

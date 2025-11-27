@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.2.0-alpha] - 2025-11-27
+
 ### Added
 
 #### New Commands
@@ -33,6 +37,11 @@ shellforge list --verbose --filter Linux
 ### Changed
 - Updated test count from 50 to 63 tests (all passing)
 - Enhanced CLI with new subcommand integration
+- Updated version to 0.2.0-alpha
+
+### Testing
+- All 63 tests passing
+- Test coverage maintained at 71-100%
 
 ---
 
@@ -150,5 +159,6 @@ shellforge build --manifest manifest.yaml --config-dir modules --os Linux --dry-
 
 ---
 
-[Unreleased]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.2.0-alpha...HEAD
+[0.2.0-alpha]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.1.0...v0.2.0-alpha
 [0.1.0]: https://github.com/gizzahub/gzh-cli-shellforge/releases/tag/v0.1.0

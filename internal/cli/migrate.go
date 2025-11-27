@@ -10,6 +10,7 @@ import (
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/filesystem"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/rcparser"
 )
 
 type migrateFlags struct {
@@ -73,11 +74,12 @@ func runMigrate(rcFilePath string, flags *migrateFlags) error {
 		return fmt.Errorf("RC file not found: %s", rcFilePath)
 	}
 
-	// Initialize filesystem and service
+	// Initialize filesystem, parser, and service
 	fs := afero.NewOsFs()
 	reader := filesystem.NewReader(fs)
 	writer := filesystem.NewWriter(fs)
-	service := app.NewMigrationService(reader, writer)
+	parser := rcparser.New(fs)
+	service := app.NewMigrationService(parser, reader, writer)
 
 	// Dry-run mode: analyze only
 	if flags.dryRun {

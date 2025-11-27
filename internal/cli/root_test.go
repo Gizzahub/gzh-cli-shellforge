@@ -22,7 +22,7 @@ func TestNewRootCmd(t *testing.T) {
 func TestRootCmd_Version(t *testing.T) {
 	cmd := NewRootCmd()
 
-	assert.Equal(t, "0.3.0", cmd.Version)
+	assert.Equal(t, "0.4.0", cmd.Version)
 }
 
 func TestRootCmd_HasSubcommands(t *testing.T) {
@@ -75,7 +75,7 @@ func TestRootCmd_Version_Flag(t *testing.T) {
 	assert.NoError(t, err)
 
 	output := buf.String()
-	assert.Contains(t, output, "0.3.0")
+	assert.Contains(t, output, "0.4.0")
 }
 
 func TestRootCmd_LongDescription(t *testing.T) {

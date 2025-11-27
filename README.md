@@ -99,10 +99,16 @@ modules:
   - 6 built-in templates: path, env, alias, conditional-source, tool-init, os-specific
   - Auto-categorization to init.d/, rc_pre.d/, rc_post.d/
   - Field validation and dependency tracking
+- ✅ **Migration Tools**: Convert monolithic shell configs to modular structure
+  - Automatic section detection with multiple header pattern support
+  - Content-based categorization (PATH → init.d, tools → rc_pre.d, aliases → rc_post.d)
+  - Dependency inference from shell code patterns
+  - OS support detection from case statements
+  - Manifest generation with full metadata
+  - Dry-run mode for analysis without file creation
 
 ### Planned Features
 
-- ⏳ **Migration Tools**: Convert monolithic `.zshrc` to modular structure
 - ⏳ **Diff Comparison**: Preview changes before deployment
 
 ---
@@ -322,6 +328,68 @@ Examples:
   # Generate with verbose output
   gz-shellforge template generate alias my-aliases -f aliases='alias ll="ls -la"' -v
 ```
+
+### `migrate` - Convert monolithic RC files to modular structure
+
+```bash
+gz-shellforge migrate <rc-file> [flags]
+
+Options:
+  -o, --output-dir string   Output directory for module files (default "modules")
+  -m, --manifest string     Manifest file path (default "manifest.yaml")
+      --dry-run             Analyze only, do not create files
+  -v, --verbose             Show detailed output
+
+Section Detection:
+  Supports multiple header patterns:
+    # --- Section Name ---     (dashes)
+    # === Section Name ===     (equals)
+    ## Section Name            (double hash)
+    # SECTION NAME             (ALL CAPS)
+
+Auto-Categorization:
+  init.d/      PATH and early initialization
+  rc_pre.d/    Tool initialization (nvm, rbenv, pyenv, conda, etc.)
+  rc_post.d/   Aliases, functions, and customizations
+
+Dependency Inference:
+  Automatically detects common patterns:
+    $MACHINE variable     → requires os-detection
+    brew commands         → requires brew-path
+
+OS Detection:
+  Analyzes case statements for OS-specific sections:
+    case $MACHINE in
+      Mac) ... ;;          → OS: [Mac]
+      Linux) ... ;;        → OS: [Linux]
+```
+
+**Examples**:
+
+```bash
+# Analyze migration (dry-run)
+gz-shellforge migrate ~/.zshrc --dry-run
+
+# Migrate to modular structure
+gz-shellforge migrate ~/.zshrc --output-dir modules --manifest manifest.yaml
+
+# Migrate with verbose output
+gz-shellforge migrate ~/.bashrc -o modules -v
+
+# Test the generated configuration
+gz-shellforge build --manifest manifest.yaml --os Mac --dry-run
+
+# Deploy the generated configuration
+gz-shellforge build --manifest manifest.yaml --os Mac --output ~/.zshrc
+```
+
+**Migration Workflow**:
+
+1. **Analyze**: Run with `--dry-run` to preview detected sections
+2. **Review**: Check section categorization and module assignments
+3. **Migrate**: Run without `--dry-run` to create module files
+4. **Verify**: Test generated manifest with `build --dry-run`
+5. **Deploy**: Use `build` to generate final shell config
 
 ### Shell Completion
 

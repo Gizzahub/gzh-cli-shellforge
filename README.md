@@ -106,10 +106,16 @@ modules:
   - OS support detection from case statements
   - Manifest generation with full metadata
   - Dry-run mode for analysis without file creation
+- ✅ **Diff Comparison**: Compare original and generated configurations
+  - Four output formats: summary, unified, context, side-by-side
+  - Line-by-line comparison with statistics
+  - LCS-based accurate diff detection
+  - Percentage change calculation
+  - Supports identical file detection
 
 ### Planned Features
 
-- ⏳ **Diff Comparison**: Preview changes before deployment
+- ⏳ **Plugin System**: Extensible module types and custom validators
 
 ---
 
@@ -390,6 +396,73 @@ gz-shellforge build --manifest manifest.yaml --os Mac --output ~/.zshrc
 3. **Migrate**: Run without `--dry-run` to create module files
 4. **Verify**: Test generated manifest with `build --dry-run`
 5. **Deploy**: Use `build` to generate final shell config
+
+---
+
+### `diff` - Compare original and generated configurations
+
+```bash
+gz-shellforge diff <original-file> <generated-file> [flags]
+
+Options:
+  -f, --format string   Output format: summary, unified, context, side-by-side (default "summary")
+  -v, --verbose         Show detailed output
+
+Output Formats:
+  summary:      Statistics only (lines added/removed/unchanged, percentage)
+  unified:      Git diff style with +/- prefixes
+  context:      Traditional diff format with context lines
+  side-by-side: Visual comparison in columns
+```
+
+**Examples**:
+
+```bash
+# Show summary statistics (default)
+gz-shellforge diff ~/.zshrc ~/.zshrc.new
+
+# Show unified diff (git style)
+gz-shellforge diff ~/.zshrc ~/.zshrc.new --format unified
+
+# Show side-by-side comparison
+gz-shellforge diff ~/.zshrc ~/.zshrc.new --format side-by-side
+
+# Compare with verbose output
+gz-shellforge diff ~/.zshrc ~/.zshrc.new -v
+```
+
+**Example Output (summary format)**:
+
+```
+Comparing:
+  Original:  /home/user/.zshrc
+  Generated: /home/user/.zshrc.new
+
+Statistics:
+  Total lines:    150
+  Lines added:    12
+  Lines removed:  5
+  Lines unchanged: 138
+
+Summary: +12 -5 ~0 (11.3% changed)
+```
+
+**Use Cases**:
+
+- **Migration Verification**: Compare original RC file with generated modular output
+- **Change Review**: Preview modifications before deploying new configuration
+- **Debugging**: Identify unexpected differences in generated files
+- **Quality Assurance**: Ensure migration preserves all important shell configurations
+
+**Diff Workflow**:
+
+1. **Migrate**: Convert RC file to modules: `migrate ~/.zshrc -o modules`
+2. **Build**: Generate output: `build -m manifest.yaml --os Mac -o ~/.zshrc.new`
+3. **Compare**: Check differences: `diff ~/.zshrc ~/.zshrc.new`
+4. **Review**: Examine changes in preferred format
+5. **Deploy**: If acceptable, replace original: `mv ~/.zshrc.new ~/.zshrc`
+
+---
 
 ### Shell Completion
 

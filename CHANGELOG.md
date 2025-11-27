@@ -9,6 +9,117 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - 2025-11-28
+
+### Added
+
+#### Diff Comparison System
+
+- **Diff Command**: Compare original RC files with generated modular configurations
+  - Four output formats for different use cases
+  - Line-by-line comparison with statistics
+  - LCS-based algorithm for accurate diff detection
+  - Supports identical file detection
+  - Home path expansion (~) support
+  - Verbose mode for detailed output
+
+#### Output Formats
+
+Supports four diff visualization formats:
+1. **Summary**: Statistics only (lines added/removed/unchanged, percentage changed)
+2. **Unified**: Git diff style with +/- prefixes
+3. **Context**: Traditional diff format with context lines
+4. **Side-by-side**: Visual comparison in columns
+
+#### Architecture (4-Layer)
+
+- **Domain Layer**: Diff result model, statistics, format validation
+  - `internal/domain/diff.go` (90 lines)
+  - `internal/domain/diff_test.go` (180 lines)
+  - 9 tests covering statistics, percentages, format validation
+
+- **Infrastructure Layer**: LCS-based comparator with formatters
+  - `internal/infra/diffcomparator/comparator.go` (304 lines)
+  - `internal/infra/diffcomparator/comparator_test.go` (401 lines)
+  - 18 tests covering LCS algorithm, all formats, edge cases
+  - Longest Common Subsequence (O(V+E) complexity)
+
+- **Application Layer**: Diff service with validation
+  - `internal/app/diff_service.go` (67 lines)
+  - `internal/app/diff_service_test.go` (172 lines)
+  - 9 tests with mocked comparator and file reader
+
+- **CLI Layer**: Diff command integration
+  - `internal/cli/diff.go` (127 lines)
+  - Full integration with root command
+  - Argument-based file specification
+  - Format and verbose flags
+
+### Usage
+
+```bash
+# Show summary statistics
+gz-shellforge diff ~/.zshrc ~/.zshrc.new
+
+# Show unified diff (git diff style)
+gz-shellforge diff ~/.zshrc ~/.zshrc.new --format unified
+
+# Show side-by-side comparison
+gz-shellforge diff ~/.zshrc ~/.zshrc.new --format side-by-side
+
+# Compare with verbose output
+gz-shellforge diff ~/.zshrc ~/.zshrc.new -v
+```
+
+### Example Output
+
+```
+Comparing:
+  Original:  /home/user/.zshrc
+  Generated: /home/user/.zshrc.new
+
+Statistics:
+  Total lines:    150
+  Lines added:    12
+  Lines removed:  5
+  Lines unchanged: 138
+
+Summary: +12 -5 ~0 (11.3% changed)
+```
+
+### Changed
+
+- Updated version from 0.4.0 to 0.5.0
+- Added `newDiffCmd()` to root command
+- Integrated diff comparison into migration workflow
+
+### Technical Details
+
+#### Implementation
+
+- Total new code: ~1,300 lines (code + tests)
+- Domain: 270 lines (90 + 180 tests)
+- Infrastructure: 705 lines (304 + 401 tests)
+- Application: 239 lines (67 + 172 tests)
+- CLI: 127 lines
+
+#### Testing
+
+- All 176 tests passing (100%)
+- Total test count: 176/176
+- LCS algorithm validated with edge cases
+- All four output formats tested
+- File existence validation tested
+
+#### Algorithms
+
+- **Longest Common Subsequence (LCS)**: O(m×n) time, O(m×n) space
+  - Used for accurate line-by-line diff detection
+  - Handles insertions, deletions, and unchanged lines
+  - No modification detection (treated as delete + add)
+
+---
+
 ## [0.4.0] - 2025-11-27
 
 ### Added

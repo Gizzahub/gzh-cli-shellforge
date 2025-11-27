@@ -1,5 +1,64 @@
 # Development History & Current Status
 
+## ✅ v0.5.0: Diff Comparison (Complete)
+
+**Started**: 2025-11-28
+**Completed**: 2025-11-28
+**Released Version**: v0.5.0
+
+### Summary
+
+Implemented complete file comparison system for comparing original RC files with generated modular configurations. Supports four output formats with LCS-based accurate diff detection and comprehensive statistics.
+
+### Implementation Details
+
+**Domain Layer** (`internal/domain/diff.go`):
+- DiffResult, DiffStatistics, DiffFormat types
+- Statistics calculation with percentage changes
+- Format validation (summary, unified, context, side-by-side)
+- 90 lines of code + 180 lines of tests (9 subtests)
+
+**Infrastructure Layer** (`internal/infra/diffcomparator/`):
+- LCS-based comparator using Longest Common Subsequence algorithm
+- Line-by-line comparison with unchanged/added/removed detection
+- Four output formatters (summary, unified, context, side-by-side)
+- Afero filesystem abstraction for testing
+- 304 lines of code + 401 lines of tests (18 subtests)
+
+**Application Layer** (`internal/app/diff_service.go`):
+- DiffService orchestrating comparison operations
+- File existence validation
+- Format validation integration
+- Clean error handling
+- 67 lines of code + 172 lines of tests (9 subtests)
+
+**CLI Layer** (`internal/cli/diff.go`):
+- `diff` command with 2 required arguments
+- Flags: --format, --verbose
+- Home path expansion (~) support
+- Integration with root command
+- 127 lines
+
+### Commits
+
+- `f8f7af0` - feat(diff): add file comparison with multiple formats
+- `af30875` - feat(cli): add diff command for file comparison
+
+### Testing
+
+- All 176 tests passing (100%)
+- Total implementation: ~1,300 lines (code + tests)
+- LCS algorithm validated with edge cases
+- All four output formats tested
+
+### Algorithms
+
+- **Longest Common Subsequence**: O(m×n) time, O(m×n) space
+  - Accurate line-by-line diff detection
+  - Handles insertions, deletions, unchanged lines
+
+---
+
 ## ✅ v0.4.0: Migration Tools (Complete)
 
 **Started**: 2025-11-27
@@ -298,6 +357,6 @@ Domain Layer (internal/domain/)
 
 ---
 
-**Last Updated**: 2025-11-27
-**Current Version**: v0.4.0
-**Status**: Migration tools complete (RC file parser + section detection). All 138 tests passing. Next: Diff comparison feature (FR-009).
+**Last Updated**: 2025-11-28
+**Current Version**: v0.5.0
+**Status**: Diff comparison complete (4 formats, LCS algorithm). All 176 tests passing. Next: CLI testing and examples.

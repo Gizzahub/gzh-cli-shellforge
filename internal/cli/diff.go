@@ -88,7 +88,7 @@ func runDiff(originalPath, generatedPath string, flags *diffFlags) error {
 	// Initialize services
 	fs := afero.NewOsFs()
 	reader := filesystem.NewReader(fs)
-	comparator := diffcomparator.New(fs)
+	comparator := diffcomparator.NewComparator(fs)
 	diffService := app.NewDiffService(comparator, reader)
 
 	// Perform comparison

@@ -22,25 +22,25 @@ func TestNewRootCmd(t *testing.T) {
 func TestRootCmd_Version(t *testing.T) {
 	cmd := NewRootCmd()
 
-	assert.Equal(t, "0.4.0", cmd.Version)
+	assert.Equal(t, "0.5.0", cmd.Version)
 }
 
 func TestRootCmd_HasSubcommands(t *testing.T) {
 	cmd := NewRootCmd()
 
 	// Check that all expected subcommands exist
-	expectedSubcommands := []string{"build", "validate", "list"}
+	expectedSubcommands := []string{"build", "validate", "list", "diff"}
 
 	for _, cmdName := range expectedSubcommands {
 		subCmd := findCommand(cmd, cmdName)
 		require.NotNil(t, subCmd, "%s subcommand should exist", cmdName)
-		assert.Equal(t, cmdName, subCmd.Use, "%s command name should match", cmdName)
+		assert.Equal(t, cmdName, subCmd.Name(), "%s command name should match", cmdName)
 	}
 
 	// Verify we have at least the expected number of custom commands
 	// (Cobra adds completion and help automatically)
 	commands := cmd.Commands()
-	assert.GreaterOrEqual(t, len(commands), 3, "should have at least build, validate, and list commands")
+	assert.GreaterOrEqual(t, len(commands), 4, "should have at least build, validate, list, and diff commands")
 }
 
 func TestRootCmd_Help(t *testing.T) {
@@ -61,6 +61,7 @@ func TestRootCmd_Help(t *testing.T) {
 	assert.Contains(t, output, "build")
 	assert.Contains(t, output, "validate")
 	assert.Contains(t, output, "list")
+	assert.Contains(t, output, "diff")
 }
 
 func TestRootCmd_Version_Flag(t *testing.T) {
@@ -75,7 +76,7 @@ func TestRootCmd_Version_Flag(t *testing.T) {
 	assert.NoError(t, err)
 
 	output := buf.String()
-	assert.Contains(t, output, "0.4.0")
+	assert.Contains(t, output, "0.5.0")
 }
 
 func TestRootCmd_LongDescription(t *testing.T) {

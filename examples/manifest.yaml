@@ -24,7 +24,7 @@ modules:
   # Package managers
   - name: conda
     file: rc_pre.d/conda.sh
-    requires: [brew-path]
+    requires: [os-detection]
     os: [Mac, Linux]
     description: Conda/Mamba initialization
 

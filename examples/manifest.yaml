@@ -1,0 +1,67 @@
+# Shellforge Manifest Example
+# This file defines the modules and their dependencies for building shell configuration
+
+modules:
+  # System initialization
+  - name: os-detection
+    file: init.d/00-os-detection.sh
+    requires: []
+    os: [Mac, Linux]
+    description: Detect operating system and set MACHINE variable
+
+  - name: brew-path
+    file: init.d/05-brew-path.sh
+    requires: [os-detection]
+    os: [Mac]
+    description: Initialize Homebrew PATH
+
+  - name: pacman-setup
+    file: init.d/05-pacman-setup.sh
+    requires: [os-detection]
+    os: [Linux]
+    description: Initialize pacman for Arch-based systems
+
+  # Package managers
+  - name: conda
+    file: rc_pre.d/conda.sh
+    requires: [brew-path]
+    os: [Mac, Linux]
+    description: Conda/Mamba initialization
+
+  - name: nvm
+    file: rc_pre.d/nvm.sh
+    requires: [os-detection]
+    os: [Mac, Linux]
+    description: Node Version Manager
+
+  - name: rbenv
+    file: rc_pre.d/rbenv.sh
+    requires: [os-detection]
+    os: [Mac, Linux]
+    description: Ruby version manager
+
+  # Development tools
+  - name: gcloud
+    file: rc_pre.d/gcloud.sh
+    requires: [brew-path]
+    os: [Mac]
+    description: Google Cloud SDK autocompletion
+
+  - name: docker-completion
+    file: rc_pre.d/docker.sh
+    requires: [os-detection]
+    os: [Mac, Linux]
+    description: Docker autocompletion
+
+  # Post-configuration
+  - name: aliases
+    file: rc_post.d/aliases.sh
+    requires: []
+    os: [Mac, Linux]
+    description: Common aliases and functions
+
+  - name: mac-specific
+    file: rc_post.d/mac.sh
+    requires: [brew-path]
+    os: [Mac]
+    description: macOS-specific configurations

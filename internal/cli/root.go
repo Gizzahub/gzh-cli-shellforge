@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	version = "0.2.0-alpha"
+	version = "0.2.1"
 )
 
 // NewRootCmd creates the root command

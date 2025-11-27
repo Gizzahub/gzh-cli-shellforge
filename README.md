@@ -90,12 +90,14 @@ modules:
 - ✅ **Validation**: Detect circular dependencies and missing files before building
 - ✅ **Dry Run Mode**: Preview output without writing files
 - ✅ **Verbose Mode**: Detailed output for debugging
-- ✅ **Backup System**: Git-backed versioning with timestamped snapshots
+- ✅ **Backup/Restore System**: Complete backup lifecycle management
+  - Git-backed versioning with timestamped snapshots
+  - Restore from any snapshot with safety backups
+  - Snapshot retention policies (by count and age)
+  - Dry-run mode for all operations
 
 ### Planned Features
 
-- ⏳ **Restore Command**: Restore from backup snapshots
-- ⏳ **Cleanup Command**: Manage snapshot retention policies
 - ⏳ **Template Generation**: Create common modules from templates
 - ⏳ **Migration Tools**: Convert monolithic `.zshrc` to modular structure
 - ⏳ **Diff Comparison**: Preview changes before deployment
@@ -201,6 +203,70 @@ Examples:
 
   # Backup to custom directory
   gz-shellforge backup --file ~/.zshrc --backup-dir ~/my-backups
+```
+
+### `restore` - Restore from backup snapshot
+
+```bash
+gz-shellforge restore --file ~/.zshrc --snapshot 2025-11-27_14-30-45
+
+Options:
+  -f, --file string         File to restore to (required)
+  -s, --snapshot string     Snapshot timestamp to restore (required)
+      --backup-dir string   Backup directory (default: ~/.backup/shellforge)
+      --no-git              Disable git versioning
+      --dry-run             Preview restore without executing
+  -v, --verbose             Show detailed output
+
+Examples:
+  # Restore from a specific snapshot
+  gz-shellforge restore --file ~/.zshrc --snapshot 2025-11-27_14-30-45
+
+  # Preview restore without applying changes
+  gz-shellforge restore --file ~/.zshrc --snapshot 2025-11-27_14-30-45 --dry-run
+
+  # Restore from custom backup directory
+  gz-shellforge restore --file ~/.zshrc --snapshot 2025-11-27_14-30-45 --backup-dir ~/my-backups
+
+  # Restore without git operations
+  gz-shellforge restore --file ~/.zshrc --snapshot 2025-11-27_14-30-45 --no-git
+```
+
+### `cleanup` - Manage snapshot retention
+
+```bash
+gz-shellforge cleanup --file ~/.zshrc --keep-count 10 --keep-days 30
+
+Options:
+  -f, --file string         File pattern to cleanup (required)
+      --keep-count int      Number of snapshots to keep (default: 10)
+      --keep-days int       Days of snapshots to keep (default: 30)
+      --backup-dir string   Backup directory (default: ~/.backup/shellforge)
+      --no-git              Disable git versioning
+      --dry-run             Preview deletions without executing
+  -v, --verbose             Show detailed output
+
+Retention Policy:
+  - Keep snapshots by count: keeps N most recent snapshots
+  - Keep snapshots by age: keeps snapshots from last N days
+  - Union policy: keeps snapshots matching EITHER criterion
+  - Safety: always keeps at least one snapshot
+
+Examples:
+  # Cleanup keeping last 10 snapshots
+  gz-shellforge cleanup --file ~/.zshrc --keep-count 10
+
+  # Cleanup keeping snapshots from last 30 days
+  gz-shellforge cleanup --file ~/.zshrc --keep-days 30
+
+  # Cleanup with both policies (union)
+  gz-shellforge cleanup --file ~/.zshrc --keep-count 10 --keep-days 30
+
+  # Preview cleanup without deleting
+  gz-shellforge cleanup --file ~/.zshrc --keep-count 10 --dry-run
+
+  # Cleanup from custom directory
+  gz-shellforge cleanup --file ~/.zshrc --keep-count 10 --backup-dir ~/my-backups
 ```
 
 ### Shell Completion
@@ -469,11 +535,14 @@ MIT License - see LICENSE file for details
 - ✅ List command (show modules with filtering)
 - ✅ Backup command (git-backed versioning with snapshots)
 
-**Planned (v0.2.1)**:
-- ⏳ Restore command (restore from backup snapshots)
-- ⏳ Cleanup command (manage snapshot retention policies)
+**Implemented (v0.2.1)**:
+- ✅ Restore command (restore from backup snapshots with safety backups)
+- ✅ Cleanup command (snapshot retention management with dual policies)
+
+**Planned (v0.3.0)**:
 - ⏳ Template generation
 - ⏳ Migration tools
+- ⏳ Diff comparison
 
 ---
 

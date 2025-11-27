@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### New Commands
+- **List Command**: Display and filter modules from manifest
+  - Show all modules with metadata (name, description, dependencies, OS support)
+  - Filter modules by OS (`--filter Mac/Linux`) with case-insensitive matching
+  - Verbose mode (`--verbose`) displays file paths with existence indicators (✓/✗)
+  - Clear, formatted output with dependency arrows (→)
+  - Validation warnings for manifest errors
+  - 13 comprehensive tests (all passing)
+
+#### Examples
+```bash
+# List all modules
+shellforge list
+
+# List only Mac-compatible modules
+shellforge list --filter Mac
+
+# List with verbose output
+shellforge list --verbose --filter Linux
+```
+
+### Changed
+- Updated test count from 50 to 63 tests (all passing)
+- Enhanced CLI with new subcommand integration
+
+---
+
 ## [0.1.0] - 2025-11-27
 
 ### Added

@@ -150,6 +150,31 @@ Examples:
   shellforge validate --verbose
 ```
 
+### `list` - List all modules
+
+```bash
+shellforge list --manifest manifest.yaml --config-dir modules
+
+Options:
+  -m, --manifest string     Path to manifest file (default "manifest.yaml")
+  -c, --config-dir string   Directory containing module files (default "modules")
+  -f, --filter string       Filter modules by OS (Mac, Linux)
+  -v, --verbose             Show detailed output with file paths
+
+Examples:
+  # List all modules
+  shellforge list
+
+  # List only Mac-compatible modules
+  shellforge list --filter Mac
+
+  # List with verbose output showing file paths
+  shellforge list --verbose
+
+  # List Linux modules with full details
+  shellforge list --filter Linux --verbose
+```
+
 ### Shell Completion
 
 Shellforge uses Cobra, which provides auto-completion for bash, zsh, fish, and PowerShell:
@@ -412,8 +437,10 @@ MIT License - see LICENSE file for details
 - ✅ Dry-run mode
 - ✅ Comprehensive testing
 
-**Next Release (v0.2.0)**:
-- ⏳ List command (show modules)
+**Implemented (v0.2.0-dev)**:
+- ✅ List command (show modules with filtering)
+
+**Planned (v0.2.0)**:
 - ⏳ Backup/restore functionality
 - ⏳ Template generation
 - ⏳ Migration tools

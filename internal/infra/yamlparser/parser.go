@@ -2,26 +2,28 @@ package yamlparser
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/spf13/afero"
 	"gopkg.in/yaml.v3"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
 // Parser implements YAML manifest parsing.
-type Parser struct{}
+type Parser struct {
+	fs afero.Fs
+}
 
-// New creates a new YAML parser.
-func New() *Parser {
-	return &Parser{}
+// New creates a new YAML parser with the given filesystem.
+func New(fs afero.Fs) *Parser {
+	return &Parser{fs: fs}
 }
 
 // Parse reads and parses a YAML manifest file.
 // Returns a Manifest or an error if parsing fails.
 func (p *Parser) Parse(path string) (*domain.Manifest, error) {
 	// Read file
-	data, err := os.ReadFile(path)
+	data, err := afero.ReadFile(p.fs, path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read manifest file: %w", err)
 	}

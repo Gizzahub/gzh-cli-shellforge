@@ -2,9 +2,9 @@ package yamlparser
 
 import (
 	"os"
-	"path/filepath"
 	"testing"
 
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -90,15 +90,13 @@ func TestParser_Parse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create temporary file
-			tmpDir := t.TempDir()
-			tmpFile := filepath.Join(tmpDir, "manifest.yaml")
-			err := os.WriteFile(tmpFile, []byte(tt.content), 0644)
-			require.NoError(t, err)
+			// Create in-memory filesystem
+			fs := afero.NewMemMapFs()
+			afero.WriteFile(fs, "manifest.yaml", []byte(tt.content), 0644)
 
 			// Parse
-			parser := New()
-			manifest, err := parser.Parse(tmpFile)
+			parser := New(fs)
+			manifest, err := parser.Parse("manifest.yaml")
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -131,7 +129,8 @@ func TestParser_Parse_FileErrors(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			parser := New()
+			fs := afero.NewMemMapFs()
+			parser := New(fs)
 			manifest, err := parser.Parse(tt.path)
 
 			assert.Error(t, err)
@@ -151,7 +150,9 @@ func TestParser_Parse_RealExample(t *testing.T) {
 		t.Skip("Example manifest not found, skipping")
 	}
 
-	parser := New()
+	// Use OS filesystem for real file
+	fs := afero.NewOsFs()
+	parser := New(fs)
 	manifest, err := parser.Parse(examplePath)
 
 	require.NoError(t, err)

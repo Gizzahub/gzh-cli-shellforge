@@ -1,6 +1,60 @@
-# TODO: Backup/Restore Implementation
+# Development History & Current Status
 
-## Status: Complete ✅
+## ✅ v0.3.0: Template Generation (Complete)
+
+**Started**: 2025-11-27
+**Completed**: 2025-11-27
+**Released Version**: v0.3.0
+
+### Summary
+
+Implemented complete template generation system with 6 built-in templates, auto-categorization, and field validation.
+
+### Implementation Details
+
+**Domain Layer** (`internal/domain/template.go`):
+- 6 template types: path, env, alias, conditional-source, tool-init, os-specific
+- Auto-categorization to init.d/, rc_pre.d/, rc_post.d/
+- Field validation with required/optional fields
+- 146 lines of tests (21 subtests)
+
+**Infrastructure Layer** (`internal/infra/template/`):
+- Renderer with {{FIELD_NAME}} placeholder substitution
+- 6 built-in templates with complete field definitions
+- Module header generation with metadata
+- 248 lines of tests (13 subtests)
+
+**Application Layer** (`internal/app/template_service.go`):
+- Template service orchestration
+- GenerateResult with file path and category
+- Interface-based design (TemplateRenderer, FileWriter)
+- 162 lines of tests (7 subtests)
+
+**CLI Layer** (`internal/cli/template.go`):
+- `template list`: Display all available templates
+- `template generate`: Create modules from templates
+- Field parsing from `-f key=value` flags
+- Dependency tracking with `-r` flag
+- 221 lines
+
+### Commits
+
+- `26ef7ce` - feat(domain): add template domain model for module generation
+- `292e443` - feat(infra): add template renderer and built-in templates
+- `a8ca222` - feat(app): add template service for module generation orchestration
+- `1617645` - feat(cli): implement template generation CLI commands
+- `2b5bb3c` - docs(readme): add template generation documentation
+- `c652b56` - chore(version): bump version to 0.3.0
+
+### Testing
+
+- All 111 tests passing (100%)
+- Total new code: ~800 lines (code + tests)
+- Comprehensive coverage across all 4 layers
+
+---
+
+## ✅ v0.2.1: Backup/Restore Lifecycle (Complete)
 
 **Started**: 2025-11-27
 **Completed**: 2025-11-27
@@ -190,4 +244,5 @@ Domain Layer (internal/domain/)
 ---
 
 **Last Updated**: 2025-11-27
-**Status**: v0.2.1 complete - Full backup/restore/cleanup lifecycle implemented and released.
+**Current Version**: v0.3.0
+**Status**: Template generation system complete. Next: Migration tools and diff comparison.

@@ -593,8 +593,10 @@ MIT License - see LICENSE file for details
 - ✅ Restore command (restore from backup snapshots with safety backups)
 - ✅ Cleanup command (snapshot retention management with dual policies)
 
-**Planned (v0.3.0)**:
-- ⏳ Template generation
+**Implemented (v0.3.0)**:
+- ✅ Template generation (6 built-in templates with auto-categorization)
+
+**Planned (v0.4.0)**:
 - ⏳ Migration tools
 - ⏳ Diff comparison
 

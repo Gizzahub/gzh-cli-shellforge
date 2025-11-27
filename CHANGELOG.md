@@ -9,6 +9,136 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2025-11-27
+
+### Added
+
+#### Template Generation System
+
+- **Template Command**: Generate shell modules from predefined templates
+  - `template list`: Display all available templates with required fields
+  - `template generate`: Create modules from built-in templates
+  - Auto-categorization to init.d/, rc_pre.d/, or rc_post.d/
+  - Field validation and dependency tracking
+  - Verbose mode with detailed output
+
+#### 6 Built-in Templates
+
+1. **path**: Add directory to PATH (init.d/)
+   - Required: `path_dir`
+   - Example: `gz-shellforge template generate path my-bin -f path_dir=/usr/local/bin`
+
+2. **env**: Set environment variable (rc_pre.d/)
+   - Required: `var_name`, `var_value`
+   - Example: `gz-shellforge template generate env EDITOR -f var_name=EDITOR -f var_value=vim`
+
+3. **alias**: Define shell aliases (rc_post.d/)
+   - Required: `aliases`
+   - Example: `gz-shellforge template generate alias my-aliases -f aliases='alias ll="ls -la"'`
+
+4. **conditional-source**: Source file if it exists (rc_pre.d/)
+   - Required: `source_path`
+   - Checks file existence before sourcing
+
+5. **tool-init**: Initialize development tool (rc_pre.d/)
+   - Required: `tool_name`, `init_command`
+   - Example: `gz-shellforge template generate tool-init nvm -f tool_name=nvm -f init_command='eval "$(nvm init)"'`
+
+6. **os-specific**: OS-specific configuration (rc_pre.d/)
+   - For platform-specific settings
+
+#### Template Architecture (4-Layer)
+
+- **Domain Layer**: Template types, validation, field definitions
+  - `internal/domain/template.go` - 106 lines
+  - `internal/domain/template_test.go` - 146 lines, 21 subtests
+  - 6 template types with auto-categorization
+  - Field validation logic
+
+- **Infrastructure Layer**: Rendering engine and built-in templates
+  - `internal/infra/template/renderer.go` - 72 lines
+  - `internal/infra/template/builtin.go` - 156 lines
+  - Placeholder substitution ({{FIELD_NAME}} pattern)
+  - Module header generation with metadata
+  - 248 lines of tests, 13 subtests
+
+- **Application Layer**: Template service orchestration
+  - `internal/app/template_service.go` - 70 lines
+  - `internal/app/template_service_test.go` - 162 lines, 7 subtests
+  - GenerateResult with file path and category
+  - Interface-based design (TemplateRenderer, FileWriter)
+
+- **CLI Layer**: User interface
+  - `internal/cli/template.go` - 221 lines
+  - Two subcommands: list and generate
+  - Field parsing from `-f key=value` flags
+  - Dependency support with `-r` flag
+  - Rich output formatting
+
+#### Examples
+
+```bash
+# List all available templates
+gz-shellforge template list
+
+# Generate a PATH module
+gz-shellforge template generate path my-bin -f path_dir=/usr/local/bin
+
+# Generate environment variable with dependency
+gz-shellforge template generate env EDITOR \
+  -f var_name=EDITOR \
+  -f var_value=vim \
+  -r os-detection
+
+# Generate tool initialization
+gz-shellforge template generate tool-init nvm \
+  -f tool_name=nvm \
+  -f init_command='eval "$(nvm init)"' \
+  -r brew-path \
+  -v
+```
+
+### Changed
+
+- Updated version from 0.2.1 to 0.3.0
+- Updated README.md:
+  - Moved template generation from planned to implemented features
+  - Added comprehensive template command documentation
+  - Updated feature list with 6 built-in templates
+
+### Technical Details
+
+#### Architecture
+
+- Follows established hexagonal architecture pattern
+- Domain → Infrastructure → Application → CLI layers
+- Complete interface-based design for testability
+- Placeholder rendering with string replacement
+
+#### Implementation
+
+- Total new code: ~800 lines (code + tests)
+- Domain: 106 lines + 146 test lines
+- Infrastructure: 228 lines + 248 test lines
+- Application: 70 lines + 162 test lines
+- CLI: 221 lines
+
+#### Testing
+
+- All 111 tests passing (100%)
+- Template domain: 21 subtests
+- Template infrastructure: 13 subtests
+- Template service: 7 subtests
+- Comprehensive coverage across all layers
+
+### Documentation
+
+- README.md: Complete template command documentation
+- README.md: Updated features section
+- CLAUDE.md: Updated project version reference
+
+---
+
 ## [0.2.1] - 2025-11-27
 
 ### Added
@@ -320,7 +450,8 @@ shellforge build --manifest manifest.yaml --config-dir modules --os Linux --dry-
 
 ---
 
-[Unreleased]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.2.0-beta...v0.2.1
 [0.2.0-beta]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.2.0-alpha...v0.2.0-beta
 [0.2.0-alpha]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.1.0...v0.2.0-alpha

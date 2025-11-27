@@ -9,6 +9,167 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.1] - 2025-11-27
+
+### Added
+
+#### New Commands
+
+- **Restore Command**: Recover files from backup snapshots
+  - Restore any timestamped snapshot to target file
+  - Safety backup created before restore (pre-restore snapshot)
+  - Dry-run mode (`--dry-run`) to preview operations
+  - Verbose mode (`--verbose`) with detailed output
+  - Git commit after successful restore
+  - Home path expansion support (~/)
+  - Comprehensive error handling
+  - End-to-end tested with file recovery validation
+
+- **Cleanup Command**: Manage snapshot retention policies
+  - Dual retention policy: keep by count (`--keep-count`) or age (`--keep-days`)
+  - Union-based: keeps snapshots matching EITHER criterion
+  - Default policy: keep 10 snapshots or 30 days
+  - Safety: always preserves at least one snapshot
+  - Dry-run mode to preview deletions
+  - Policy validation (count ≥ 1, days ≥ 1)
+  - Git commit after cleanup
+  - Clear user feedback with deletion summary
+
+#### Complete Backup Lifecycle
+
+With v0.2.1, Shellforge now provides complete backup/restore/cleanup lifecycle:
+- **Backup**: Create git-backed snapshots (v0.2.0-beta)
+- **Restore**: Recover from any snapshot (v0.2.1)
+- **Cleanup**: Manage retention policies (v0.2.1)
+
+#### Examples
+
+```bash
+# Backup workflow
+gz-shellforge backup --file ~/.zshrc --message "Before major refactor"
+
+# Restore from snapshot
+gz-shellforge restore --file ~/.zshrc --snapshot 2025-11-27_14-30-45
+
+# Preview restore (dry-run)
+gz-shellforge restore --file ~/.zshrc --snapshot 2025-11-27_14-30-45 --dry-run
+
+# Cleanup old snapshots
+gz-shellforge cleanup --file ~/.zshrc --keep-count 10 --keep-days 30
+
+# Preview cleanup (dry-run)
+gz-shellforge cleanup --file ~/.zshrc --keep-count 5 --dry-run
+```
+
+### Changed
+
+- Updated version from 0.2.0-alpha to 0.2.1
+- Enhanced Features section: complete backup/restore system
+- Updated Status section: v0.2.1 implemented
+- Binary name: `gz-shellforge` (consistent with gzh-cli tool family)
+
+### Technical Details
+
+#### Architecture
+
+- **Adapter Pattern**: Git repository adapter in CLI layer
+  - Bridges concrete `git.Repository` to `app.GitRepository` interface
+  - Handles package-level functions (e.g., `IsGitInstalled()`)
+  - Enables interface-based dependency injection
+
+#### Implementation
+
+- `internal/cli/restore.go` - 158 lines
+- `internal/cli/cleanup.go` - 206 lines
+- Both commands use existing `BackupService` methods
+- Comprehensive validation and error handling
+- Home path expansion for all file paths
+
+### Testing
+
+- All 50/50 tests passing (100%)
+- Test coverage: 77-81% across all layers
+- End-to-end testing for all backup lifecycle commands
+- Version tests updated to 0.2.1
+
+### Documentation
+
+- README.md: Added restore and cleanup command sections
+- README.md: Updated Features section with complete backup/restore system
+- README.md: Updated Status section with v0.2.1 release
+- TODO.md: Marked all v0.2.1 tasks as complete
+- CHANGELOG.md: Comprehensive v0.2.1 release notes
+
+---
+
+## [0.2.0-beta] - 2025-11-27
+
+### Added
+
+#### New Commands
+
+- **Backup Command**: Create git-backed snapshots of shell configuration files
+  - Timestamped snapshots (YYYY-MM-DD_HH-MM-SS format)
+  - Git versioning (optional, non-fatal)
+  - Custom backup directory support
+  - Verbose mode with detailed output
+  - Home path expansion support (~/)
+  - Rich user feedback with snapshot details
+
+#### Backup System Architecture
+
+- **Domain Layer**: Snapshot entity with retention policies
+  - `internal/domain/snapshot.go` - Snapshot data model
+  - Retention policy logic (keep by count/age)
+  - Safety: always keep at least one snapshot
+  - Human-readable size formatting
+
+- **Infrastructure Layer**: Git and snapshot file operations
+  - `internal/infra/git/repository.go` - Git wrapper
+  - `internal/infra/snapshot/manager.go` - Snapshot file operations
+  - Comprehensive tests (77.6-91.7% coverage)
+
+- **Application Layer**: Backup service orchestration
+  - `internal/app/backup_service.go` - Business logic
+  - Coordinates snapshot manager and git repository
+  - Mock-based tests (78.0% coverage)
+
+- **CLI Layer**: Backup command
+  - `internal/cli/backup.go` - CLI implementation
+  - Git repository adapter pattern
+  - User-friendly output
+
+#### Examples
+
+```bash
+# Backup your zsh configuration
+gz-shellforge backup --file ~/.zshrc
+
+# Backup with custom message
+gz-shellforge backup --file ~/.zshrc --message "Before major refactor"
+
+# Backup without git versioning
+gz-shellforge backup --file ~/.bashrc --no-git
+
+# Backup to custom directory
+gz-shellforge backup --file ~/.zshrc --backup-dir ~/my-backups
+```
+
+### Technical Details
+
+- Binary renamed to `gz-shellforge` for consistency
+- Git operations are optional and non-fatal
+- Afero filesystem abstraction for testability
+- Comprehensive CLAUDE.md development guide added
+
+### Testing
+
+- All 50/50 tests passing
+- Test coverage: 77-81% across all layers
+- End-to-end backup workflow tested
+
+---
+
 ## [0.2.0-alpha] - 2025-11-27
 
 ### Added
@@ -159,6 +320,8 @@ shellforge build --manifest manifest.yaml --config-dir modules --os Linux --dry-
 
 ---
 
-[Unreleased]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.2.0-alpha...HEAD
+[Unreleased]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.2.0-beta...v0.2.1
+[0.2.0-beta]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.2.0-alpha...v0.2.0-beta
 [0.2.0-alpha]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.1.0...v0.2.0-alpha
 [0.1.0]: https://github.com/gizzahub/gzh-cli-shellforge/releases/tag/v0.1.0

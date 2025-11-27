@@ -13,10 +13,10 @@ import (
 
 func TestParser_Parse(t *testing.T) {
 	tests := []struct {
-		name    string
-		content string
-		wantErr bool
-		errMsg  string
+		name     string
+		content  string
+		wantErr  bool
+		errMsg   string
 		validate func(*testing.T, *domain.Manifest)
 	}{
 		{
@@ -116,9 +116,9 @@ func TestParser_Parse(t *testing.T) {
 
 func TestParser_Parse_FileErrors(t *testing.T) {
 	tests := []struct {
-		name    string
-		path    string
-		errMsg  string
+		name   string
+		path   string
+		errMsg string
 	}{
 		{
 			name:   "file not found",

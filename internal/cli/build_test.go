@@ -85,9 +85,9 @@ func TestRunBuild_Success(t *testing.T) {
 	}
 
 	tests := []struct {
-		name       string
-		flags      *buildFlags
-		wantModules int
+		name         string
+		flags        *buildFlags
+		wantModules  int
 		wantInOutput []string
 	}{
 		{

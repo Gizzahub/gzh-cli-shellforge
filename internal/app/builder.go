@@ -55,10 +55,10 @@ type BuildOptions struct {
 
 // BuildResult contains the result of a build operation.
 type BuildResult struct {
-	Output       string   // Generated shell configuration
-	ModuleCount  int      // Number of modules included
-	ModuleNames  []string // Names of modules in load order
-	GeneratedAt  time.Time
+	Output      string   // Generated shell configuration
+	ModuleCount int      // Number of modules included
+	ModuleNames []string // Names of modules in load order
+	GeneratedAt time.Time
 }
 
 // Build generates shell configuration from modules.
@@ -134,9 +134,9 @@ func (s *BuilderService) Build(opts BuildOptions) (*BuildResult, error) {
 	}
 
 	return &BuildResult{
-		Output:       output,
-		ModuleCount:  len(modules),
-		ModuleNames:  moduleNames,
-		GeneratedAt:  now,
+		Output:      output,
+		ModuleCount: len(modules),
+		ModuleNames: moduleNames,
+		GeneratedAt: now,
 	}, nil
 }

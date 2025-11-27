@@ -22,7 +22,7 @@ with dependency resolution and OS-specific filtering.
 It reads a manifest file defining shell modules and their dependencies,
 resolves the load order using topological sorting, and generates a
 single shell configuration file.`,
-		Version: version,
+		Version:      version,
 		SilenceUsage: true,
 	}
 

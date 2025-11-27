@@ -68,11 +68,14 @@ func (r *Repository) Commit(message string) error {
 	cmd := exec.Command("git", "-C", r.dir, "commit", "-m", message)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		// Check if error is due to nothing to commit
-		if strings.Contains(string(output), "nothing to commit") {
+		outputStr := string(output)
+		// Check if error is due to nothing to commit (in various languages)
+		if strings.Contains(outputStr, "nothing to commit") ||
+			strings.Contains(outputStr, "커밋할 사항 없음") ||
+			strings.Contains(outputStr, "nothing added to commit") {
 			return nil // Not an error
 		}
-		return fmt.Errorf("git commit failed: %w (%s)", err, strings.TrimSpace(string(output)))
+		return fmt.Errorf("git commit failed: %w (%s)", err, strings.TrimSpace(outputStr))
 	}
 
 	return nil

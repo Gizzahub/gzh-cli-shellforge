@@ -31,6 +31,7 @@ single shell configuration file.`,
 	cmd.AddCommand(newValidateCmd())
 	cmd.AddCommand(newListCmd())
 	cmd.AddCommand(newBackupCmd())
+	cmd.AddCommand(newRestoreCmd())
 
 	return cmd
 }

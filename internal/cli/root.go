@@ -28,6 +28,7 @@ single shell configuration file.`,
 
 	// Add subcommands
 	cmd.AddCommand(newBuildCmd())
+	cmd.AddCommand(newValidateCmd())
 
 	return cmd
 }

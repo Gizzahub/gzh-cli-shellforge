@@ -1,5 +1,60 @@
 # Development History & Current Status
 
+## ✅ v0.4.0: Migration Tools (Complete)
+
+**Started**: 2025-11-27
+**Completed**: 2025-11-27
+**Released Version**: v0.4.0
+
+### Summary
+
+Implemented complete migration system for converting monolithic RC files (.zshrc, .bashrc) into modular structures with automatic section detection, categorization, and manifest generation.
+
+### Implementation Details
+
+**Domain Layer** (`internal/domain/migration.go`):
+- Section detection with 4 pattern types (dashes, equals, hash, ALL CAPS)
+- Auto-categorization to init.d/, rc_pre.d/, rc_post.d/
+- Dependency inference from content analysis
+- OS support detection from case statements
+- 152 lines of code + 373 lines of tests (21 subtests)
+
+**Infrastructure Layer** (`internal/infra/rcparser/`):
+- Line-by-line RC file parser
+- Multi-pattern section header detection
+- Description extraction from comment blocks
+- Integration with domain categorization rules
+- 198 lines of code + 416 lines of tests (27 subtests)
+
+**Application Layer** (`internal/app/migration_service.go`):
+- MigrationService with RCParser interface
+- Analyze mode (dry-run without file creation)
+- Full migration (module files + manifest YAML)
+- Module content generation with headers
+- 186 lines (updated to use parser)
+
+**CLI Layer** (`internal/cli/migrate.go`):
+- `migrate` command with dependency injection
+- Dry-run and verbose modes
+- Home path expansion (~) support
+- Analysis and migration result formatting
+- 201 lines
+
+### Commits
+
+- `af79baf` - fix(infra): handle localized git commit messages in tests
+- `1669ab1` - feat(domain): add migration domain model with section categorization
+- `9454d0d` - feat(infra): add RC file parser for migration analysis
+- `34bae0a` - feat(app): integrate RC parser into migration service
+
+### Testing
+
+- All 138 tests passing (100%)
+- Total implementation: ~1,500 lines (code + tests)
+- Comprehensive coverage across all 4 layers
+
+---
+
 ## ✅ v0.3.0: Template Generation (Complete)
 
 **Started**: 2025-11-27
@@ -244,5 +299,5 @@ Domain Layer (internal/domain/)
 ---
 
 **Last Updated**: 2025-11-27
-**Current Version**: v0.3.0
-**Status**: Template generation system complete. Next: Migration tools and diff comparison.
+**Current Version**: v0.4.0
+**Status**: Migration tools complete (RC file parser + section detection). All 138 tests passing. Next: Diff comparison feature (FR-009).

@@ -35,19 +35,24 @@ Supports multiple section header formats:
 #### Architecture (4-Layer)
 
 - **Domain Layer**: Migration model, section categorization, dependency inference
-  - `internal/domain/migration.go` (190 lines)
-  - `internal/domain/migration_test.go` (389 lines)
+  - `internal/domain/migration.go` (152 lines)
+  - `internal/domain/migration_test.go` (373 lines)
   - 21 tests covering categorization, dependency detection, pattern matching
 
+- **Infrastructure Layer**: RC file parser for section extraction
+  - `internal/infra/rcparser/parser.go` (198 lines)
+  - `internal/infra/rcparser/parser_test.go` (416 lines)
+  - 27 tests covering file parsing, section detection, description extraction
+
 - **Application Layer**: Migration service orchestration
-  - `internal/app/migration_service.go` (318 lines)
-  - `internal/app/migration_service_test.go` (294 lines)
-  - 13 tests covering analyze, migrate, content generation
+  - `internal/app/migration_service.go` (186 lines)
+  - Uses RCParser interface for clean separation of concerns
+  - Orchestrates parsing, file writing, and manifest generation
 
 - **CLI Layer**: Migrate command
-  - `internal/cli/migrate.go` (195 lines)
-  - `internal/cli/migrate_test.go` (233 lines)
-  - 10 tests covering structure, flags, integration
+  - `internal/cli/migrate.go` (updated with parser injection)
+  - Full integration with domain → infra → app layers
+  - Dry-run and verbose modes
 
 #### Examples
 
@@ -84,19 +89,18 @@ gz-shellforge build --manifest manifest.yaml --os Mac --output ~/.zshrc
 
 #### Implementation
 
-- Total new code: ~1,640 lines (code + tests + examples)
-- Domain: 579 lines (code + tests)
-- Application: 612 lines (code + tests)
-- CLI: 428 lines (code + tests)
-- Examples: 127 lines
+- Total new code: ~1,500 lines (code + tests)
+- Domain: 525 lines (152 + 373 tests)
+- Infrastructure: 614 lines (198 + 416 tests)
+- Application: 186 lines (migration service)
+- CLI: Integration updates
 
 #### Testing
 
-- All 124 tests passing (100%)
+- All 138 tests passing (100%)
 - Migration domain: 21 tests
-- Migration service: 13 tests
-- Migration CLI: 10 tests
-- Example file verified with real migration
+- RC parser: 27 tests
+- Full integration verified with end-to-end workflow
 
 #### Migration Features
 

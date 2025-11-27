@@ -95,10 +95,13 @@ modules:
   - Restore from any snapshot with safety backups
   - Snapshot retention policies (by count and age)
   - Dry-run mode for all operations
+- ✅ **Template Generation**: Create common modules from predefined templates
+  - 6 built-in templates: path, env, alias, conditional-source, tool-init, os-specific
+  - Auto-categorization to init.d/, rc_pre.d/, rc_post.d/
+  - Field validation and dependency tracking
 
 ### Planned Features
 
-- ⏳ **Template Generation**: Create common modules from templates
 - ⏳ **Migration Tools**: Convert monolithic `.zshrc` to modular structure
 - ⏳ **Diff Comparison**: Preview changes before deployment
 
@@ -267,6 +270,57 @@ Examples:
 
   # Cleanup from custom directory
   gz-shellforge cleanup --file ~/.zshrc --keep-count 10 --backup-dir ~/my-backups
+```
+
+### `template` - Generate modules from templates
+
+```bash
+gz-shellforge template list
+gz-shellforge template generate <template-type> <module-name> [flags]
+
+Subcommands:
+  list                      List available templates with required fields
+  generate                  Generate a module from a predefined template
+
+Options (generate):
+  -c, --config-dir string   Module directory (default "modules")
+  -f, --field strings       Template field (key=value), can be used multiple times
+  -r, --requires strings    Module dependencies, can be used multiple times
+  -v, --verbose             Show detailed output
+
+Available Templates:
+  path                  Add directory to PATH (init.d/)
+                        Required: path_dir
+
+  env                   Set environment variable (rc_pre.d/)
+                        Required: var_name, var_value
+
+  alias                 Define shell aliases (rc_post.d/)
+                        Required: aliases
+
+  conditional-source    Source file if it exists (rc_pre.d/)
+                        Required: source_path
+
+  tool-init             Initialize development tool (rc_pre.d/)
+                        Required: tool_name, init_command
+
+  os-specific           OS-specific configuration (rc_pre.d/)
+
+Examples:
+  # List available templates
+  gz-shellforge template list
+
+  # Generate path module
+  gz-shellforge template generate path my-bin -f path_dir=/usr/local/bin
+
+  # Generate env module
+  gz-shellforge template generate env EDITOR -f var_name=EDITOR -f var_value=vim
+
+  # Generate with dependencies
+  gz-shellforge template generate tool-init nvm -f tool_name=nvm -f init_command='eval "$(nvm init)"' -r brew-path
+
+  # Generate with verbose output
+  gz-shellforge template generate alias my-aliases -f aliases='alias ll="ls -la"' -v
 ```
 
 ### Shell Completion

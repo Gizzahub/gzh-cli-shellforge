@@ -33,7 +33,7 @@ go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
 git clone https://github.com/gizzahub/gzh-cli-shellforge.git
 cd gzh-cli-shellforge
 make build
-./build/shellforge --version
+./build/gz-shellforge --version
 
 # Install system-wide (copies to $GOPATH/bin)
 make install
@@ -43,16 +43,16 @@ make install
 
 ```bash
 # 1. Validate your configuration
-shellforge validate --manifest manifest.yaml --config-dir modules
+gz-shellforge validate --manifest manifest.yaml --config-dir modules
 
 # 2. Build shell config (dry-run to preview)
-shellforge build --manifest manifest.yaml --config-dir modules --os Mac --dry-run
+gz-shellforge build --manifest manifest.yaml --config-dir modules --os Mac --dry-run
 
 # 3. Build and save to file
-shellforge build --manifest manifest.yaml --config-dir modules --os Mac --output ~/.zshrc
+gz-shellforge build --manifest manifest.yaml --config-dir modules --os Mac --output ~/.zshrc
 
 # 4. With verbose output for debugging
-shellforge build --manifest manifest.yaml --config-dir modules --os Linux --output ~/.bashrc --verbose
+gz-shellforge build --manifest manifest.yaml --config-dir modules --os Linux --output ~/.bashrc --verbose
 ```
 
 ### Example Manifest
@@ -105,7 +105,7 @@ modules:
 ### `build` - Build shell configuration
 
 ```bash
-shellforge build --manifest manifest.yaml --config-dir modules --os Mac --output ~/.zshrc
+gz-shellforge build --manifest manifest.yaml --config-dir modules --os Mac --output ~/.zshrc
 
 Options:
   -m, --manifest string     Path to manifest file (default "manifest.yaml")
@@ -117,22 +117,22 @@ Options:
 
 Examples:
   # Build for macOS with default manifest
-  shellforge build --os Mac
+  gz-shellforge build --os Mac
 
   # Build with custom manifest and output
-  shellforge build --manifest custom.yaml --output ~/.zshrc --os Mac
+  gz-shellforge build --manifest custom.yaml --output ~/.zshrc --os Mac
 
   # Dry run to preview output
-  shellforge build --os Linux --dry-run
+  gz-shellforge build --os Linux --dry-run
 
   # Verbose mode for debugging
-  shellforge build --os Mac --verbose
+  gz-shellforge build --os Mac --verbose
 ```
 
 ### `validate` - Validate manifest file
 
 ```bash
-shellforge validate --manifest manifest.yaml --config-dir modules
+gz-shellforge validate --manifest manifest.yaml --config-dir modules
 
 Options:
   -m, --manifest string     Path to manifest file (default "manifest.yaml")
@@ -141,19 +141,19 @@ Options:
 
 Examples:
   # Validate default manifest
-  shellforge validate
+  gz-shellforge validate
 
   # Validate custom manifest
-  shellforge validate --manifest custom.yaml --config-dir modules
+  gz-shellforge validate --manifest custom.yaml --config-dir modules
 
   # Verbose validation with detailed output
-  shellforge validate --verbose
+  gz-shellforge validate --verbose
 ```
 
 ### `list` - List all modules
 
 ```bash
-shellforge list --manifest manifest.yaml --config-dir modules
+gz-shellforge list --manifest manifest.yaml --config-dir modules
 
 Options:
   -m, --manifest string     Path to manifest file (default "manifest.yaml")
@@ -163,16 +163,16 @@ Options:
 
 Examples:
   # List all modules
-  shellforge list
+  gz-shellforge list
 
   # List only Mac-compatible modules
-  shellforge list --filter Mac
+  gz-shellforge list --filter Mac
 
   # List with verbose output showing file paths
-  shellforge list --verbose
+  gz-shellforge list --verbose
 
   # List Linux modules with full details
-  shellforge list --filter Linux --verbose
+  gz-shellforge list --filter Linux --verbose
 ```
 
 ### Shell Completion
@@ -181,16 +181,16 @@ Shellforge uses Cobra, which provides auto-completion for bash, zsh, fish, and P
 
 ```bash
 # Bash
-shellforge completion bash > /etc/bash_completion.d/shellforge
+gz-shellforge completion bash > /etc/bash_completion.d/gz-shellforge
 
 # Zsh
-shellforge completion zsh > "${fpath[1]}/_shellforge"
+gz-shellforge completion zsh > "${fpath[1]}/_gz-shellforge"
 
 # Fish
-shellforge completion fish > ~/.config/fish/completions/shellforge.fish
+gz-shellforge completion fish > ~/.config/fish/completions/gz-shellforge.fish
 
 # PowerShell
-shellforge completion powershell > shellforge.ps1
+gz-shellforge completion powershell > gz-shellforge.ps1
 ```
 
 ---
@@ -263,9 +263,9 @@ Try it out:
 
 ```bash
 cd examples
-shellforge validate --verbose
-shellforge build --os Mac --dry-run
-shellforge build --os Linux --dry-run
+gz-shellforge validate --verbose
+gz-shellforge build --os Mac --dry-run
+gz-shellforge build --os Linux --dry-run
 ```
 
 ---

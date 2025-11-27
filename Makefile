@@ -3,7 +3,7 @@
 .PHONY: help build test lint clean install
 
 # Variables
-BINARY_NAME=shellforge
+BINARY_NAME=gz-shellforge
 BUILD_DIR=build
 MAIN_PATH=cmd/shellforge/main.go
 

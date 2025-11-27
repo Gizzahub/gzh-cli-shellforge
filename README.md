@@ -90,10 +90,12 @@ modules:
 - ✅ **Validation**: Detect circular dependencies and missing files before building
 - ✅ **Dry Run Mode**: Preview output without writing files
 - ✅ **Verbose Mode**: Detailed output for debugging
+- ✅ **Backup System**: Git-backed versioning with timestamped snapshots
 
 ### Planned Features
 
-- ⏳ **Backup & Restore**: Git-backed versioning with timestamped snapshots
+- ⏳ **Restore Command**: Restore from backup snapshots
+- ⏳ **Cleanup Command**: Manage snapshot retention policies
 - ⏳ **Template Generation**: Create common modules from templates
 - ⏳ **Migration Tools**: Convert monolithic `.zshrc` to modular structure
 - ⏳ **Diff Comparison**: Preview changes before deployment
@@ -173,6 +175,32 @@ Examples:
 
   # List Linux modules with full details
   gz-shellforge list --filter Linux --verbose
+```
+
+### `backup` - Backup shell configuration
+
+```bash
+gz-shellforge backup --file ~/.zshrc --message "Before major refactor"
+
+Options:
+  -f, --file string         File to backup (required)
+  -m, --message string      Backup description message
+      --backup-dir string   Backup directory (default: ~/.backup/shellforge)
+      --no-git              Disable git versioning
+  -v, --verbose             Show detailed output
+
+Examples:
+  # Backup your zsh configuration
+  gz-shellforge backup --file ~/.zshrc
+
+  # Backup with custom message
+  gz-shellforge backup --file ~/.zshrc --message "Before major refactor"
+
+  # Backup without git versioning
+  gz-shellforge backup --file ~/.bashrc --no-git
+
+  # Backup to custom directory
+  gz-shellforge backup --file ~/.zshrc --backup-dir ~/my-backups
 ```
 
 ### Shell Completion
@@ -437,11 +465,13 @@ MIT License - see LICENSE file for details
 - ✅ Dry-run mode
 - ✅ Comprehensive testing
 
-**Implemented (v0.2.0-dev)**:
+**Implemented (v0.2.0-alpha)**:
 - ✅ List command (show modules with filtering)
+- ✅ Backup command (git-backed versioning with snapshots)
 
-**Planned (v0.2.0)**:
-- ⏳ Backup/restore functionality
+**Planned (v0.2.1)**:
+- ⏳ Restore command (restore from backup snapshots)
+- ⏳ Cleanup command (manage snapshot retention policies)
 - ⏳ Template generation
 - ⏳ Migration tools
 

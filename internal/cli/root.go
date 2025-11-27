@@ -30,6 +30,7 @@ single shell configuration file.`,
 	cmd.AddCommand(newBuildCmd())
 	cmd.AddCommand(newValidateCmd())
 	cmd.AddCommand(newListCmd())
+	cmd.AddCommand(newBackupCmd())
 
 	return cmd
 }

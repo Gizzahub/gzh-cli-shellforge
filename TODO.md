@@ -1,5 +1,48 @@
 # Development History & Current Status
 
+## ✅ Post-v0.5.0: Integration & CLI Testing (Complete)
+
+**Started**: 2025-11-28
+**Completed**: 2025-11-28
+
+### Summary
+
+Added comprehensive integration tests and CLI tests to validate the complete workflow and improve test coverage.
+
+### Implementation Details
+
+**Integration Tests** (`internal/integration/workflow_test.go` - 244 lines):
+- TestMigrateBuildDiffWorkflow: End-to-end validation of migrate→build→diff
+  - Step 1: Migrate RC file to modular structure
+  - Step 2: Build output from modules
+  - Step 3: Compare original with generated (diff)
+  - Step 4: Validate all expected files exist
+- TestDiffFormats: Validates all 4 diff output formats
+- TestRealWorldExample: Uses actual examples/sample.zshrc file
+
+**CLI Tests** (`internal/cli/diff_test.go` - 170 lines):
+- Command structure and usage validation
+- Flag validation (format, verbose)
+- Help text and examples verification
+- Default value validation
+- Integration with root command
+- Format validation in help text
+- 11 test cases covering all aspects of diff command
+
+### Commits
+
+- `d5fbd6a` - test(integration): add end-to-end workflow tests
+- `26b5a25` - test(cli): add diff command tests
+
+### Testing
+
+- All 179 tests passing (100%)
+- Integration tests validate complete workflow
+- CLI tests ensure command structure integrity
+- Total new code: ~414 lines (tests only)
+
+---
+
 ## ✅ v0.5.0: Diff Comparison (Complete)
 
 **Started**: 2025-11-28
@@ -359,4 +402,4 @@ Domain Layer (internal/domain/)
 
 **Last Updated**: 2025-11-28
 **Current Version**: v0.5.0
-**Status**: Diff comparison complete (4 formats, LCS algorithm). All 176 tests passing. Next: CLI testing and examples.
+**Status**: v0.5.0 complete with integration tests and CLI tests. All 179 tests passing (100%). Ready for release.

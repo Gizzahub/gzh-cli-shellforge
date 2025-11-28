@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Integration Tests**: End-to-end workflow validation
+  - `internal/integration/workflow_test.go` (244 lines)
+  - TestMigrateBuildDiffWorkflow: Full migrate→build→diff workflow
+  - TestDiffFormats: All 4 diff output formats validation
+  - TestRealWorldExample: Real examples/sample.zshrc testing
+
+- **CLI Tests**: Diff command structural tests
+  - `internal/cli/diff_test.go` (170 lines)
+  - Command structure, flags, help text validation
+  - 11 test cases for diff command CLI
+
+### Changed
+
+- Test count increased from 176 to 179 tests
+- Added comprehensive integration testing coverage
+
 ---
 
 ## [0.5.0] - 2025-11-28

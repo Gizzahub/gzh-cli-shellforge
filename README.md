@@ -543,10 +543,27 @@ modules:
 
 ## Examples
 
+### Quick Start: Complete Workflow Demo
+
+Run the complete migrate→build→diff workflow demonstration:
+
+```bash
+cd examples
+./workflow-demo.sh
+```
+
+This automated demo shows the entire workflow from start to finish, including migration, building for different OSes, and comparing results.
+
+For a detailed step-by-step guide, see [examples/WORKFLOW.md](examples/WORKFLOW.md).
+
+### Example Configuration
+
 See the [examples/](examples/) directory for a complete working example with:
 - `manifest.yaml` - Example manifest with 10 modules
 - `modules/` - Example shell modules organized by category
-- Demonstrates: OS filtering, dependencies, module organization
+- `sample.zshrc` - Sample RC file for testing migration
+- `workflow-demo.sh` - Automated workflow demonstration
+- `WORKFLOW.md` - Complete workflow guide with best practices
 
 Try it out:
 

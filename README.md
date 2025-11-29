@@ -737,9 +737,17 @@ MIT License - see LICENSE file for details
 **Implemented (v0.3.0)**:
 - ✅ Template generation (6 built-in templates with auto-categorization)
 
-**Planned (v0.4.0)**:
-- ⏳ Migration tools
-- ⏳ Diff comparison
+**Implemented (v0.4.0)**:
+- ✅ Migration tools (RC file to modular structure conversion)
+- ✅ Auto-categorization (init.d/, rc_pre.d/, rc_post.d/)
+- ✅ Section detection (4 pattern types)
+- ✅ Dependency inference from content analysis
+
+**Implemented (v0.5.0)**:
+- ✅ Diff comparison (4 output formats: summary, unified, context, side-by-side)
+- ✅ LCS-based algorithm for accurate diff detection
+- ✅ Statistics and change percentage calculation
+- ✅ Integration tests (end-to-end workflow validation)
 
 ---
 

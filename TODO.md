@@ -1,6 +1,55 @@
 # Development History & Current Status
 
-## ✅ Post-v0.5.0: Integration & CLI Testing (Complete)
+## ✅ Post-v0.5.0 Session 2: CLI Command Tests (Complete)
+
+**Started**: 2025-11-28
+**Completed**: 2025-11-28
+
+### Summary
+
+Added comprehensive structural tests for all CLI commands (backup, restore, cleanup) to improve test coverage and ensure command integrity.
+
+### Implementation Details
+
+**CLI Command Tests** (609 lines total):
+- `internal/cli/backup_test.go` (223 lines)
+  - 11 test cases covering structure, flags, help text, shortcuts, examples
+  - Required flag enforcement, default values, integration
+  - expandHomePath function tests
+- `internal/cli/restore_test.go` (195 lines)
+  - 10 test cases for restore command
+  - Dual required flags (file and snapshot) validation
+  - Safety backup and dry-run mode documentation
+- `internal/cli/cleanup_test.go` (191 lines)
+  - 11 test cases for cleanup command
+  - Retention policy documentation verification
+  - Default values (keep-count=10, keep-days=30)
+- `internal/cli/migrate_test.go` (already existed)
+  - 9 test cases already in place
+  - Comprehensive coverage of migrate command
+
+**Documentation Updates**:
+- Updated README.md to reflect v0.4.0 and v0.5.0 as implemented
+- Updated CHANGELOG.md with all CLI test additions
+- Updated TODO.md status
+
+### Commits
+
+- `ff8b2c1` - docs(readme): update feature implementation status
+- `93b9c98` - test(cli): add backup command tests
+- `6991a8e` - test(cli): add restore command tests
+- `fbff079` - test(cli): add cleanup command tests
+
+### Testing
+
+- All 212 tests passing (100%)
+- Test count increased from 179 to 212 (+36 tests)
+- CLI layer structural coverage significantly improved
+- Total new code: ~609 lines of tests
+
+---
+
+## ✅ Post-v0.5.0 Session 1: Integration & CLI Testing (Complete)
 
 **Started**: 2025-11-28
 **Completed**: 2025-11-28
@@ -402,4 +451,4 @@ Domain Layer (internal/domain/)
 
 **Last Updated**: 2025-11-28
 **Current Version**: v0.5.0
-**Status**: v0.5.0 complete with integration tests and CLI tests. All 179 tests passing (100%). Ready for release.
+**Status**: v0.5.0 complete with comprehensive testing. All 212 tests passing (100%). Documentation updated. Ready for release.

@@ -20,9 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Command structure, flags, help text validation
   - 11 test cases for diff command CLI
 
+### Added (continued)
+
+- **CLI Command Tests**: Comprehensive structural tests for all commands
+  - `internal/cli/backup_test.go` (223 lines, 11 tests)
+  - `internal/cli/restore_test.go` (195 lines, 10 tests)
+  - `internal/cli/cleanup_test.go` (191 lines, 11 tests)
+  - `internal/cli/migrate_test.go` (already existed, 9 tests)
+  - Command structure, flags, help text, defaults validation
+
 ### Changed
 
-- Test count increased from 176 to 179 tests
+- Test count increased from 176 to 212 tests (+36 tests)
+- CLI layer test coverage improved with structural tests
 - Added comprehensive integration testing coverage
 
 ---

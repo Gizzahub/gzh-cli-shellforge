@@ -29,10 +29,20 @@ info() {
     echo -e "${YELLOW}ℹ $1${NC}"
 }
 
-# Check if gz-shellforge is installed
-if ! command -v gz-shellforge &> /dev/null; then
+# Find gz-shellforge binary
+SHELLFORGE=""
+if command -v gz-shellforge &> /dev/null; then
+    SHELLFORGE="gz-shellforge"
+elif [ -f "../build/gz-shellforge" ]; then
+    SHELLFORGE="$(cd .. && pwd)/build/gz-shellforge"
+    info "Using local binary: $SHELLFORGE"
+elif [ -f "build/gz-shellforge" ]; then
+    SHELLFORGE="$(pwd)/build/gz-shellforge"
+    info "Using local binary: $SHELLFORGE"
+else
     echo "Error: gz-shellforge is not installed or not in PATH"
     echo "Please run: make install"
+    echo "Or run from project root after: make build"
     exit 1
 fi
 
@@ -91,8 +101,8 @@ info "Original file location: $DEMO_DIR/.zshrc"
 # Step 2: Migrate to modular structure
 step "Step 2: Migrate RC File to Modular Structure"
 
-info "Running: gz-shellforge migrate .zshrc --output-dir modules --manifest manifest.yaml"
-gz-shellforge migrate .zshrc --output-dir modules --manifest manifest.yaml
+info "Running: $SHELLFORGE migrate .zshrc --output-dir modules --manifest manifest.yaml"
+$SHELLFORGE migrate .zshrc --output-dir modules --manifest manifest.yaml
 
 success "Migration complete!"
 echo ""
@@ -105,8 +115,8 @@ ls -lh modules/*/
 # Step 3: Build configuration for Mac
 step "Step 3: Build Configuration for Mac"
 
-info "Running: gz-shellforge build --manifest manifest.yaml --config-dir modules --os Mac --output .zshrc.mac"
-gz-shellforge build --manifest manifest.yaml --config-dir modules --os Mac --output .zshrc.mac
+info "Running: $SHELLFORGE build --manifest manifest.yaml --config-dir modules --os Mac --output .zshrc.mac"
+$SHELLFORGE build --manifest manifest.yaml --config-dir modules --os Mac --output .zshrc.mac
 
 success "Build complete for Mac!"
 echo ""
@@ -119,8 +129,8 @@ head -20 .zshrc.mac
 # Step 4: Build configuration for Linux
 step "Step 4: Build Configuration for Linux (Optional)"
 
-info "Running: gz-shellforge build --manifest manifest.yaml --config-dir modules --os Linux --output .zshrc.linux"
-gz-shellforge build --manifest manifest.yaml --config-dir modules --os Linux --output .zshrc.linux
+info "Running: $SHELLFORGE build --manifest manifest.yaml --config-dir modules --os Linux --output .zshrc.linux"
+$SHELLFORGE build --manifest manifest.yaml --config-dir modules --os Linux --output .zshrc.linux
 
 success "Build complete for Linux!"
 echo ""
@@ -130,30 +140,30 @@ ls -lh .zshrc.linux
 # Step 5: Compare original with generated
 step "Step 5: Compare Original with Generated (Mac)"
 
-info "Running: gz-shellforge diff .zshrc .zshrc.mac --format summary"
+info "Running: $SHELLFORGE diff .zshrc .zshrc.mac --format summary"
 echo ""
-gz-shellforge diff .zshrc .zshrc.mac --format summary
+$SHELLFORGE diff .zshrc .zshrc.mac --format summary
 
 echo ""
 echo ""
-info "Running: gz-shellforge diff .zshrc .zshrc.mac --format unified"
+info "Running: $SHELLFORGE diff .zshrc .zshrc.mac --format unified"
 echo ""
-gz-shellforge diff .zshrc .zshrc.mac --format unified | head -30
+$SHELLFORGE diff .zshrc .zshrc.mac --format unified | head -30
 echo "... (truncated)"
 
 # Step 6: List modules
 step "Step 6: List Modules in Manifest"
 
-info "Running: gz-shellforge list --manifest manifest.yaml"
+info "Running: $SHELLFORGE list --manifest manifest.yaml"
 echo ""
-gz-shellforge list --manifest manifest.yaml
+$SHELLFORGE list --manifest manifest.yaml
 
 # Step 7: Validate configuration
 step "Step 7: Validate Configuration"
 
-info "Running: gz-shellforge validate --manifest manifest.yaml --config-dir modules"
+info "Running: $SHELLFORGE validate --manifest manifest.yaml --config-dir modules"
 echo ""
-gz-shellforge validate --manifest manifest.yaml --config-dir modules
+$SHELLFORGE validate --manifest manifest.yaml --config-dir modules
 
 # Summary
 step "Workflow Complete!"

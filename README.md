@@ -556,6 +556,14 @@ This automated demo shows the entire workflow from start to finish, including mi
 
 For a detailed step-by-step guide, see [examples/WORKFLOW.md](examples/WORKFLOW.md).
 
+### CLI Quick Reference
+
+Need quick command examples? See [examples/CLI-EXAMPLES.md](examples/CLI-EXAMPLES.md) for:
+- Common usage patterns for all commands
+- Real-world scenarios (initial setup, adding modules, multi-OS, rollback)
+- Tips and tricks for efficient workflows
+- Command chaining and automation examples
+
 ### Example Configuration
 
 See the [examples/](examples/) directory for a complete working example with:
@@ -564,6 +572,7 @@ See the [examples/](examples/) directory for a complete working example with:
 - `sample.zshrc` - Sample RC file for testing migration
 - `workflow-demo.sh` - Automated workflow demonstration
 - `WORKFLOW.md` - Complete workflow guide with best practices
+- `CLI-EXAMPLES.md` - Quick reference for all CLI commands with real-world scenarios
 
 Try it out:
 

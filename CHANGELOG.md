@@ -29,11 +29,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `internal/cli/migrate_test.go` (already existed, 9 tests)
   - Command structure, flags, help text, defaults validation
 
+### Added (continued)
+
+- **Documentation Examples**: Complete workflow and CLI usage guides
+  - `examples/workflow-demo.sh` (184 lines) - Automated demo script
+  - `examples/WORKFLOW.md` (480 lines) - Step-by-step workflow guide
+  - `examples/CLI-EXAMPLES.md` (863 lines) - Quick reference for all commands
+  - Updated README.md with Quick Start and CLI Quick Reference sections
+
 ### Changed
 
 - Test count increased from 176 to 212 tests (+36 tests)
 - CLI layer test coverage improved with structural tests
 - Added comprehensive integration testing coverage
+
+### Fixed
+
+- **Workflow Demo Script**: Binary path resolution with absolute paths
+  - Handles binary in PATH, ../build/, or build/ directories
+  - Prevents "command not found" errors when script changes directories
+  - Tested successfully with complete migrate→build→diff→validate workflow
 
 ---
 

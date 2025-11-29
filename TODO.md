@@ -449,6 +449,60 @@ Domain Layer (internal/domain/)
 
 ---
 
-**Last Updated**: 2025-11-28
+## ✅ Post-v0.5.0 Session 3: Documentation & Examples (Complete)
+
+**Started**: 2025-11-30
+**Completed**: 2025-11-30
+
+### Summary
+
+Added comprehensive documentation examples including automated workflow demo, step-by-step guide, and complete CLI quick reference.
+
+### Implementation Details
+
+**Workflow Demo** (`examples/workflow-demo.sh` - 184 lines):
+- Automated demonstration of complete migrate→build→diff workflow
+- Colored output with step markers (green ✓, blue headers, yellow info)
+- Creates sample .zshrc, migrates to modules, builds for Mac/Linux
+- Runs validation and diff comparison
+- Binary detection: PATH, ../build/, build/ with absolute path conversion
+- Uses temporary directory for clean demo environment
+
+**Workflow Guide** (`examples/WORKFLOW.md` - 480 lines):
+- ASCII art workflow diagram
+- 10-step detailed workflow with examples
+- Advanced workflows (multi-OS, version control, continuous updates)
+- Real-world scenarios (6 detailed examples)
+- Troubleshooting section with common issues
+- Best practices for migration and deployment
+
+**CLI Quick Reference** (`examples/CLI-EXAMPLES.md` - 863 lines):
+- Complete reference for all 9 commands
+- 60+ practical examples with copy-paste ready code
+- 6 real-world scenarios (initial setup, adding modules, multi-OS, rollback)
+- Tips and tricks (aliases, command chaining, automation)
+- Short flags and advanced options for each command
+
+**Documentation Updates**:
+- Updated README.md with Quick Start section linking to workflow-demo.sh
+- Updated README.md with CLI Quick Reference section
+- Updated CHANGELOG.md with documentation examples
+
+### Commits
+
+- `20a228b` - docs(examples): add workflow demo and guide
+- `490a461` - docs(examples): add comprehensive CLI usage guide
+- `be5aad5` - fix(examples): use absolute path for binary in workflow-demo
+
+### Testing
+
+- Workflow demo script tested successfully end-to-end
+- All 7 steps complete: migrate→build(Mac)→build(Linux)→diff→list→validate
+- Binary path resolution works with local build directory
+- Creates 7 modules from sample .zshrc (preamble, os-detection, path-setup, homebrew, nvm-setup, git-aliases, helper-functions)
+
+---
+
+**Last Updated**: 2025-11-30
 **Current Version**: v0.5.0
-**Status**: v0.5.0 complete with comprehensive testing. All 212 tests passing (100%). Documentation updated. Ready for release.
+**Status**: v0.5.0 complete with comprehensive testing and documentation examples. All 212 tests passing (100%). Workflow demo validated. Ready for release.

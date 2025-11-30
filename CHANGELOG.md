@@ -47,6 +47,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Real-world shell configs: 41-2,500µs (excellent performance)
   - Regression testing workflow and future optimization roadmap
 
+### Added (continued)
+
+- **Pre-Release Validation Script**: Automated quality gates before release
+  - `scripts/pre-release.sh` (353 lines) - Comprehensive validation automation
+  - 9 validation categories: git status, version consistency, build, code quality, tests, benchmarks, documentation, dependencies, integration
+  - Validates 24+ checks including format, coverage, security, and end-to-end workflow
+  - Automatic issue detection (found missing LICENSE, formatting, go.mod issues)
+  - Summary report with pass/fail/warning counts
+  - Exit code 0 on success, 1 on failure for CI/CD integration
+  - Optional `--skip-benchmarks` flag for faster validation
+  - MIT LICENSE file added (identified by validation script)
+
 ### Changed
 
 - Test count increased from 176 to 212 tests (+36 tests)

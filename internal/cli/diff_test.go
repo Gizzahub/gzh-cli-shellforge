@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -167,4 +168,48 @@ func TestDiffCmd_FormatValidation(t *testing.T) {
 	assert.Contains(t, formatFlag.Usage, "unified")
 	assert.Contains(t, formatFlag.Usage, "context")
 	assert.Contains(t, formatFlag.Usage, "side-by-side")
+}
+
+func TestFormatDiffSummary(t *testing.T) {
+	tests := []struct {
+		name     string
+		result   *domain.DiffResult
+		contains []string
+	}{
+		{
+			name: "summary with changes",
+			result: &domain.DiffResult{
+				Statistics: domain.DiffStatistics{
+					LinesAdded:    5,
+					LinesRemoved:  3,
+					LinesModified: 2,
+					TotalLines:    100,
+				},
+			},
+			contains: []string{"Summary:"},
+		},
+		{
+			name: "summary with no changes",
+			result: &domain.DiffResult{
+				Statistics: domain.DiffStatistics{
+					LinesAdded:    0,
+					LinesRemoved:  0,
+					LinesModified: 0,
+					TotalLines:    50,
+				},
+			},
+			contains: []string{"Summary:"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			output := formatDiffSummary(tt.result)
+
+			assert.NotEmpty(t, output)
+			for _, expected := range tt.contains {
+				assert.Contains(t, output, expected)
+			}
+		})
+	}
 }

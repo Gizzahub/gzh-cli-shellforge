@@ -1,5 +1,80 @@
 # Development History & Current Status
 
+## ✅ Post-v0.5.1 Session 1: Runtime Integration Tests (Complete)
+
+**Started**: 2025-11-30
+**Completed**: 2025-11-30
+
+### Summary
+
+Added comprehensive runtime integration tests that execute the actual CLI binary to verify end-to-end behavior across all commands, complementing existing structural tests.
+
+### Implementation Details
+
+**Runtime Integration Tests** (`internal/integration/cli_test.go` - 493 lines):
+- TestCLI_Version: Validates --version flag shows correct version (0.5.1)
+- TestCLI_Help: Tests help output for all commands
+  - Root command help text
+  - Build, validate, migrate, diff subcommand help
+  - Flag documentation verification
+- TestCLI_Build: Tests build command execution
+  - Successful build with temporary files
+  - Dry-run mode validation
+  - Missing manifest error handling
+- TestCLI_Validate: Tests validation command
+  - Valid manifest and modules
+  - Missing module file detection
+- TestCLI_Migrate: Tests RC file migration
+  - Successful migration creating module files
+  - Missing RC file error handling
+- TestCLI_Diff: Tests diff command with multiple formats
+  - Summary format output
+  - Unified format (git-style)
+  - Side-by-side format
+  - Identical files detection
+- TestCLI_ExitCodes: Validates proper exit codes
+  - Successful operations (exit 0)
+  - Invalid commands (exit 1)
+  - Missing required flags
+  - Unknown flags
+
+**Test Infrastructure**:
+- getBinaryPath() helper: Finds or builds binary automatically
+- Uses exec.Command to run actual CLI binary
+- Creates temporary directories for test isolation
+- Validates stdout/stderr output with assertions
+- Tests both success and failure paths
+
+**Version Consistency Updates**:
+- Updated `internal/cli/root_test.go` version expectations (0.5.0 → 0.5.1)
+
+### Commits
+
+- `a189527` - test(integration): add runtime CLI integration tests
+
+### Testing
+
+- Test count: 212 → 219 tests (+7 net increase)
+- All 219 tests passing (100%)
+- 8 new test functions with 21 subtests
+- Total new code: ~493 lines (tests only)
+- Coverage impact: Integration tests don't affect coverage metrics but validate runtime behavior
+
+### Key Improvements
+
+**Runtime Validation**:
+- Tests execute actual binary, not just command structure
+- Validates real file I/O operations
+- Verifies actual output formatting and content
+- Tests complete command lifecycle (parse → execute → output)
+
+**Error Path Coverage**:
+- Missing files and invalid arguments
+- Malformed configurations
+- Exit code validation for all error scenarios
+
+---
+
 ## ✅ Post-v0.5.0 Session 2: CLI Command Tests (Complete)
 
 **Started**: 2025-11-28
@@ -829,4 +904,4 @@ To publish the release:
 
 **Last Updated**: 2025-11-30
 **Current Version**: v0.5.1
-**Status**: ✅ v0.5.1 tagged and ready for GitHub release. All 212 tests passing. Comprehensive documentation. Developer tooling complete.
+**Status**: ✅ v0.5.1 tagged and ready for GitHub release. All 219 tests passing (100%). Runtime integration tests added. Comprehensive documentation. Developer tooling complete.

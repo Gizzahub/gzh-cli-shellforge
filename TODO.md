@@ -776,6 +776,57 @@ Added convenience Makefile targets to streamline common development workflows, m
 
 ---
 
+## ✅ v0.5.1 Release (Complete)
+
+**Released**: 2025-11-30
+**Git Tag**: v0.5.1
+
+### Release Summary
+
+Released v0.5.1 as a maintenance/polish release building on v0.5.0's diff comparison feature.
+
+### What's New in v0.5.1
+
+**Testing Infrastructure** (+47 tests):
+- Integration tests for end-to-end workflow validation
+- CLI structural tests for all commands (backup, restore, cleanup, migrate, diff)
+- Performance benchmark suite (28 benchmarks)
+- Test count: 165 → 212 tests (100% passing)
+
+**Developer Tooling**:
+- Pre-release validation script (9 categories, 24+ checks)
+- Makefile workflow automation (7 new targets)
+- Automatic issue detection and reporting
+
+**Documentation** (+2,765 lines):
+- Workflow demonstration script
+- Step-by-step workflow guide
+- CLI quick reference (60+ examples)
+- Performance benchmarks documentation
+- Pre-release validation guide
+
+**Quality Improvements**:
+- MIT LICENSE added
+- Code formatting (go fmt)
+- Dependencies tidied (go mod tidy)
+- Version consistency verified
+
+### Commits & Tag
+
+- Version bump: `065e385`
+- Git tag: `v0.5.1`
+- Commits since v0.5.0: 21 commits
+- Tag message: Comprehensive release notes
+
+### Next Steps
+
+To publish the release:
+1. Push the tag: `git push origin v0.5.1`
+2. Create GitHub release with binaries
+3. Update project documentation
+
+---
+
 **Last Updated**: 2025-11-30
-**Current Version**: v0.5.0
-**Status**: v0.5.0 complete with comprehensive testing, documentation, benchmarks, pre-release automation, and developer workflow tools. All 212 tests passing. Ready for v0.5.0 release.
+**Current Version**: v0.5.1
+**Status**: ✅ v0.5.1 tagged and ready for GitHub release. All 212 tests passing. Comprehensive documentation. Developer tooling complete.

@@ -1,8 +1,13 @@
 package cli
 
 import (
+	"bytes"
+	"io"
+	"os"
 	"testing"
 
+	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -230,4 +235,211 @@ func TestMigrateCmd_RootIntegration(t *testing.T) {
 
 	require.NotNil(t, migrateCmd, "migrate command should be registered with root")
 	assert.Equal(t, "migrate", migrateCmd.Name())
+}
+
+func TestPrintAnalysisResult(t *testing.T) {
+	tests := []struct {
+		name     string
+		result   *app.MigrateResult
+		verbose  bool
+		contains []string
+	}{
+		{
+			name: "analysis with sections",
+			result: &app.MigrateResult{
+				SourceFile: "/home/user/.zshrc",
+				Sections: []domain.Section{
+					{
+						Name:      "PATH Setup",
+						Content:   "export PATH=/usr/local/bin:$PATH",
+						Category:  "init.d",
+						LineStart: 1,
+						LineEnd:   3,
+					},
+					{
+						Name:      "Aliases",
+						Content:   "alias gs='git status'",
+						Category:  "rc_post.d",
+						LineStart: 5,
+						LineEnd:   7,
+					},
+				},
+				ModulesCreated: 2,
+			},
+			verbose: false,
+			contains: []string{
+				"Migration Analysis",
+				"/home/user/.zshrc",
+				"Detected sections: 2",
+				"Modules to create: 2",
+				"PATH Setup",
+				"Aliases",
+				"init.d/",
+				"rc_post.d/",
+			},
+		},
+		{
+			name: "analysis with verbose",
+			result: &app.MigrateResult{
+				SourceFile: "/home/user/.bashrc",
+				Sections: []domain.Section{
+					{
+						Name:      "Environment",
+						Content:   "export VAR=value\nexport FOO=bar\nexport BAZ=qux",
+						Category:  "init.d",
+						LineStart: 1,
+						LineEnd:   3,
+					},
+				},
+				ModulesCreated: 1,
+			},
+			verbose: true,
+			contains: []string{
+				"Migration Analysis",
+				"Detected sections: 1",
+				"Environment",
+				"Content preview:",
+				"export VAR=value",
+			},
+		},
+		{
+			name: "analysis with no sections",
+			result: &app.MigrateResult{
+				SourceFile:     "/home/user/.zshrc",
+				Sections:       []domain.Section{},
+				ModulesCreated: 0,
+			},
+			verbose: false,
+			contains: []string{
+				"Migration Analysis",
+				"No sections detected",
+				"unsegmented",
+				"Tip:",
+			},
+		},
+		{
+			name: "analysis with warnings",
+			result: &app.MigrateResult{
+				SourceFile: "/home/user/.zshrc",
+				Sections: []domain.Section{
+					{Name: "Test", Content: "echo test", Category: "init.d"},
+				},
+				ModulesCreated: 1,
+				Warnings:       []string{"Some content could not be categorized", "Missing section headers"},
+			},
+			verbose: false,
+			contains: []string{
+				"Migration Analysis",
+				"Warnings:",
+				"Some content could not be categorized",
+				"Missing section headers",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			old := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			printAnalysisResult(tt.result, tt.verbose)
+
+			w.Close()
+			os.Stdout = old
+
+			var buf bytes.Buffer
+			io.Copy(&buf, r)
+			output := buf.String()
+
+			for _, expected := range tt.contains {
+				assert.Contains(t, output, expected, "Output should contain: %s", expected)
+			}
+		})
+	}
+}
+
+func TestPrintMigrationResult(t *testing.T) {
+	tests := []struct {
+		name     string
+		result   *app.MigrateResult
+		verbose  bool
+		contains []string
+	}{
+		{
+			name: "migration complete",
+			result: &app.MigrateResult{
+				SourceFile:     "/home/user/.zshrc",
+				ModulesCreated: 3,
+				ManifestPath:   "/output/manifest.yaml",
+			},
+			verbose: false,
+			contains: []string{
+				"Migration Complete",
+				"Created 3 module files",
+				"Generated manifest: /output/manifest.yaml",
+				"Next steps:",
+				"Review generated module files",
+			},
+		},
+		{
+			name: "migration with verbose",
+			result: &app.MigrateResult{
+				SourceFile:     "/home/user/.bashrc",
+				ModulesCreated: 2,
+				ManifestPath:   "/output/manifest.yaml",
+				ModuleFilesPaths: []string{
+					"/output/modules/init.d/10-path.sh",
+					"/output/modules/rc_post.d/50-aliases.sh",
+				},
+			},
+			verbose: true,
+			contains: []string{
+				"Migration Complete",
+				"Created 2 module files",
+				"Module files created:",
+				"/output/modules/init.d/10-path.sh",
+				"/output/modules/rc_post.d/50-aliases.sh",
+			},
+		},
+		{
+			name: "migration with warnings",
+			result: &app.MigrateResult{
+				SourceFile:     "/home/user/.zshrc",
+				ModulesCreated: 1,
+				ManifestPath:   "/output/manifest.yaml",
+				Warnings:       []string{"Some lines could not be parsed", "Complex shell constructs detected"},
+			},
+			verbose: false,
+			contains: []string{
+				"Migration Complete",
+				"Warnings:",
+				"Some lines could not be parsed",
+				"Complex shell constructs detected",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			old := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			printMigrationResult(tt.result, tt.verbose)
+
+			w.Close()
+			os.Stdout = old
+
+			var buf bytes.Buffer
+			io.Copy(&buf, r)
+			output := buf.String()
+
+			for _, expected := range tt.contains {
+				assert.Contains(t, output, expected, "Output should contain: %s", expected)
+			}
+		})
+	}
 }

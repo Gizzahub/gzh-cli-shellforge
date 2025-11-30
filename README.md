@@ -736,11 +736,17 @@ open coverage.html
 ```
 
 **Test Coverage:**
-- Domain layer: 76.9%
-- Infrastructure layer: 91.7-100%
-- Application layer: 89.2%
-- CLI layer: 71.3%
-- **Total: 50 tests passing**
+- Domain layer: 88.7%
+- Infrastructure layer: 77.6-100% (yamlparser: 100%, rcparser: 97.4%, diffcomparator: 93.9%)
+- Application layer: 86.5%
+- CLI layer: 45.8%
+- **Overall: 70.1%**
+- **Total: 235 tests passing** (100% pass rate)
+
+**Test Types:**
+- Unit tests: 227 tests (mock-based with afero.MemMapFs)
+- Integration tests: 8 tests (end-to-end workflow validation)
+- Runtime tests: CLI execution validation with actual binary
 
 ---
 

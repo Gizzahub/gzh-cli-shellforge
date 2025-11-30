@@ -621,6 +621,52 @@ make test
 make test-coverage
 ```
 
+### Common Development Workflows
+
+**Quick development tasks:**
+```bash
+# Run all tests with HTML coverage report
+make coverage-html
+
+# Run performance benchmarks
+make bench
+
+# Run the workflow demonstration
+make demo
+
+# Validate before committing
+make validate
+```
+
+**Pre-release preparation:**
+```bash
+# Full validation with benchmarks (recommended before release)
+make pre-release
+
+# Or fast validation without benchmarks
+make validate
+```
+
+**Available Makefile targets:**
+- `make help` - Show all available targets
+- `make build` - Build the binary
+- `make build-all` - Build for multiple platforms
+- `make test` - Run all tests
+- `make test-coverage` - Generate coverage report
+- `make coverage-html` - Generate and open HTML coverage report
+- `make bench` - Run diff algorithm benchmarks
+- `make bench-all` - Run all project benchmarks
+- `make lint` - Format code and run linters
+- `make validate` - Run pre-release validation (fast)
+- `make validate-full` - Complete validation with benchmarks
+- `make demo` - Run workflow demonstration
+- `make pre-release` - Prepare for release
+- `make clean` - Remove build artifacts
+- `make install` - Install to GOPATH/bin
+- `make deps` - Download and tidy dependencies
+- `make run` - Run the application
+```
+
 ### Project Architecture
 
 ```

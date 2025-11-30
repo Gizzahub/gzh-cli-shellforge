@@ -111,8 +111,8 @@ print_header "2. Version Consistency"
 
 print_check "Extracting version from sources..."
 
-# Get version from main.go
-MAIN_VERSION=$(grep 'Version.*=' cmd/shellforge/main.go | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+# Get version from root.go
+MAIN_VERSION=$(grep 'version.*=' internal/cli/root.go | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
 
 # Get version from CHANGELOG.md
 CHANGELOG_VERSION=$(grep -E '## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | head -1 | sed -E 's/.*\[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')
@@ -120,14 +120,14 @@ CHANGELOG_VERSION=$(grep -E '## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | head 
 # Get version from git tags
 LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
 
-print_info "main.go version:      $MAIN_VERSION"
+print_info "root.go version:      $MAIN_VERSION"
 print_info "CHANGELOG.md version: $CHANGELOG_VERSION"
 print_info "Latest git tag:       $LATEST_TAG"
 
 if [[ "$MAIN_VERSION" == "$CHANGELOG_VERSION" ]]; then
     print_success "Version consistency check passed"
 else
-    print_error "Version mismatch between main.go ($MAIN_VERSION) and CHANGELOG.md ($CHANGELOG_VERSION)"
+    print_error "Version mismatch between root.go ($MAIN_VERSION) and CHANGELOG.md ($CHANGELOG_VERSION)"
 fi
 
 # ============================================

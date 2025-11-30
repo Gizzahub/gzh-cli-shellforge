@@ -33,3 +33,7 @@ Thumbs.db
 
 # Snapshots and backups
 .backup/
+*.out
+*_coverage.out
+coverage.out
+total_coverage.out

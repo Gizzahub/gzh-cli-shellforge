@@ -204,7 +204,7 @@ func TestMigrationService_Migrate(t *testing.T) {
 			parserResult: &domain.MigrationResult{
 				Sections: []domain.Section{
 					{
-						Name:      "PATH Setup",
+						Name:        "PATH Setup",
 						Content:     "export PATH=/usr/local/bin:$PATH\n",
 						Category:    "init.d",
 						Description: "Path configuration",

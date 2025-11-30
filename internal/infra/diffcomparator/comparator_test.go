@@ -183,10 +183,10 @@ func TestComparator_Compare_EmptyFiles(t *testing.T) {
 
 func TestTruncate(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     string
-		maxLen    int
-		expected  string
+		name     string
+		input    string
+		maxLen   int
+		expected string
 	}{
 		{
 			name:     "short string",
@@ -210,7 +210,7 @@ func TestTruncate(t *testing.T) {
 			name:     "very short max",
 			input:    "hello world",
 			maxLen:   3,
-			expected: "...",  // maxLen-3 = 0, so just "..."
+			expected: "...", // maxLen-3 = 0, so just "..."
 		},
 		{
 			name:     "empty string",

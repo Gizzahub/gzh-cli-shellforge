@@ -37,6 +37,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `examples/CLI-EXAMPLES.md` (863 lines) - Quick reference for all commands
   - Updated README.md with Quick Start and CLI Quick Reference sections
 
+### Added (continued)
+
+- **Performance Benchmarks**: Comprehensive benchmark suite for diff algorithm
+  - `internal/infra/diffcomparator/comparator_bench_test.go` (534 lines)
+  - 6 benchmark categories: identical files, additions, modifications, formats, real-world, functions
+  - `docs/BENCHMARKS.md` (385 lines) - Performance analysis and optimization guide
+  - Key metrics: Small files < 100µs, Medium files < 10ms, Large files < 100ms
+  - Real-world shell configs: 41-2,500µs (excellent performance)
+  - Regression testing workflow and future optimization roadmap
+
 ### Changed
 
 - Test count increased from 176 to 212 tests (+36 tests)

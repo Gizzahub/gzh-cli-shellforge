@@ -503,6 +503,96 @@ Added comprehensive documentation examples including automated workflow demo, st
 
 ---
 
+## ✅ Post-v0.5.0 Session 4: Performance Benchmarks (Complete)
+
+**Started**: 2025-11-30
+**Completed**: 2025-11-30
+
+### Summary
+
+Added comprehensive benchmark suite to measure and track diff algorithm performance across releases, with detailed performance analysis documentation.
+
+### Implementation Details
+
+**Benchmark Test File** (`internal/infra/diffcomparator/comparator_bench_test.go` - 534 lines):
+
+1. **BenchmarkComparator_Compare_Identical** (4 sizes):
+   - Small (10 lines): ~1.2µs, 4KB
+   - Medium (100 lines): ~6.9µs, 28KB
+   - Large (1,000 lines): ~57µs, 262KB
+   - VeryLarge (10,000 lines): ~540µs, 2.6MB
+
+2. **BenchmarkComparator_Compare_Additions** (5 scenarios):
+   - Tests 10% and 50% line additions
+   - Small to Large file sizes
+   - Complexity: O(n×m)
+
+3. **BenchmarkComparator_Compare_Modifications** (5 scenarios):
+   - Tests 10% and 50% modifications
+   - Shows LCS algorithm cost
+   - Large 10%: ~516ms (most expensive)
+
+4. **BenchmarkComparator_Compare_Formats** (4 formats):
+   - Summary: ~18.8ms
+   - Unified: ~18.2ms (fastest)
+   - Context: ~39ms (2x slower)
+   - SideBySide: ~18.6ms
+
+5. **BenchmarkComparator_Compare_RealWorld** (3 scenarios):
+   - Small config: ~41µs
+   - Medium config: ~87µs
+   - Large config: ~2.5ms
+
+6. **Function-Level Benchmarks**:
+   - parseStatistics: ~200ns-20µs, 0 allocations
+   - splitLines: ~1.5µs-1.3ms, single allocation
+
+**Helper Functions**:
+- generateFileContent: Create test files with N lines
+- generateShellConfig: Realistic shell configuration with sections
+- applyRealWorldChanges: Simulate migration transformations (minor/moderate/major)
+- modifyContent/modifyLines: Apply percentage-based changes
+
+**Performance Documentation** (`docs/BENCHMARKS.md` - 385 lines):
+- How to run benchmarks and analyze results
+- Detailed performance metrics for each category
+- Complexity analysis and memory allocation patterns
+- Optimization tips and format selection guide
+- Performance thresholds (excellent/good/acceptable/slow)
+- Regression testing workflow using benchstat
+- Future optimization opportunities (short/medium/long-term)
+
+### Key Performance Findings
+
+**Real-World Performance**:
+- Typical .zshrc (50-200 lines): **< 100µs** (sub-millisecond)
+- Complex .bashrc (500+ lines): **< 3ms** (imperceptible to user)
+
+**Algorithm Characteristics**:
+- Identical files: O(n), very fast
+- Additions: O(n×m), acceptable
+- Modifications: O(n×m×d), expensive with high change rate
+- Format overhead: Context format 2x slower than unified
+
+**Memory Efficiency**:
+- parseStatistics: Zero allocations (excellent)
+- splitLines: Single allocation per call
+- Full comparison: Linear memory growth with file size
+
+### Commits
+
+- `82e1e24` - test(perf): add comprehensive benchmark tests for diff comparator
+
+### Benefits
+
+1. **Performance Tracking**: Measure diff algorithm performance across releases
+2. **Regression Detection**: Identify performance degradation early
+3. **Optimization Guidance**: Know where optimization efforts should focus
+4. **Format Selection**: Data-driven choice of diff output format
+5. **Capacity Planning**: Understand limitations with large files
+
+---
+
 **Last Updated**: 2025-11-30
 **Current Version**: v0.5.0
-**Status**: v0.5.0 complete with comprehensive testing and documentation examples. All 212 tests passing (100%). Workflow demo validated. Ready for release.
+**Status**: v0.5.0 complete with comprehensive testing, documentation examples, and performance benchmarks. All 212 tests + benchmarks passing (100%). Ready for release.

@@ -18,10 +18,10 @@ type Section struct {
 
 // MigrationResult contains the result of migrating an RC file
 type MigrationResult struct {
-	Sections []Section         // Detected sections
-	Modules  []Module          // Generated module definitions
-	Manifest *Manifest         // Generated manifest
-	Warnings []string          // Warnings during migration
+	Sections []Section // Detected sections
+	Modules  []Module  // Generated module definitions
+	Manifest *Manifest // Generated manifest
+	Warnings []string  // Warnings during migration
 }
 
 // SectionPattern defines regex patterns for detecting section headers

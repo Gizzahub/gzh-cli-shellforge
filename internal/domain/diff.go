@@ -21,21 +21,21 @@ const (
 
 // DiffStatistics contains statistics about differences between files.
 type DiffStatistics struct {
-	LinesAdded    int
-	LinesRemoved  int
-	LinesModified int
+	LinesAdded     int
+	LinesRemoved   int
+	LinesModified  int
 	LinesUnchanged int
-	TotalLines    int
+	TotalLines     int
 }
 
 // DiffResult represents the result of comparing two files.
 type DiffResult struct {
-	OriginalFile string
+	OriginalFile  string
 	GeneratedFile string
-	Statistics   DiffStatistics
-	Format       DiffFormat
-	Content      string // Formatted diff content based on Format
-	IsIdentical  bool
+	Statistics    DiffStatistics
+	Format        DiffFormat
+	Content       string // Formatted diff content based on Format
+	IsIdentical   bool
 }
 
 // NewDiffResult creates a new DiffResult.

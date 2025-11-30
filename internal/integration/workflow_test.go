@@ -141,9 +141,9 @@ function mkcd() {
 
 		// Verify all expected files exist
 		expectedFiles := []string{
-			"/test/.zshrc",         // Original
-			"/test/manifest.yaml",  // Generated manifest
-			"/test/.zshrc.new",     // Generated output
+			"/test/.zshrc",        // Original
+			"/test/manifest.yaml", // Generated manifest
+			"/test/.zshrc.new",    // Generated output
 		}
 
 		for _, file := range expectedFiles {

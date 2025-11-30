@@ -81,9 +81,9 @@ func TestDiffCmd_FlagShortcuts(t *testing.T) {
 	cmd := newDiffCmd()
 
 	tests := []struct {
-		name     string
-		short    string
-		long     string
+		name  string
+		short string
+		long  string
 	}{
 		{"format", "-f", "--format"},
 		{"verbose", "-v", "--verbose"},

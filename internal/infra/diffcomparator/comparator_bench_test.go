@@ -82,9 +82,9 @@ func BenchmarkComparator_Compare_Additions(b *testing.B) {
 // Benchmark file comparison with modifications
 func BenchmarkComparator_Compare_Modifications(b *testing.B) {
 	scenarios := []struct {
-		name         string
-		totalLines   int
-		modifiedPct  int
+		name        string
+		totalLines  int
+		modifiedPct int
 	}{
 		{"Small_10pct", 100, 10},
 		{"Small_50pct", 100, 50},
@@ -157,9 +157,9 @@ func BenchmarkComparator_Compare_RealWorld(b *testing.B) {
 		originalSize int
 		changeType   string
 	}{
-		{"SmallConfig_MinorChanges", 50, "minor"},      // .zshrc with few aliases
+		{"SmallConfig_MinorChanges", 50, "minor"},         // .zshrc with few aliases
 		{"MediumConfig_ModerateChanges", 200, "moderate"}, // typical .bashrc
-		{"LargeConfig_MajorChanges", 500, "major"},     // complex shell setup
+		{"LargeConfig_MajorChanges", 500, "major"},        // complex shell setup
 	}
 
 	for _, scenario := range scenarios {

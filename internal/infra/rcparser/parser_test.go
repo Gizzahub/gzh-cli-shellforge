@@ -272,9 +272,9 @@ func TestParser_DetectSectionHeader(t *testing.T) {
 	parser := New(afero.NewMemMapFs())
 
 	tests := []struct {
-		name  string
-		line  string
-		want  string
+		name string
+		line string
+		want string
 	}{
 		{
 			name: "dashes style",

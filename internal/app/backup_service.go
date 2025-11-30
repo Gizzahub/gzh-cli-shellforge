@@ -45,9 +45,9 @@ func NewBackupService(snapshotMgr SnapshotManager, gitRepo GitRepository, config
 
 // BackupResult contains information about a backup operation
 type BackupResult struct {
-	Snapshot      *domain.Snapshot
-	GitCommitted  bool
-	Message       string
+	Snapshot     *domain.Snapshot
+	GitCommitted bool
+	Message      string
 }
 
 // Backup creates a backup of the source file

@@ -21,9 +21,9 @@ const (
 type TemplateCategory string
 
 const (
-	CategoryInitD    TemplateCategory = "init.d"
-	CategoryRcPreD   TemplateCategory = "rc_pre.d"
-	CategoryRcPostD  TemplateCategory = "rc_post.d"
+	CategoryInitD   TemplateCategory = "init.d"
+	CategoryRcPreD  TemplateCategory = "rc_pre.d"
+	CategoryRcPostD TemplateCategory = "rc_post.d"
 )
 
 // Template represents a module template definition

@@ -121,12 +121,12 @@ func (sl *SnapshotList) GetToDelete(keepCount int, keepDays int) []Snapshot {
 
 // BackupConfig represents the configuration for backup operations
 type BackupConfig struct {
-	BackupDir     string // ~/.backup/shellforge
-	SnapshotsDir  string // ~/.backup/shellforge/snapshots
-	CurrentDir    string // ~/.backup/shellforge/current
-	GitEnabled    bool   // Whether to use git for versioning
-	KeepCount     int    // Number of snapshots to keep (0 = unlimited)
-	KeepDays      int    // Days to keep snapshots (0 = unlimited)
+	BackupDir    string // ~/.backup/shellforge
+	SnapshotsDir string // ~/.backup/shellforge/snapshots
+	CurrentDir   string // ~/.backup/shellforge/current
+	GitEnabled   bool   // Whether to use git for versioning
+	KeepCount    int    // Number of snapshots to keep (0 = unlimited)
+	KeepDays     int    // Days to keep snapshots (0 = unlimited)
 }
 
 // NewBackupConfig creates a default backup configuration
@@ -136,8 +136,8 @@ func NewBackupConfig(backupDir string) *BackupConfig {
 		SnapshotsDir: filepath.Join(backupDir, "snapshots"),
 		CurrentDir:   filepath.Join(backupDir, "current"),
 		GitEnabled:   true,
-		KeepCount:    10,  // Keep last 10 snapshots by default
-		KeepDays:     30,  // Keep 30 days by default
+		KeepCount:    10, // Keep last 10 snapshots by default
+		KeepDays:     30, // Keep 30 days by default
 	}
 }
 

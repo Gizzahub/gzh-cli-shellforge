@@ -31,11 +31,11 @@ func NewMigrationService(parser RCParser, reader FileReader, writer FileWriter) 
 
 // MigrateResult contains the result of an RC file migration
 type MigrateResult struct {
-	SourceFile      string
-	Sections        []domain.Section
-	ModulesCreated  int
-	ManifestPath    string
-	Warnings        []string
+	SourceFile       string
+	Sections         []domain.Section
+	ModulesCreated   int
+	ManifestPath     string
+	Warnings         []string
 	ModuleFilesPaths []string
 }
 

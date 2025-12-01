@@ -99,7 +99,7 @@ gz-shellforge template generate alias my-aliases -f aliases='alias ll="ls -la"'
 
 - **[Complete Command Reference](docs/user/20-commands.md)** - All commands and options
 - **[Workflow Guide](docs/user/30-workflows.md)** - Step-by-step workflows
-- **[Examples](docs/user/40-examples.md)** - Real-world usage examples
+- **[Command Reference](docs/user/40-command-reference.md)** - All commands with examples
 - **[FAQ](FAQ.md)** - Frequently asked questions
 
 ### Try the examples

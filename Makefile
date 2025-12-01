@@ -62,7 +62,9 @@ clean: ## Clean build artifacts
 
 install: ## Install the binary to GOPATH/bin
 	@echo "Installing $(BINARY_NAME)..."
-	$(GOCMD) install $(MAIN_PATH)
+	@mkdir -p $(BUILD_DIR)
+	$(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
+	@cp $(BUILD_DIR)/$(BINARY_NAME) $(GOPATH)/bin/$(BINARY_NAME)
 	@echo "Installed to $(GOPATH)/bin/$(BINARY_NAME)"
 
 deps: ## Download dependencies

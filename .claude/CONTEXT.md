@@ -143,11 +143,10 @@ internal/infra/yamlparser/parser.go # YAML parsing
 
 ### Documentation
 ```
-README.md                           # Main documentation (837 lines - to be simplified)
-CLAUDE.md                           # Development guide (THIS FILE WILL BE MOVED)
-docs/user/                          # User documentation (NEW)
-docs/developer/                     # Developer documentation (NEW)
-docs/reference/                     # API reference (NEW)
+README.md                           # Main documentation (302 lines - simplified)
+CLAUDE.md                           # Development guide
+docs/user/                          # User documentation
+docs/dev/                           # Developer documentation
 .claude/CONTEXT.md                  # This file (LLM entry point)
 ```
 

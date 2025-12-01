@@ -101,8 +101,8 @@ git push origin feature/my-awesome-feature
 
 1. **Check existing issues**: [GitHub Issues](https://github.com/gizzahub/gzh-cli-shellforge/issues)
 2. **Discuss large changes**: Open an issue first for discussion
-3. **Read architecture docs**: [docs/developer/00-architecture.md](docs/developer/00-architecture.md)
-4. **Follow style guide**: [docs/developer/40-code-style.md](docs/developer/40-code-style.md)
+3. **Read architecture docs**: [docs/dev/00-architecture.md](docs/dev/00-architecture.md)
+4. **Follow Go best practices**: See [Effective Go](https://golang.org/doc/effective_go.html)
 
 ### Development Workflow
 
@@ -278,7 +278,7 @@ make bench
 - Troubleshooting
 - FAQ
 
-**Developer Documentation** (`docs/developer/`):
+**Developer Documentation** (`docs/dev/`):
 - Architecture
 - Development setup
 - Testing guide
@@ -459,7 +459,7 @@ internal/
 3. Infra layer: Implements interfaces, uses external libraries
 4. CLI layer: Wires everything together
 
-See [Architecture Document](docs/developer/00-architecture.md) for details.
+See [Architecture Document](docs/dev/00-architecture.md) for details.
 
 ### Adding New Features
 
@@ -494,7 +494,7 @@ Look for issues labeled `good first issue`:
 
 - [Effective Go](https://golang.org/doc/effective_go.html)
 - [Hexagonal Architecture](https://alistair.cockburn.us/hexagonal-architecture/)
-- [Project Documentation](docs/developer/)
+- [Project Documentation](docs/dev/)
 
 ---
 
@@ -553,10 +553,10 @@ Contributors are recognized in:
 
 ## 📚 Additional Resources
 
-- **[Developer Documentation](docs/developer/)** - Complete developer guide
-- **[Architecture](docs/developer/00-architecture.md)** - System design
-- **[Testing Guide](docs/developer/20-testing-guide.md)** - Testing best practices
-- **[Code Style](docs/developer/40-code-style.md)** - Style guidelines
+- **[Developer Documentation](docs/dev/)** - Complete developer guide
+- **[Architecture](docs/dev/00-architecture.md)** - System design
+- **[Testing Guide](docs/dev/20-testing-guide.md)** - Testing best practices
+- **[Code Style](docs/dev/40-code-style.md)** - Style guidelines
 
 ---
 

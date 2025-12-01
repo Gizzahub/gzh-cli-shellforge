@@ -197,7 +197,7 @@ See: docs/user/command-reference.md (command syntax)
 ├── README.md                       # Short landing page (150 lines max)
 ├── LICENSE
 ├── CHANGELOG.md
-├── CONTRIBUTING.md                 # Link to docs/developer/contributing.md
+├── CONTRIBUTING.md                 # Link to docs/dev/contributing.md
 └── docs/                           # All detailed docs moved here
 ```
 
@@ -214,7 +214,7 @@ Build tool for modular shell configurations with automatic dependency resolution
 ## Documentation
 
 - **Users**: [User Guide](docs/user/)
-- **Developers**: [Developer Guide](docs/developer/)
+- **Developers**: [Developer Guide](docs/dev/)
 - **API Reference**: [API Docs](docs/reference/)
 
 ## Features
@@ -253,7 +253,7 @@ MIT
 ### 4.1 Separation Principles
 
 #### Human Documentation
-- **Location**: `docs/user/`, `docs/developer/`
+- **Location**: `docs/user/`, `docs/dev/`
 - **Style**: Tutorial, narrative, example-driven
 - **Format**: Markdown with rich formatting
 - **Length**: As long as needed for clarity
@@ -315,7 +315,7 @@ MIT
   - [ ] examples/CLI-EXAMPLES.md → docs/user/40-command-reference.md
   - [x] ARCHITECTURE.md → docs/dev/00-architecture.md (COMPLETED)
   - [x] TECH_STACK.md → docs/dev/50-tech-stack.md (COMPLETED)
-  - [ ] docs/BENCHMARKS.md → docs/developer/60-benchmarks.md
+  - [ ] docs/BENCHMARKS.md → docs/dev/60-benchmarks.md
   - [ ] PRD.md → docs/design/prd.md
   - [ ] REQUIREMENTS.md → docs/design/requirements.md
 - [ ] Rename CLAUDE.md → .claude/DEVELOPMENT.md
@@ -370,24 +370,24 @@ MIT
 **Priority**: MEDIUM
 **Effort**: 3-4 hours
 
-- [ ] **docs/developer/README.md** (dev docs landing page)
-- [ ] **docs/developer/10-development-setup.md**
+- [ ] **docs/dev/README.md** (dev docs landing page)
+- [ ] **docs/dev/10-development-setup.md**
   - Prerequisites
   - Clone and build
   - Running tests
   - IDE setup (VSCode, GoLand)
-- [ ] **docs/developer/20-testing-guide.md**
+- [ ] **docs/dev/20-testing-guide.md**
   - Testing strategy
   - Writing unit tests
   - Writing integration tests
   - Coverage targets
   - Running benchmarks
-- [ ] **docs/developer/30-contributing.md**
+- [ ] **docs/dev/30-contributing.md**
   - How to contribute
   - Code review process
   - PR guidelines
   - Issue triage
-- [ ] **docs/developer/40-code-style.md**
+- [ ] **docs/dev/40-code-style.md**
   - Go conventions
   - Project-specific patterns
   - Naming conventions
@@ -449,7 +449,7 @@ MIT
   - Installation (1 command)
   - Support links
 - [ ] Create CONTRIBUTING.md
-  - Link to docs/developer/contributing.md
+  - Link to docs/dev/contributing.md
   - Code of conduct
   - Quick contribution checklist
 
@@ -570,7 +570,7 @@ This file will be removed in v0.6.0. Please update your bookmarks.
 
    We've reorganized documentation for better discoverability:
    - User documentation: docs/user/
-   - Developer documentation: docs/developer/
+   - Developer documentation: docs/dev/
    - API reference: docs/reference/
 
    Old links redirected for 1 month. Please update bookmarks.

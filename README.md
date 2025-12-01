@@ -153,10 +153,10 @@ gz-shellforge diff ~/.zshrc ~/.zshrc.new
 - **[User Documentation](docs/user/)** - Complete user guide
 
 ### For Developers
-- **[Architecture](docs/developer/00-architecture.md)** - System design (Hexagonal)
-- **[Tech Stack](docs/developer/50-tech-stack.md)** - Technology decisions
-- **[Development Guide](.claude/DEVELOPMENT.md)** - Contributing guide
-- **[Developer Documentation](docs/developer/)** - Complete developer guide
+- **[Architecture](docs/dev/00-architecture.md)** - System design (Hexagonal)
+- **[Tech Stack](docs/dev/50-tech-stack.md)** - Technology decisions
+- **[Contributing Guide](docs/dev/CONTRIBUTING.md)** - How to contribute
+- **[Developer Documentation](docs/dev/)** - Complete developer guide
 
 ---
 

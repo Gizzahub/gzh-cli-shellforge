@@ -53,18 +53,26 @@ in the correct order.`,
 	cmd.Flags().StringVarP(&flags.configDir, "config-dir", "c", "modules", "Directory containing module files")
 	cmd.Flags().StringVarP(&flags.manifest, "manifest", "m", "manifest.yaml", "Path to manifest file")
 	cmd.Flags().StringVarP(&flags.output, "output", "o", "", "Output file path (stdout if not specified)")
-	cmd.Flags().StringVar(&flags.targetOS, "os", "", "Target operating system (Mac, Linux, etc.)")
+	cmd.Flags().StringVar(&flags.targetOS, "os", "", "Target operating system (Mac, Linux, etc.) - REQUIRED")
 	cmd.Flags().BoolVar(&flags.dryRun, "dry-run", false, "Preview output without writing file")
 	cmd.Flags().BoolVarP(&flags.verbose, "verbose", "v", false, "Show detailed output")
-
-	// Mark required flags
-	cmd.MarkFlagRequired("os")
 
 	return cmd
 }
 
 func runBuild(flags *buildFlags) error {
 	// Validate flags
+	if flags.targetOS == "" {
+		return fmt.Errorf(`--os flag is required
+
+Please specify your target operating system:
+  gz-shellforge build --os Mac              # For macOS
+  gz-shellforge build --os Linux            # For Linux
+  gz-shellforge build --os Mac --dry-run    # Preview without writing
+
+Common OS values: Mac, Linux, BSD, Windows`)
+	}
+
 	if flags.output == "" && !flags.dryRun {
 		return fmt.Errorf("--output is required unless --dry-run is specified")
 	}

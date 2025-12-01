@@ -171,38 +171,74 @@ All files are optimized for LLM processing (< 10KB each).
 ### Go Example
 
 ```go
-package shellmeta
+package main
 
 import (
-    "io/ioutil"
-    "path/filepath"
-    "gopkg.in/yaml.v3"
+    "fmt"
+    "log"
+
+    "github.com/gizzahub/gzh-cli-shellforge/internal/domain/shellmeta"
+    "github.com/spf13/afero"
 )
 
-// LoadAllProfiles loads all profile metadata
-func LoadAllProfiles(dir string) (*ShellProfiles, error) {
-    profiles := &ShellProfiles{}
+func main() {
+    // Create loader with real filesystem
+    loader := shellmeta.NewLoader(afero.NewOsFs())
 
-    // Load each file
-    files := []string{"core.yaml", "contexts.yaml", "dev.yaml", "automation.yaml"}
-    for _, file := range files {
-        data, err := ioutil.ReadFile(filepath.Join(dir, file))
-        if err != nil {
-            return nil, err
-        }
-
-        // Merge into profiles struct
-        var partial map[string]interface{}
-        if err := yaml.Unmarshal(data, &partial); err != nil {
-            return nil, err
-        }
-
-        // ... merge logic ...
+    // Load all profiles from directory
+    profiles, err := loader.Load("data/shell-profiles")
+    if err != nil {
+        log.Fatal(err)
     }
 
-    return profiles, nil
+    // Query init files for macOS bash
+    files := profiles.GetInitFilesForOS("mac", "bash")
+    fmt.Println("macOS bash init files:", files)
+
+    // Get default shell for macOS
+    shell := profiles.GetDefaultShell("mac")
+    fmt.Println("macOS default shell:", shell) // "zsh"
+
+    // Check if profile is loaded in cron context
+    loaded := profiles.IsProfileLoadedInContext("cron")
+    fmt.Println("Profile loaded in cron:", loaded) // false
+
+    // Get language version manager info
+    rbenv := profiles.GetLanguageVersionManager("rbenv")
+    if rbenv != nil {
+        fmt.Println("rbenv init command:", rbenv.InitCommand)
+    }
+
+    // List supported distributions
+    distros := profiles.ListSupportedDistributions()
+    fmt.Println("Supported distros:", distros)
+
+    // Get shell mode information
+    mode := profiles.GetShellMode("login")
+    if mode != nil {
+        fmt.Println("Login shell use cases:", mode.UseCases)
+    }
 }
 ```
+
+### Available Query Methods
+
+| Method | Description |
+|--------|-------------|
+| `GetInitFilesForOS(os, shell)` | Get shell init files for OS |
+| `GetLoginShellFiles(os)` | Get login shell files |
+| `GetInteractiveShellFiles(os)` | Get interactive shell files |
+| `GetDefaultShell(os)` | Get default shell for OS |
+| `GetLanguageVersionManager(name)` | Get language version manager info |
+| `GetDesktopEnvironment(name)` | Get desktop environment info |
+| `GetDisplayManager(name)` | Get display manager info |
+| `GetShellMode(mode)` | Get shell mode info |
+| `GetTerminalMultiplexer(name)` | Get terminal multiplexer info |
+| `GetUserSwitch(name)` | Get user switch command info |
+| `ListSupportedDistributions()` | List Linux distributions |
+| `ListLanguageVersionManagers()` | List version managers |
+| `ListDesktopEnvironments()` | List desktop environments |
+| `IsProfileLoadedInContext(ctx)` | Check if profile is loaded |
 
 ---
 
@@ -228,6 +264,6 @@ When adding new content:
 
 ## Related Documentation
 
-- Project root: `../README.md`
-- Examples: `../../examples/`
-- Build system integration: `../../internal/domain/shellmeta/`
+- Project root: `../../README.md`
+- Go package: `../../internal/domain/shellmeta/`
+- Package doc: `../../internal/domain/shellmeta/doc.go`

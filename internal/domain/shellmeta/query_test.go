@@ -173,6 +173,7 @@ func TestShellProfiles_GetShellMode(t *testing.T) {
 		{"login alias", "login", false},
 		{"non_login_shell", "non_login_shell", false},
 		{"non-login alias", "non-login", false},
+		{"nonlogin alias", "nonlogin", false},
 		{"interactive_shell", "interactive_shell", false},
 		{"interactive alias", "interactive", false},
 		{"nonexistent", "nonexistent", true},
@@ -378,9 +379,14 @@ func TestShellProfiles_IsProfileLoadedInContext(t *testing.T) {
 		{"docker-exec", "docker-exec", false},
 		{"flatpak", "flatpak", false},
 		{"git_hooks", "git_hooks", false},
+		{"git-hooks", "git-hooks", false},
 		{"github_actions", "github_actions", false},
+		{"github-actions", "github-actions", false},
 		{"gitlab_ci", "gitlab_ci", false},
+		{"gitlab-ci", "gitlab-ci", false},
 		{"jenkins", "jenkins", false},
+		{"ssh_forced_command", "ssh_forced_command", false},
+		{"ssh-forced-command", "ssh-forced-command", false},
 		{"unknown context", "unknown", true}, // default
 	}
 

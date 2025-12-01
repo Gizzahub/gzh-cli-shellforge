@@ -1,0 +1,333 @@
+# Shell Profile Metadata
+# Defines shell initialization files for different OS and shell combinations
+# This metadata is used to determine which RC files to source when building shell configurations
+
+# OS-specific profiles
+os_profiles:
+  # Linux distributions
+  linux:
+    distributions:
+      # Ubuntu and Debian-based
+      ubuntu:
+        login_shell: [/etc/profile, ~/.profile, ~/.bash_profile, ~/.bash_login]
+        interactive_shell: [/etc/bash.bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile, ~/.profile]
+          zsh: [~/.zshrc, ~/.zprofile, ~/.zlogin]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      debian:
+        login_shell: [/etc/profile, ~/.profile]
+        interactive_shell: [/etc/bash.bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.profile]
+          zsh: [~/.zshrc, ~/.zprofile]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      # Arch-based distributions
+      arch:
+        login_shell: [/etc/profile, ~/.bash_profile]
+        interactive_shell: [~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile, ~/.zlogin]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      manjaro:
+        login_shell: [/etc/profile, ~/.bash_profile, ~/.profile]
+        interactive_shell: [~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile, ~/.zlogin]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      # RedHat-based distributions (RHEL, CentOS, Fedora)
+      redhat:
+        login_shell: [/etc/profile, ~/.bash_profile]
+        interactive_shell: [/etc/bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      fedora:
+        login_shell: [/etc/profile, ~/.bash_profile]
+        interactive_shell: [/etc/bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      centos:
+        login_shell: [/etc/profile, ~/.bash_profile]
+        interactive_shell: [/etc/bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+  # macOS
+  mac:
+    login_shell: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
+    interactive_shell: [/etc/bashrc, ~/.bashrc]
+    shell_types:
+      bash: [~/.bash_profile, ~/.bashrc, ~/.profile]
+      zsh: [~/.zshrc, ~/.zprofile, ~/.zlogin]  # Default shell since macOS Catalina (10.15)
+      fish: [~/.config/fish/config.fish]
+      sh: [~/.profile]
+
+# Load priority and order
+# Lower index = higher priority (loaded first or takes precedence)
+load_priority:
+  # Login shell priority (bash behavior)
+  # Bash reads the first file that exists and stops
+  login_shell:
+    - /etc/profile         # System-wide configuration
+    - ~/.bash_profile      # User-specific bash login (stops here if exists)
+    - ~/.bash_login        # Alternative if .bash_profile doesn't exist
+    - ~/.profile           # Generic shell profile (used if no bash-specific files)
+
+  # Interactive non-login shell
+  interactive_shell:
+    - /etc/bashrc          # System-wide (RHEL/macOS)
+    - /etc/bash.bashrc     # System-wide (Debian/Ubuntu)
+    - ~/.bashrc            # User-specific
+
+  # Zsh-specific load order
+  zsh:
+    - /etc/zshenv          # Always loaded first
+    - ~/.zshenv            # User environment variables
+    - /etc/zprofile        # System-wide login shell
+    - ~/.zprofile          # User login shell
+    - /etc/zshrc           # System-wide interactive
+    - ~/.zshrc             # User interactive (most common)
+    - /etc/zlogin          # System-wide login (after zshrc)
+    - ~/.zlogin            # User login (after zshrc)
+    - ~/.zlogout           # User logout
+
+  # Fish-specific
+  fish:
+    - /etc/fish/config.fish           # System-wide
+    - ~/.config/fish/config.fish      # User-specific
+    - ~/.config/fish/conf.d/*.fish    # User config directory
+
+# Shell detection commands
+shell_detection:
+  bash:
+    command: "bash --version"
+    version_pattern: "GNU bash, version ([0-9.]+)"
+
+  zsh:
+    command: "zsh --version"
+    version_pattern: "zsh ([0-9.]+)"
+
+  fish:
+    command: "fish --version"
+    version_pattern: "fish, version ([0-9.]+)"
+
+# OS detection patterns
+os_detection:
+  mac:
+    uname: "Darwin"
+    check_file: "/System/Library/CoreServices/SystemVersion.plist"
+
+  linux:
+    uname: "Linux"
+    distro_files:
+      ubuntu: [/etc/lsb-release, /etc/os-release]
+      debian: [/etc/debian_version, /etc/os-release]
+      arch: [/etc/arch-release, /etc/os-release]
+      manjaro: [/etc/lsb-release]
+      redhat: [/etc/redhat-release, /etc/os-release]
+      fedora: [/etc/fedora-release, /etc/os-release]
+      centos: [/etc/centos-release, /etc/os-release]
+
+# Default shell per OS
+default_shells:
+  mac: "zsh"           # Since macOS Catalina (10.15+)
+  linux:
+    ubuntu: "bash"
+    debian: "bash"
+    arch: "bash"
+    manjaro: "zsh"     # Manjaro defaults to zsh
+    redhat: "bash"
+    fedora: "bash"
+    centos: "bash"
+
+# SSH-specific initialization files
+ssh_profiles:
+  # Executed when SSH connection is established
+  user:
+    - ~/.ssh/rc              # User SSH session initialization
+    - ~/.ssh/environment     # SSH environment variables (if PermitUserEnvironment=yes)
+
+  system:
+    - /etc/ssh/sshrc         # System-wide SSH initialization
+
+  # SSH session detection
+  detection:
+    env_var: "SSH_CONNECTION"  # Check if SSH_CONNECTION is set
+    tty_pattern: "^pts/"       # Check if TTY matches pts/* (pseudo-terminal)
+
+# X Window System initialization
+x_window_profiles:
+  # Display Manager login (GUI login)
+  display_manager:
+    - /etc/X11/Xsession.d/*    # System-wide X session scripts (Debian/Ubuntu)
+    - /etc/X11/xinit/xinitrc   # System X initialization
+    - ~/.xprofile              # User X profile (sourced by display managers)
+    - ~/.xsessionrc            # Debian/Ubuntu specific
+
+  # startx / xinit (manual X start)
+  manual_start:
+    - /etc/X11/xinit/xinitrc   # System default
+    - ~/.xinitrc               # User X initialization (overrides system)
+    - ~/.xsession              # Alternative to .xinitrc
+
+  # X resources and settings
+  resources:
+    - ~/.Xresources            # X resources (xrdb)
+    - ~/.Xdefaults             # Legacy X resources
+    - ~/.Xmodmap               # Keyboard mapping
+
+# Desktop Environment specific
+desktop_environments:
+  # GNOME
+  gnome:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    legacy: [~/.gnomerc]
+    environment: [~/.config/environment.d/*.conf]
+    description: "GNOME Desktop Environment (GDM)"
+
+  # KDE Plasma
+  kde:
+    autostart:
+      - ~/.config/autostart/*.desktop
+      - /etc/xdg/autostart/*.desktop
+      - ~/.config/plasma-workspace/env/*.sh           # Pre-startup scripts
+      - ~/.config/plasma-workspace/shutdown/*.sh      # Shutdown scripts
+      - ~/.config/autostart-scripts/*.sh              # Legacy autostart
+    legacy: [~/.kde/env/, ~/.kde4/env/]
+    description: "KDE Plasma Desktop (SDDM)"
+
+  # XFCE
+  xfce:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    environment: [~/.config/xfce4/xinitrc]
+    description: "XFCE Desktop Environment (LightDM)"
+
+  # LXQt
+  lxqt:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    environment: [~/.config/lxqt/session.conf]
+    description: "LXQt Desktop Environment"
+
+  # MATE
+  mate:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    legacy: [~/.mate/env/]
+    description: "MATE Desktop Environment"
+
+  # Cinnamon
+  cinnamon:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    description: "Cinnamon Desktop Environment"
+
+  # Window Managers (i3, sway, etc.)
+  i3:
+    config: [~/.config/i3/config, ~/.i3/config, /etc/i3/config]
+    autostart: [~/.config/i3/autostart.sh]
+    description: "i3 Window Manager"
+
+  sway:
+    config: [~/.config/sway/config, /etc/sway/config]
+    autostart: [~/.config/sway/autostart.sh]
+    description: "Sway (Wayland compositor)"
+
+  awesome:
+    config: [~/.config/awesome/rc.lua]
+    description: "Awesome Window Manager"
+
+  bspwm:
+    config: [~/.config/bspwm/bspwmrc]
+    autostart: [~/.config/bspwm/autostart.sh]
+    description: "bspwm Window Manager"
+
+# Session type detection
+session_types:
+  # TTY console (Ctrl+Alt+F1-F6)
+  tty:
+    detection:
+      tty_pattern: "^tty[0-9]+$"     # /dev/tty1, /dev/tty2, etc.
+      display_var: null                # DISPLAY not set
+    init_files: [/etc/profile, ~/.profile, ~/.bash_profile]
+
+  # GUI (X11 or Wayland)
+  gui:
+    detection:
+      display_var: "DISPLAY"           # X11: DISPLAY set (e.g., :0)
+      wayland_var: "WAYLAND_DISPLAY"   # Wayland: WAYLAND_DISPLAY set
+    init_files: [~/.xprofile, ~/.xinitrc, ~/.xsession]
+
+  # SSH remote
+  ssh:
+    detection:
+      ssh_var: "SSH_CONNECTION"        # SSH_CONNECTION set
+      ssh_client_var: "SSH_CLIENT"     # SSH_CLIENT set
+      ssh_tty_var: "SSH_TTY"           # SSH_TTY set
+    init_files: [~/.ssh/rc, /etc/ssh/sshrc]
+
+# Systemd user session (modern Linux)
+systemd_user:
+  environment:
+    - ~/.config/environment.d/*.conf    # User environment variables
+    - /etc/environment.d/*.conf         # System environment variables
+
+  units:
+    - ~/.config/systemd/user/*.service  # User service units
+    - /etc/systemd/user/*.service       # System user service units
+
+  targets:
+    default: "default.target"
+    graphical: "graphical-session.target"
+
+  detection:
+    command: "systemctl --user status"
+    env_var: "XDG_RUNTIME_DIR"
+
+# Display Manager specific
+display_managers:
+  gdm:
+    name: "GNOME Display Manager"
+    init_files: [/etc/gdm3/Xsession, ~/.xprofile]
+    wayland_support: true
+    default_session: "gnome"
+
+  lightdm:
+    name: "LightDM"
+    init_files: [/etc/lightdm/Xsession, ~/.xprofile]
+    wayland_support: false
+    default_session: "xfce"
+
+  sddm:
+    name: "Simple Desktop Display Manager"
+    init_files: [/usr/share/sddm/scripts/Xsession, ~/.xprofile]
+    wayland_support: true
+    default_session: "plasma"
+
+  xdm:
+    name: "X Display Manager"
+    init_files: [/etc/X11/xdm/Xsession, ~/.xsession]
+    wayland_support: false
+
+  ly:
+    name: "TUI Display Manager"
+    init_files: [~/.xinitrc]
+    wayland_support: true

@@ -40,6 +40,7 @@ type OSProfile struct {
 type LoadPriority struct {
 	LoginShell       []string `yaml:"login_shell"`
 	InteractiveShell []string `yaml:"interactive_shell"`
+	Bash             []string `yaml:"bash,omitempty"`
 	Zsh              []string `yaml:"zsh"`
 	Fish             []string `yaml:"fish"`
 }

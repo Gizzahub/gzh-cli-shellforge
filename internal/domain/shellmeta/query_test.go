@@ -289,6 +289,81 @@ func TestShellProfiles_ListLanguageVersionManagers(t *testing.T) {
 	}
 }
 
+func TestShellProfiles_ListDesktopEnvironments(t *testing.T) {
+	profiles := loadTestProfiles(t)
+
+	des := profiles.ListDesktopEnvironments()
+	if len(des) == 0 {
+		t.Error("ListDesktopEnvironments() should return at least one DE")
+	}
+
+	// Check gnome exists
+	found := false
+	for _, de := range des {
+		if de == "gnome" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("ListDesktopEnvironments() should include gnome")
+	}
+}
+
+func TestShellProfiles_GetInteractiveShellFiles(t *testing.T) {
+	profiles := loadTestProfiles(t)
+
+	tests := []struct {
+		name    string
+		os      string
+		wantLen int
+		wantNil bool
+	}{
+		{"Mac", "mac", 2, false},
+		{"Ubuntu", "ubuntu", 2, false},
+		{"Darwin alias", "darwin", 2, false},
+		{"Nonexistent", "windows", 0, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := profiles.GetInteractiveShellFiles(tt.os)
+			if tt.wantNil && got != nil {
+				t.Errorf("GetInteractiveShellFiles() = %v, want nil", got)
+			}
+			if !tt.wantNil && len(got) != tt.wantLen {
+				t.Errorf("GetInteractiveShellFiles() len = %v, want %v", len(got), tt.wantLen)
+			}
+		})
+	}
+}
+
+func TestShellProfiles_GetDisplayManager(t *testing.T) {
+	profiles := loadTestProfiles(t)
+
+	tests := []struct {
+		name    string
+		dm      string
+		wantNil bool
+	}{
+		{"gdm", "gdm", false},
+		{"GDM uppercase", "GDM", false},
+		{"nonexistent", "lightdm", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := profiles.GetDisplayManager(tt.dm)
+			if tt.wantNil && got != nil {
+				t.Errorf("GetDisplayManager() = %v, want nil", got)
+			}
+			if !tt.wantNil && got == nil {
+				t.Error("GetDisplayManager() = nil, want non-nil")
+			}
+		})
+	}
+}
+
 func TestShellProfiles_IsProfileLoadedInContext(t *testing.T) {
 	profiles := loadTestProfiles(t)
 

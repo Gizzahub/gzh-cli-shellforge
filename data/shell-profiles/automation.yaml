@@ -247,7 +247,9 @@ terminal_multiplexers:
     new_pane: "Ctrl-t n"
 
     default_shell: "configurable in config.yaml"
-    shell_profile: "depends on configuration"
+    shell_profile:
+      new_tab: "depends on configuration"
+      new_pane: "depends on configuration"
 
 # System environment configuration
 system_environment:

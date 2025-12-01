@@ -176,6 +176,10 @@ func TestShellProfiles_GetShellMode(t *testing.T) {
 		{"nonlogin alias", "nonlogin", false},
 		{"interactive_shell", "interactive_shell", false},
 		{"interactive alias", "interactive", false},
+		{"noninteractive alias", "noninteractive", true},   // not in test data
+		{"non-interactive alias", "non-interactive", true}, // not in test data
+		{"restricted alias", "restricted", true},           // not in test data
+		{"posix alias", "posix", true},                     // not in test data
 		{"nonexistent", "nonexistent", true},
 	}
 

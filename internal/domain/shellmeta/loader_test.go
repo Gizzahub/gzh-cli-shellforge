@@ -165,6 +165,78 @@ func TestLoader_InvalidYAML(t *testing.T) {
 	}
 }
 
+func TestLoader_InvalidContextsYAML(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	_ = afero.WriteFile(fs, "/invalid/contexts.yaml", []byte("invalid: yaml: content:"), 0644)
+
+	loader := NewLoader(fs)
+	_, err := loader.LoadContexts("/invalid/contexts.yaml")
+	if err == nil {
+		t.Error("LoadContexts() should return error for invalid YAML")
+	}
+}
+
+func TestLoader_InvalidDevYAML(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	_ = afero.WriteFile(fs, "/invalid/dev.yaml", []byte("invalid: yaml: content:"), 0644)
+
+	loader := NewLoader(fs)
+	_, err := loader.LoadDev("/invalid/dev.yaml")
+	if err == nil {
+		t.Error("LoadDev() should return error for invalid YAML")
+	}
+}
+
+func TestLoader_InvalidAutomationYAML(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	_ = afero.WriteFile(fs, "/invalid/automation.yaml", []byte("invalid: yaml: content:"), 0644)
+
+	loader := NewLoader(fs)
+	_, err := loader.LoadAutomation("/invalid/automation.yaml")
+	if err == nil {
+		t.Error("LoadAutomation() should return error for invalid YAML")
+	}
+}
+
+func TestLoader_MissingContextsFile(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	_ = fs.MkdirAll("/partial", 0755)
+	_ = afero.WriteFile(fs, "/partial/core.yaml", []byte("default_shells:\n  mac: zsh"), 0644)
+
+	loader := NewLoader(fs)
+	_, err := loader.Load("/partial")
+	if err == nil {
+		t.Error("Load() should return error when contexts.yaml is missing")
+	}
+}
+
+func TestLoader_MissingDevFile(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	_ = fs.MkdirAll("/partial", 0755)
+	_ = afero.WriteFile(fs, "/partial/core.yaml", []byte("default_shells:\n  mac: zsh"), 0644)
+	_ = afero.WriteFile(fs, "/partial/contexts.yaml", []byte("ssh_profiles:\n  user: []"), 0644)
+
+	loader := NewLoader(fs)
+	_, err := loader.Load("/partial")
+	if err == nil {
+		t.Error("Load() should return error when dev.yaml is missing")
+	}
+}
+
+func TestLoader_MissingAutomationFile(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	_ = fs.MkdirAll("/partial", 0755)
+	_ = afero.WriteFile(fs, "/partial/core.yaml", []byte("default_shells:\n  mac: zsh"), 0644)
+	_ = afero.WriteFile(fs, "/partial/contexts.yaml", []byte("ssh_profiles:\n  user: []"), 0644)
+	_ = afero.WriteFile(fs, "/partial/dev.yaml", []byte("language_version_managers: {}"), 0644)
+
+	loader := NewLoader(fs)
+	_, err := loader.Load("/partial")
+	if err == nil {
+		t.Error("Load() should return error when automation.yaml is missing")
+	}
+}
+
 func setupTestFiles(t *testing.T, fs afero.Fs) {
 	t.Helper()
 

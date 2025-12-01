@@ -1,0 +1,138 @@
+# Shell Profiles - Development Environments
+# IDE integrated terminals and language version managers
+#
+# This file addresses common development environment issues, particularly:
+# - GUI IDEs launched from desktop not inheriting shell profiles
+# - Language version managers (rbenv, nvm, pyenv, etc.) not being available
+# - Environment variables not set in IDE terminals
+#
+# Related files:
+# - core.yaml: OS and Shell basics
+# - contexts.yaml: Execution contexts
+# - automation.yaml: Automation and isolated environments
+
+# GUI application execution contexts
+gui_app_contexts:
+  # IDEs and Editors with integrated terminals
+  ide_integrated_terminal:
+    problem: "GUI apps started from desktop don't inherit shell profile"
+    affected_apps:
+      - VSCode (code)
+      - IntelliJ IDEA
+      - PyCharm
+      - WebStorm
+      - Sublime Text
+      - Atom (deprecated)
+      - Eclipse
+      - NetBeans
+
+    scenarios:
+      desktop_launcher:
+        description: "App launched from application menu or .desktop file"
+        shell_profile_loaded: false
+        environment_source: "systemd user session or display manager"
+        typical_issues:
+          - "rbenv/rvm not in PATH"
+          - "nvm not available"
+          - "conda not activated"
+          - "pyenv missing"
+          - "Custom PATH not set"
+
+      terminal_launch:
+        description: "App launched from terminal: $ code ."
+        shell_profile_loaded: true
+        environment_source: "inherits from parent shell"
+        typical_issues: []
+
+    solutions:
+      vscode:
+        - "Set terminal.integrated.shell.linux in settings.json"
+        - "Use terminal.integrated.shellArgs to add --login"
+        - "Set terminal.integrated.env.linux for environment variables"
+        - "Source ~/.bashrc in integrated terminal"
+
+      general:
+        - "Launch IDE from terminal instead of desktop"
+        - "Modify .desktop file to wrap command with shell"
+        - "Use ~/.pam_environment or /etc/environment"
+        - "Configure in ~/.config/environment.d/*.conf"
+
+  # Desktop launchers (.desktop files)
+  desktop_file_execution:
+    location:
+      - ~/.local/share/applications/*.desktop
+      - /usr/share/applications/*.desktop
+      - /usr/local/share/applications/*.desktop
+
+    exec_field:
+      description: "Exec= line runs without shell profile"
+      example: "Exec=/usr/bin/code %F"
+      shell_profile_loaded: false
+
+    workarounds:
+      wrapped_command: "Exec=/bin/bash -lc '/usr/bin/code %F'"
+      custom_desktop_file: "Copy to ~/.local/share/applications/ and modify"
+
+# Language version managers and environment tools
+language_version_managers:
+  # Ruby
+  rbenv:
+    init_command: 'eval "$(rbenv init -)"'
+    init_files: [~/.bashrc, ~/.zshrc, ~/.config/fish/config.fish]
+    shims_location: ~/.rbenv/shims
+    path_modification: true
+    typical_problem: "ruby command not found in GUI IDE"
+
+  rvm:
+    init_command: "source ~/.rvm/scripts/rvm"
+    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    path_modification: true
+    function_definitions: true
+    typical_problem: "rvm is a function, not available in sub-shells"
+
+  # Node.js
+  nvm:
+    init_command: "source ~/.nvm/nvm.sh"
+    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    lazy_load: true
+    function_definitions: true
+    typical_problem: "nvm command not found, node version not set"
+
+  # Python
+  pyenv:
+    init_command: 'eval "$(pyenv init -)"'
+    init_files: [~/.bashrc, ~/.zshrc, ~/.config/fish/config.fish]
+    shims_location: ~/.pyenv/shims
+    path_modification: true
+
+  conda:
+    init_command: 'eval "$(conda shell.bash hook)"'
+    init_files: [~/.bashrc, ~/.zshrc]
+    path_modification: true
+    environment_activation: true
+    typical_problem: "conda not available, base environment not activated"
+
+  # Java
+  jenv:
+    init_command: 'eval "$(jenv init -)"'
+    init_files: [~/.bashrc, ~/.zshrc]
+    shims_location: ~/.jenv/shims
+    path_modification: true
+
+  sdkman:
+    init_command: "source ~/.sdkman/bin/sdkman-init.sh"
+    init_files: [~/.bashrc, ~/.zshrc]
+    path_modification: true
+
+  # Go
+  gvm:
+    init_command: "source ~/.gvm/scripts/gvm"
+    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    path_modification: true
+
+  # Rust
+  rustup:
+    init_command: "source ~/.cargo/env"
+    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    path_modification: true
+    env_file: ~/.cargo/env

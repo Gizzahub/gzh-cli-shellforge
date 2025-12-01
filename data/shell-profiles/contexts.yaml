@@ -1,0 +1,283 @@
+# Shell Profiles - Execution Contexts
+# Defines how shell profiles are loaded in different execution contexts
+#
+# This file contains information about:
+# - Shell execution modes (login/non-login, interactive/non-interactive)
+# - Session types (TTY, GUI, SSH)
+# - SSH-specific profiles
+# - X Window System initialization
+# - Desktop Environments (GNOME, KDE, XFCE, etc.)
+# - Display Managers (GDM, LightDM, SDDM, etc.)
+# - systemd user sessions
+# - XDG environment variables
+#
+# Related files:
+# - core.yaml: OS and Shell basics
+# - dev.yaml: Development environments (IDEs, language version managers)
+# - automation.yaml: Automation and isolated environments
+
+# SSH-specific initialization files
+ssh_profiles:
+  # Executed when SSH connection is established
+  user:
+    - ~/.ssh/rc              # User SSH session initialization
+    - ~/.ssh/environment     # SSH environment variables (if PermitUserEnvironment=yes)
+
+  system:
+    - /etc/ssh/sshrc         # System-wide SSH initialization
+
+  # SSH session detection
+  detection:
+    env_var: "SSH_CONNECTION"  # Check if SSH_CONNECTION is set
+    tty_pattern: "^pts/"       # Check if TTY matches pts/* (pseudo-terminal)
+
+# X Window System initialization
+x_window_profiles:
+  # Display Manager login (GUI login)
+  display_manager:
+    - /etc/X11/Xsession.d/*    # System-wide X session scripts (Debian/Ubuntu)
+    - /etc/X11/xinit/xinitrc   # System X initialization
+    - ~/.xprofile              # User X profile (sourced by display managers)
+    - ~/.xsessionrc            # Debian/Ubuntu specific
+
+  # startx / xinit (manual X start)
+  manual_start:
+    - /etc/X11/xinit/xinitrc   # System default
+    - ~/.xinitrc               # User X initialization (overrides system)
+    - ~/.xsession              # Alternative to .xinitrc
+
+  # X resources and settings
+  resources:
+    - ~/.Xresources            # X resources (xrdb)
+    - ~/.Xdefaults             # Legacy X resources
+    - ~/.Xmodmap               # Keyboard mapping
+
+# Desktop Environment specific
+desktop_environments:
+  # GNOME
+  gnome:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    legacy: [~/.gnomerc]
+    environment: [~/.config/environment.d/*.conf]
+    description: "GNOME Desktop Environment (GDM)"
+
+  # KDE Plasma
+  kde:
+    autostart:
+      - ~/.config/autostart/*.desktop
+      - /etc/xdg/autostart/*.desktop
+      - ~/.config/plasma-workspace/env/*.sh           # Pre-startup scripts
+      - ~/.config/plasma-workspace/shutdown/*.sh      # Shutdown scripts
+      - ~/.config/autostart-scripts/*.sh              # Legacy autostart
+    legacy: [~/.kde/env/, ~/.kde4/env/]
+    description: "KDE Plasma Desktop (SDDM)"
+
+  # XFCE
+  xfce:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    environment: [~/.config/xfce4/xinitrc]
+    description: "XFCE Desktop Environment (LightDM)"
+
+  # LXQt
+  lxqt:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    environment: [~/.config/lxqt/session.conf]
+    description: "LXQt Desktop Environment"
+
+  # MATE
+  mate:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    legacy: [~/.mate/env/]
+    description: "MATE Desktop Environment"
+
+  # Cinnamon
+  cinnamon:
+    autostart: [~/.config/autostart/*.desktop, /etc/xdg/autostart/*.desktop]
+    description: "Cinnamon Desktop Environment"
+
+  # Window Managers (i3, sway, etc.)
+  i3:
+    config: [~/.config/i3/config, ~/.i3/config, /etc/i3/config]
+    autostart: [~/.config/i3/autostart.sh]
+    description: "i3 Window Manager"
+
+  sway:
+    config: [~/.config/sway/config, /etc/sway/config]
+    autostart: [~/.config/sway/autostart.sh]
+    description: "Sway (Wayland compositor)"
+
+  awesome:
+    config: [~/.config/awesome/rc.lua]
+    description: "Awesome Window Manager"
+
+  bspwm:
+    config: [~/.config/bspwm/bspwmrc]
+    autostart: [~/.config/bspwm/autostart.sh]
+    description: "bspwm Window Manager"
+
+# Session type detection
+session_types:
+  # TTY console (Ctrl+Alt+F1-F6)
+  tty:
+    detection:
+      tty_pattern: "^tty[0-9]+$"     # /dev/tty1, /dev/tty2, etc.
+      display_var: null                # DISPLAY not set
+    init_files: [/etc/profile, ~/.profile, ~/.bash_profile]
+
+  # GUI (X11 or Wayland)
+  gui:
+    detection:
+      display_var: "DISPLAY"           # X11: DISPLAY set (e.g., :0)
+      wayland_var: "WAYLAND_DISPLAY"   # Wayland: WAYLAND_DISPLAY set
+    init_files: [~/.xprofile, ~/.xinitrc, ~/.xsession]
+
+  # SSH remote
+  ssh:
+    detection:
+      ssh_var: "SSH_CONNECTION"        # SSH_CONNECTION set
+      ssh_client_var: "SSH_CLIENT"     # SSH_CLIENT set
+      ssh_tty_var: "SSH_TTY"           # SSH_TTY set
+    init_files: [~/.ssh/rc, /etc/ssh/sshrc]
+
+# Systemd user session (modern Linux)
+systemd_user:
+  environment:
+    - ~/.config/environment.d/*.conf    # User environment variables
+    - /etc/environment.d/*.conf         # System environment variables
+
+  units:
+    - ~/.config/systemd/user/*.service  # User service units
+    - /etc/systemd/user/*.service       # System user service units
+
+  targets:
+    default: "default.target"
+    graphical: "graphical-session.target"
+
+  detection:
+    command: "systemctl --user status"
+    env_var: "XDG_RUNTIME_DIR"
+
+# Display Manager specific
+display_managers:
+  gdm:
+    name: "GNOME Display Manager"
+    init_files: [/etc/gdm3/Xsession, ~/.xprofile]
+    wayland_support: true
+    default_session: "gnome"
+
+  lightdm:
+    name: "LightDM"
+    init_files: [/etc/lightdm/Xsession, ~/.xprofile]
+    wayland_support: false
+    default_session: "xfce"
+
+  sddm:
+    name: "Simple Desktop Display Manager"
+    init_files: [/usr/share/sddm/scripts/Xsession, ~/.xprofile]
+    wayland_support: true
+    default_session: "plasma"
+
+  xdm:
+    name: "X Display Manager"
+    init_files: [/etc/X11/xdm/Xsession, ~/.xsession]
+    wayland_support: false
+
+  ly:
+    name: "TUI Display Manager"
+    init_files: [~/.xinitrc]
+    wayland_support: true
+
+# Shell execution modes and contexts
+shell_modes:
+  # Login vs Non-login shell
+  login_shell:
+    detection:
+      - "shopt -q login_shell"              # Bash: returns 0 if login shell
+      - "echo $0 | grep '^-'"               # Shell name starts with '-'
+      - "[[ -o login ]]"                    # Zsh: check login option
+    files_loaded:
+      bash: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
+      zsh: [/etc/zprofile, ~/.zprofile, /etc/zlogin, ~/.zlogin]
+    use_cases:
+      - SSH login
+      - Console login (TTY)
+      - "su - user"
+      - "bash --login or bash -l"
+
+  non_login_shell:
+    detection:
+      - "! shopt -q login_shell"            # Bash: returns 1 if not login
+      - "echo $0 | grep -v '^-'"            # No '-' prefix
+    files_loaded:
+      bash: [/etc/bash.bashrc, ~/.bashrc]
+      zsh: [/etc/zshrc, ~/.zshrc]
+    use_cases:
+      - New terminal tab/window in GUI
+      - bash command without --login
+      - tmux/screen new pane
+      - Script execution with shebang
+
+  # Interactive vs Non-interactive
+  interactive_shell:
+    detection:
+      - "[[ $- == *i* ]]"                   # Check if 'i' option is set
+      - "test -n \"$PS1\""                  # PS1 is set in interactive mode
+    files_loaded:
+      bash: [~/.bashrc]
+      zsh: [~/.zshrc]
+    features:
+      - Command line editing
+      - Job control
+      - Prompt
+      - History
+
+  non_interactive_shell:
+    detection:
+      - "[[ $- != *i* ]]"                   # 'i' option not set
+      - "test -z \"$PS1\""                  # PS1 not set
+    files_loaded:
+      bash: []                               # Usually nothing (unless BASH_ENV set)
+      zsh: [~/.zshenv]                       # zsh always loads .zshenv
+    use_cases:
+      - Script execution
+      - "ssh user@host 'command'"
+      - cron jobs
+      - systemd services
+
+  # Special modes
+  restricted_shell:
+    detection:
+      - "[[ $- == *r* ]]"                   # Check if 'r' option is set
+    command: "rbash"
+    restrictions:
+      - Cannot cd
+      - Cannot modify PATH, SHELL, ENV
+      - Cannot use commands with /
+      - Cannot redirect output with >, >>, <>
+
+  posix_mode:
+    command: "bash --posix"
+    detection:
+      - "shopt -q posix"
+    features:
+      - Strict POSIX compliance
+      - Some bash extensions disabled
+
+# XDG and desktop environment variables
+xdg_environment:
+  base_directories:
+    XDG_CONFIG_HOME: ~/.config
+    XDG_DATA_HOME: ~/.local/share
+    XDG_STATE_HOME: ~/.local/state
+    XDG_CACHE_HOME: ~/.cache
+    XDG_RUNTIME_DIR: /run/user/$UID
+
+  session_type:
+    XDG_SESSION_TYPE: "x11 or wayland"
+    XDG_SESSION_DESKTOP: "gnome, kde, xfce, etc."
+    XDG_CURRENT_DESKTOP: "desktop environment name"
+
+  set_by:
+    - Display manager (GDM, SDDM, LightDM)
+    - systemd-logind
+    - PAM modules

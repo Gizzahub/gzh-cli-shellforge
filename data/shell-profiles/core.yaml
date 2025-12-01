@@ -1,0 +1,169 @@
+# Shell Profiles - Core
+# OS and Shell basic initialization file mappings
+#
+# This file contains the fundamental information about which initialization
+# files are loaded by different shells on different operating systems.
+#
+# Related files:
+# - contexts.yaml: Execution contexts (login/non-login, GUI, SSH, etc.)
+# - dev.yaml: Development environments (IDEs, language version managers)
+# - automation.yaml: Automation and isolated environments
+
+# OS-specific profiles
+os_profiles:
+  # Linux distributions
+  linux:
+    distributions:
+      # Ubuntu and Debian-based
+      ubuntu:
+        login_shell: [/etc/profile, ~/.profile, ~/.bash_profile, ~/.bash_login]
+        interactive_shell: [/etc/bash.bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile, ~/.profile]
+          zsh: [~/.zshrc, ~/.zprofile, ~/.zlogin]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      debian:
+        login_shell: [/etc/profile, ~/.profile]
+        interactive_shell: [/etc/bash.bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.profile]
+          zsh: [~/.zshrc, ~/.zprofile]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      # Arch-based distributions
+      arch:
+        login_shell: [/etc/profile, ~/.bash_profile]
+        interactive_shell: [~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile, ~/.zlogin]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      manjaro:
+        login_shell: [/etc/profile, ~/.bash_profile, ~/.profile]
+        interactive_shell: [~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile, ~/.zlogin]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      # RedHat-based distributions (RHEL, CentOS, Fedora)
+      redhat:
+        login_shell: [/etc/profile, ~/.bash_profile]
+        interactive_shell: [/etc/bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      fedora:
+        login_shell: [/etc/profile, ~/.bash_profile]
+        interactive_shell: [/etc/bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+      centos:
+        login_shell: [/etc/profile, ~/.bash_profile]
+        interactive_shell: [/etc/bashrc, ~/.bashrc]
+        shell_types:
+          bash: [~/.bashrc, ~/.bash_profile]
+          zsh: [~/.zshrc, ~/.zprofile]
+          fish: [~/.config/fish/config.fish]
+          sh: [~/.profile]
+
+  # macOS
+  mac:
+    login_shell: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
+    interactive_shell: [/etc/bashrc, ~/.bashrc]
+    shell_types:
+      bash: [~/.bash_profile, ~/.bashrc, ~/.profile]
+      zsh: [~/.zshrc, ~/.zprofile, ~/.zlogin]  # Default shell since macOS Catalina (10.15)
+      fish: [~/.config/fish/config.fish]
+      sh: [~/.profile]
+
+# Load priority and order
+# Lower index = higher priority (loaded first or takes precedence)
+load_priority:
+  # Login shell priority (bash behavior)
+  # Bash reads the first file that exists and stops
+  login_shell:
+    - /etc/profile         # System-wide configuration
+    - ~/.bash_profile      # User-specific bash login (stops here if exists)
+    - ~/.bash_login        # Alternative if .bash_profile doesn't exist
+    - ~/.profile           # Generic shell profile (used if no bash-specific files)
+
+  # Interactive non-login shell
+  interactive_shell:
+    - /etc/bashrc          # System-wide (RHEL/macOS)
+    - /etc/bash.bashrc     # System-wide (Debian/Ubuntu)
+    - ~/.bashrc            # User-specific
+
+  # Zsh-specific load order
+  zsh:
+    - /etc/zshenv          # Always loaded first
+    - ~/.zshenv            # User environment variables
+    - /etc/zprofile        # System-wide login shell
+    - ~/.zprofile          # User login shell
+    - /etc/zshrc           # System-wide interactive
+    - ~/.zshrc             # User interactive (most common)
+    - /etc/zlogin          # System-wide login (after zshrc)
+    - ~/.zlogin            # User login (after zshrc)
+    - ~/.zlogout           # User logout
+
+  # Fish-specific
+  fish:
+    - /etc/fish/config.fish           # System-wide
+    - ~/.config/fish/config.fish      # User-specific
+    - ~/.config/fish/conf.d/*.fish    # User config directory
+
+# Shell detection commands
+shell_detection:
+  bash:
+    command: "bash --version"
+    version_pattern: "GNU bash, version ([0-9.]+)"
+
+  zsh:
+    command: "zsh --version"
+    version_pattern: "zsh ([0-9.]+)"
+
+  fish:
+    command: "fish --version"
+    version_pattern: "fish, version ([0-9.]+)"
+
+# OS detection patterns
+os_detection:
+  mac:
+    uname: "Darwin"
+    check_file: "/System/Library/CoreServices/SystemVersion.plist"
+
+  linux:
+    uname: "Linux"
+    distro_files:
+      ubuntu: [/etc/lsb-release, /etc/os-release]
+      debian: [/etc/debian_version, /etc/os-release]
+      arch: [/etc/arch-release, /etc/os-release]
+      manjaro: [/etc/lsb-release]
+      redhat: [/etc/redhat-release, /etc/os-release]
+      fedora: [/etc/fedora-release, /etc/os-release]
+      centos: [/etc/centos-release, /etc/os-release]
+
+# Default shell per OS
+default_shells:
+  mac: "zsh"           # Since macOS Catalina (10.15+)
+  linux:
+    ubuntu: "bash"
+    debian: "bash"
+    arch: "bash"
+    manjaro: "zsh"     # Manjaro defaults to zsh
+    redhat: "bash"
+    fedora: "bash"
+    centos: "bash"

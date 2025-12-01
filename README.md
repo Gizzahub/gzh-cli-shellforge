@@ -2,39 +2,25 @@
 
 > Build tool for modular shell configurations with automatic dependency resolution
 
-A Go implementation of Shellforge - transform modular shell scripts into unified `.zshrc`/`.bashrc` with dependency resolution and OS-specific filtering.
+Transform your monolithic `.zshrc`/`.bashrc` into organized, maintainable modules with automatic dependency resolution and OS-specific filtering.
 
-[![Tests](https://img.shields.io/badge/tests-50%2F50_passing-brightgreen)]()
-[![Coverage](https://img.shields.io/badge/coverage-71%25--100%25-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-235_passing-brightgreen)]()
+[![Coverage](https://img.shields.io/badge/coverage-70.1%25-brightgreen)]()
 [![Go Version](https://img.shields.io/badge/go-1.21%2B-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 
-**[Quick Start](QUICK_START.md)** | **[Documentation](docs/user/)** | **[FAQ](FAQ.md)** | **[Examples](examples/)**
+**[Quick Start](docs/user/00-quick-start.md)** | **[Documentation](docs/user/)** | **[Examples](examples/)**
 
 ---
 
 ## What It Does
 
-- **Reads shell modules** from your config directory
-- **Resolves dependencies** automatically via topological sort
-- **Filters by OS** (macOS/Linux) - include/exclude modules per platform
-- **Validates configuration** before building (circular dependencies, missing files)
-- **Generates unified** `.zshrc`, `.bashrc`, or custom shell config
-
-## Why Shellforge?
-
-### Before
-- ❌ Manual concatenation of shell scripts → ordering errors
-- ❌ No dependency tracking → tools load before dependencies
-- ❌ OS-specific logic scattered → hard to maintain
-- ❌ No validation → discover errors after deployment
-
-### After
-- ✅ Automatic dependency resolution
-- ✅ OS-specific filtering
-- ✅ Pre-deployment validation
-- ✅ Modular, maintainable configuration
-- ✅ Version control friendly
+- ✅ **Automatic dependency resolution** - Modules load in correct order
+- ✅ **OS-specific filtering** - Different configs for Mac/Linux
+- ✅ **Validation** - Catch errors before deployment
+- ✅ **Migration** - Convert existing configs automatically
+- ✅ **Templates** - Generate common modules quickly
+- ✅ **Backup/Restore** - Version control with git
 
 ---
 
@@ -43,213 +29,208 @@ A Go implementation of Shellforge - transform modular shell scripts into unified
 ### Install
 
 ```bash
-# From source (requires Go 1.21+)
+# Install via Go
 go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
 
-# Or build locally
-git clone https://github.com/gizzahub/gzh-cli-shellforge.git
-cd gzh-cli-shellforge
+# Or build from source
 make install
 ```
 
-### 5-Minute Tutorial
+### Migrate Your Config (5 minutes)
 
 ```bash
 # 1. Backup your current config
 gz-shellforge backup --file ~/.zshrc
 
-# 2. Convert to modular structure
+# 2. Migrate to modular structure
+mkdir ~/shellforge && cd ~/shellforge
 gz-shellforge migrate ~/.zshrc
 
-# 3. Validate
-gz-shellforge validate
-
-# 4. Build for your OS
+# 3. Build for your OS
 gz-shellforge build --os Mac --output ~/.zshrc.new
 
-# 5. Compare and deploy
+# 4. Test and deploy
 gz-shellforge diff ~/.zshrc ~/.zshrc.new
-mv ~/.zshrc.new ~/.zshrc && source ~/.zshrc
+mv ~/.zshrc.new ~/.zshrc
 ```
 
-**[→ Complete Quick Start Guide](QUICK_START.md)**
+**[Complete tutorial →](docs/user/00-quick-start.md)**
 
 ---
 
 ## Core Features
 
-### ✅ Implemented
+### Dependency Resolution
+Automatically sorts modules using topological sort (Kahn's algorithm). No more manual ordering or "works by accident" configs.
 
-- **Automatic Dependency Resolution**: Topological sort ensures correct module load order
-- **OS Filtering**: Include/exclude modules based on target OS (Mac, Linux)
-- **Validation**: Detect circular dependencies and missing files before building
-- **Migration Tools**: Convert monolithic RC files to modular structure
-- **Template Generation**: Create modules from 6 built-in templates
-- **Backup/Restore**: Git-backed versioning with timestamped snapshots
-- **Diff Comparison**: 4 output formats (summary, unified, context, side-by-side)
+### OS Filtering
+Write once, deploy everywhere. Modules tagged with `os: [Mac]` only load on macOS, `os: [Linux]` only on Linux.
 
-### ⏳ Planned
-
-- **Plugin System**: Extensible module types and custom validators
-
----
-
-## Commands
-
-### Essential Commands
-
-```bash
-# Build shell configuration
-gz-shellforge build --manifest manifest.yaml --os Mac --output ~/.zshrc
-
-# Validate manifest file
-gz-shellforge validate --manifest manifest.yaml
-
-# List all modules (with optional OS filter)
-gz-shellforge list --filter Mac
-
-# Convert monolithic RC to modular structure
-gz-shellforge migrate ~/.zshrc --output-dir modules
-
-# Compare configurations
-gz-shellforge diff ~/.zshrc ~/.zshrc.new
-```
-
-### Backup & Restore
-
-```bash
-# Create backup snapshot
-gz-shellforge backup --file ~/.zshrc --message "Before changes"
-
-# Restore from snapshot
-gz-shellforge restore --file ~/.zshrc --snapshot 2025-11-27_14-30-45
-
-# Cleanup old snapshots
-gz-shellforge cleanup --file ~/.zshrc --keep-count 10 --keep-days 30
-```
+### Migration Tools
+Convert your existing monolithic `.zshrc` to organized modules automatically. Detects sections, infers dependencies, and categorizes content.
 
 ### Template System
+Generate common modules from 6 built-in templates: PATH, environment variables, aliases, tool initialization, and more.
 
-```bash
-# List available templates
-gz-shellforge template list
+### Backup & Restore
+Git-backed versioning with timestamped snapshots. Rollback to any previous configuration instantly.
 
-# Generate module from template
-gz-shellforge template generate path my-bin -f path_dir=/usr/local/bin
-gz-shellforge template generate alias my-aliases -f aliases='alias ll="ls -la"'
-```
-
-**[→ Complete Command Reference](docs/user/20-commands.md)**
+### Diff Comparison
+Compare original and generated configs with 4 output formats: summary, unified, context, side-by-side.
 
 ---
 
-## Example Manifest
+## Example: Module Structure
 
 ```yaml
+# manifest.yaml
 modules:
   - name: os-detection
     file: init.d/00-os-detection.sh
     requires: []
     os: [Mac, Linux]
-    description: Detect operating system
 
   - name: brew-path
     file: init.d/05-brew-path.sh
     requires: [os-detection]
     os: [Mac]
-    description: Homebrew PATH initialization
 
   - name: nvm
     file: rc_pre.d/nvm.sh
     requires: [brew-path]
     os: [Mac, Linux]
-    description: Node Version Manager
 ```
+
+```
+modules/
+├── init.d/             # Early initialization
+├── rc_pre.d/           # Tool setup (nvm, rbenv)
+└── rc_post.d/          # Aliases, functions
+```
+
+**[See complete examples →](examples/)**
+
+---
+
+## Commands
+
+```bash
+# Validate configuration
+gz-shellforge validate
+
+# Build for specific OS
+gz-shellforge build --os Mac --output ~/.zshrc
+
+# List modules with filtering
+gz-shellforge list --filter Mac
+
+# Migrate existing config
+gz-shellforge migrate ~/.zshrc
+
+# Generate from template
+gz-shellforge template generate alias my-aliases
+
+# Backup current config
+gz-shellforge backup --file ~/.zshrc
+
+# Restore from snapshot
+gz-shellforge restore --file ~/.zshrc --snapshot 2025-11-28_14-30-45
+
+# Compare configs
+gz-shellforge diff ~/.zshrc ~/.zshrc.new
+```
+
+**[Full command reference →](docs/user/40-command-reference.md)**
 
 ---
 
 ## Documentation
 
 ### For Users
-
-- **[Quick Start](QUICK_START.md)** - Get started in 5 minutes
-- **[FAQ](FAQ.md)** - Frequently asked questions
-- **[Command Reference](docs/user/20-commands.md)** - All commands and options
-- **[Workflow Guide](docs/user/30-workflows.md)** - Step-by-step workflows
-- **[Examples](docs/user/40-examples.md)** - Real-world usage examples
+- **[Quick Start Guide](docs/user/00-quick-start.md)** - Get started in 5 minutes
+- **[Complete Workflows](docs/user/30-workflows.md)** - Step-by-step guide
+- **[Command Reference](docs/user/40-command-reference.md)** - All commands with examples
+- **[User Documentation](docs/user/)** - Complete user guide
 
 ### For Developers
-
-- **[Architecture](ARCHITECTURE.md)** - System design (Hexagonal + Clean Architecture)
-- **[Tech Stack](TECH_STACK.md)** - Technology choices and rationale
-- **[Contributing](docs/dev/CONTRIBUTING.md)** - How to contribute
-- **[API Reference](docs/dev/API.md)** - Public API documentation
-
----
-
-## Examples
-
-### Try the Demo
-
-```bash
-cd examples/
-./workflow-demo.sh  # Automated demonstration of complete workflow
-```
-
-This shows the entire migrate → build → diff workflow for both Mac and Linux.
-
-### Example Configuration
-
-The `examples/` directory contains:
-- `manifest.yaml` - Example manifest with 10 modules
-- `modules/` - Shell modules organized by category (init.d/, rc_pre.d/, rc_post.d/)
-- `sample.zshrc` - Sample RC file for testing migration
-- `WORKFLOW.md` - Complete workflow guide
+- **[Architecture](docs/developer/00-architecture.md)** - System design (Hexagonal)
+- **[Tech Stack](docs/developer/50-tech-stack.md)** - Technology decisions
+- **[Development Guide](.claude/DEVELOPMENT.md)** - Contributing guide
+- **[Developer Documentation](docs/developer/)** - Complete developer guide
 
 ---
 
 ## Performance
 
-Shellforge (Go) is significantly faster than the Python version:
+Go implementation is significantly faster than Python version:
 
 | Metric | Python | Go | Improvement |
 |--------|--------|----|----|
-| Startup time | ~200ms | <10ms | **20x faster** |
+| Startup | ~200ms | <10ms | **20x faster** |
 | Build (10 modules) | ~300ms | <50ms | **6x faster** |
-| Memory usage | ~80MB | <10MB | **8x lighter** |
-| Binary size | ~40MB (venv) | ~8MB | **5x smaller** |
+| Memory | ~80MB | <10MB | **8x lighter** |
+| Binary size | ~40MB | ~8MB | **5x smaller** |
 
 ---
 
-## Platform Support
+## Why Shellforge?
 
-- ✅ **macOS**: 10.15+ (Catalina and later)
-- ✅ **Linux**: Ubuntu 20.04+, Debian 11+, Arch, Manjaro
-- ✅ **Shells**: Zsh 5.8+, Bash 4.0+, Fish 3.0+
-- ⏳ **BSD**: FreeBSD 13+ (planned)
-- ❌ **Windows**: Not supported (use WSL)
+### Problem
+- Manual shell script concatenation causes ordering errors
+- No dependency tracking leads to tools loading before dependencies
+- OS-specific logic scattered everywhere, hard to maintain
+- No validation until runtime errors occur
+
+### Solution
+- Automatic dependency resolution with topological sort
+- OS-specific module filtering (Mac/Linux)
+- Pre-deployment validation catches errors early
+- Modular structure makes maintenance easy
+- Version control friendly for team collaboration
 
 ---
 
-## Testing
+## Status
+
+**Version**: 0.2.0-alpha
+**Test Coverage**: 70.1% (235 tests passing)
+**Status**: Active development
+
+### Implemented Features
+- ✅ Build, validate, list commands
+- ✅ Migration from monolithic configs
+- ✅ Template generation (6 types)
+- ✅ Backup/restore with git versioning
+- ✅ Diff comparison (4 formats)
+- ✅ OS filtering (Mac/Linux)
+
+### Planned Features
+- ⏳ Plugin system for custom validators
+- ⏳ BSD support (FreeBSD 13+)
+- ⏳ Fish shell support
+
+---
+
+## Installation
+
+### Prerequisites
+- Go 1.21 or later
+- Git (for backup/restore features)
+
+### From Source
 
 ```bash
-# Run all tests
-make test
-
-# With coverage report
-make test-coverage
-open coverage.html
-
-# Run benchmarks
-make bench
+git clone https://github.com/gizzahub/gzh-cli-shellforge.git
+cd gzh-cli-shellforge
+make install
 ```
 
-**Test Coverage:**
-- Domain layer: 88.7%
-- Infrastructure layer: 77.6-100%
-- Application layer: 86.5%
-- **Overall: 70.1%** (235 tests passing)
+### Verify Installation
+
+```bash
+gz-shellforge --version
+# Output: shellforge version 0.2.0-alpha
+```
 
 ---
 
@@ -257,46 +238,30 @@ make bench
 
 Contributions welcome! Please:
 
-1. Fork the repository
-2. Create a feature branch
-3. Write tests for new features
-4. Ensure tests pass (`make test`)
-5. Format code (`go fmt ./...`)
-6. Open a Pull Request
+1. Read the [Contributing Guide](docs/developer/30-contributing.md)
+2. Fork the repository
+3. Create a feature branch
+4. Write tests for new features
+5. Ensure all tests pass: `make test`
+6. Submit a pull request
 
-See **[CONTRIBUTING.md](docs/dev/CONTRIBUTING.md)** for detailed guidelines.
-
----
-
-## Status
-
-- **Version**: 0.2.0-alpha
-- **Development**: Active
-- **Stability**: Alpha (core features stable, API may change)
-- **Production Ready**: Core build/validate features ready for use
-
-**Recent Releases:**
-- v0.5.0: Diff comparison with 4 output formats
-- v0.4.0: Migration tools with auto-categorization
-- v0.3.0: Template generation system
-- v0.2.1: Restore and cleanup commands
-- v0.2.0: List and backup commands
-- v0.1.0: Initial release with build/validate
+See [Development Guide](.claude/DEVELOPMENT.md) for architecture details.
 
 ---
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
 ## Support
 
+- **Documentation**: [docs/user/](docs/user/)
 - **Issues**: [GitHub Issues](https://github.com/gizzahub/gzh-cli-shellforge/issues)
+- **Examples**: [examples/](examples/)
 - **Discussions**: [GitHub Discussions](https://github.com/gizzahub/gzh-cli-shellforge/discussions)
-- **Documentation**: [docs/](docs/)
 
 ---
 
-**Made with ❤️ for better shell config management**
+**Built with Go, designed for shell power users** 🚀

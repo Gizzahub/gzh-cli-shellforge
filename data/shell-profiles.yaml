@@ -331,3 +331,489 @@ display_managers:
     name: "TUI Display Manager"
     init_files: [~/.xinitrc]
     wayland_support: true
+
+# Shell execution modes and contexts
+shell_modes:
+  # Login vs Non-login shell
+  login_shell:
+    detection:
+      - "shopt -q login_shell"              # Bash: returns 0 if login shell
+      - "echo $0 | grep '^-'"               # Shell name starts with '-'
+      - "[[ -o login ]]"                    # Zsh: check login option
+    files_loaded:
+      bash: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
+      zsh: [/etc/zprofile, ~/.zprofile, /etc/zlogin, ~/.zlogin]
+    use_cases:
+      - SSH login
+      - Console login (TTY)
+      - "su - user"
+      - "bash --login or bash -l"
+
+  non_login_shell:
+    detection:
+      - "! shopt -q login_shell"            # Bash: returns 1 if not login
+      - "echo $0 | grep -v '^-'"            # No '-' prefix
+    files_loaded:
+      bash: [/etc/bash.bashrc, ~/.bashrc]
+      zsh: [/etc/zshrc, ~/.zshrc]
+    use_cases:
+      - New terminal tab/window in GUI
+      - bash command without --login
+      - tmux/screen new pane
+      - Script execution with shebang
+
+  # Interactive vs Non-interactive
+  interactive_shell:
+    detection:
+      - "[[ $- == *i* ]]"                   # Check if 'i' option is set
+      - "test -n \"$PS1\""                  # PS1 is set in interactive mode
+    files_loaded:
+      bash: [~/.bashrc]
+      zsh: [~/.zshrc]
+    features:
+      - Command line editing
+      - Job control
+      - Prompt
+      - History
+
+  non_interactive_shell:
+    detection:
+      - "[[ $- != *i* ]]"                   # 'i' option not set
+      - "test -z \"$PS1\""                  # PS1 not set
+    files_loaded:
+      bash: []                               # Usually nothing (unless BASH_ENV set)
+      zsh: [~/.zshenv]                       # zsh always loads .zshenv
+    use_cases:
+      - Script execution
+      - "ssh user@host 'command'"
+      - cron jobs
+      - systemd services
+
+  # Special modes
+  restricted_shell:
+    detection:
+      - "[[ $- == *r* ]]"                   # Check if 'r' option is set
+    command: "rbash"
+    restrictions:
+      - Cannot cd
+      - Cannot modify PATH, SHELL, ENV
+      - Cannot use commands with /
+      - Cannot redirect output with >, >>, <>
+
+  posix_mode:
+    command: "bash --posix"
+    detection:
+      - "shopt -q posix"
+    features:
+      - Strict POSIX compliance
+      - Some bash extensions disabled
+
+# GUI application execution contexts
+gui_app_contexts:
+  # IDEs and Editors with integrated terminals
+  ide_integrated_terminal:
+    problem: "GUI apps started from desktop don't inherit shell profile"
+    affected_apps:
+      - VSCode (code)
+      - IntelliJ IDEA
+      - PyCharm
+      - WebStorm
+      - Sublime Text
+      - Atom (deprecated)
+      - Eclipse
+      - NetBeans
+
+    scenarios:
+      desktop_launcher:
+        description: "App launched from application menu or .desktop file"
+        shell_profile_loaded: false
+        environment_source: "systemd user session or display manager"
+        typical_issues:
+          - "rbenv/rvm not in PATH"
+          - "nvm not available"
+          - "conda not activated"
+          - "pyenv missing"
+          - "Custom PATH not set"
+
+      terminal_launch:
+        description: "App launched from terminal: $ code ."
+        shell_profile_loaded: true
+        environment_source: "inherits from parent shell"
+        typical_issues: []
+
+    solutions:
+      vscode:
+        - "Set terminal.integrated.shell.linux in settings.json"
+        - "Use terminal.integrated.shellArgs to add --login"
+        - "Set terminal.integrated.env.linux for environment variables"
+        - "Source ~/.bashrc in integrated terminal"
+
+      general:
+        - "Launch IDE from terminal instead of desktop"
+        - "Modify .desktop file to wrap command with shell"
+        - "Use ~/.pam_environment or /etc/environment"
+        - "Configure in ~/.config/environment.d/*.conf"
+
+  # Desktop launchers (.desktop files)
+  desktop_file_execution:
+    location:
+      - ~/.local/share/applications/*.desktop
+      - /usr/share/applications/*.desktop
+      - /usr/local/share/applications/*.desktop
+
+    exec_field:
+      description: "Exec= line runs without shell profile"
+      example: "Exec=/usr/bin/code %F"
+      shell_profile_loaded: false
+
+    workarounds:
+      wrapped_command: "Exec=/bin/bash -lc '/usr/bin/code %F'"
+      custom_desktop_file: "Copy to ~/.local/share/applications/ and modify"
+
+# Language version managers and environment tools
+language_version_managers:
+  # Ruby
+  rbenv:
+    init_command: 'eval "$(rbenv init -)"'
+    init_files: [~/.bashrc, ~/.zshrc, ~/.config/fish/config.fish]
+    shims_location: ~/.rbenv/shims
+    path_modification: true
+    typical_problem: "ruby command not found in GUI IDE"
+
+  rvm:
+    init_command: "source ~/.rvm/scripts/rvm"
+    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    path_modification: true
+    function_definitions: true
+    typical_problem: "rvm is a function, not available in sub-shells"
+
+  # Node.js
+  nvm:
+    init_command: "source ~/.nvm/nvm.sh"
+    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    lazy_load: true
+    function_definitions: true
+    typical_problem: "nvm command not found, node version not set"
+
+  # Python
+  pyenv:
+    init_command: 'eval "$(pyenv init -)"'
+    init_files: [~/.bashrc, ~/.zshrc, ~/.config/fish/config.fish]
+    shims_location: ~/.pyenv/shims
+    path_modification: true
+
+  conda:
+    init_command: 'eval "$(conda shell.bash hook)"'
+    init_files: [~/.bashrc, ~/.zshrc]
+    path_modification: true
+    environment_activation: true
+    typical_problem: "conda not available, base environment not activated"
+
+  # Java
+  jenv:
+    init_command: 'eval "$(jenv init -)"'
+    init_files: [~/.bashrc, ~/.zshrc]
+    shims_location: ~/.jenv/shims
+    path_modification: true
+
+  sdkman:
+    init_command: "source ~/.sdkman/bin/sdkman-init.sh"
+    init_files: [~/.bashrc, ~/.zshrc]
+    path_modification: true
+
+  # Go
+  gvm:
+    init_command: "source ~/.gvm/scripts/gvm"
+    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    path_modification: true
+
+  # Rust
+  rustup:
+    init_command: "source ~/.cargo/env"
+    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    path_modification: true
+    env_file: ~/.cargo/env
+
+# Scheduled and automated execution
+scheduled_execution:
+  # Cron
+  cron:
+    user_crontab: "crontab -e"
+    system_crontab: /etc/crontab
+    cron_d: /etc/cron.d/*
+
+    environment:
+      default_path: "/usr/bin:/bin"
+      default_shell: "/bin/sh"
+      minimal_env: true
+      no_profile: true
+
+    shell_profile_loaded: false
+
+    workarounds:
+      source_profile: "0 * * * * . ~/.profile; /path/to/script"
+      use_bash_login: "0 * * * * bash -lc '/path/to/script'"
+      set_in_crontab: |
+        SHELL=/bin/bash
+        PATH=/usr/local/bin:/usr/bin:/bin
+        0 * * * * /path/to/script
+
+  # at command
+  at:
+    command: "at now + 1 hour"
+    environment: "inherits current environment at scheduling time"
+    shell_profile_loaded: false
+
+  # systemd timer
+  systemd_timer:
+    user_timers: ~/.config/systemd/user/*.timer
+    system_timers: /etc/systemd/system/*.timer
+
+    environment:
+      no_profile: true
+      use_environment_file: true
+
+    service_file_env:
+      - "Environment=\"PATH=/usr/local/bin:/usr/bin\""
+      - "EnvironmentFile=/path/to/env/file"
+
+    workarounds:
+      use_bash_login: "ExecStart=/bin/bash -lc '/path/to/script'"
+      environment_d: "~/.config/environment.d/99-custom.conf"
+
+  # macOS launchd
+  macos_launchd:
+    user_agents: ~/Library/LaunchAgents/*.plist
+    system_daemons: /Library/LaunchDaemons/*.plist
+
+    environment:
+      no_profile: true
+      use_environment_dict: true
+
+    plist_env:
+      key: "EnvironmentVariables"
+      example: |
+        <key>EnvironmentVariables</key>
+        <dict>
+          <key>PATH</key>
+          <string>/usr/local/bin:/usr/bin:/bin</string>
+        </dict>
+
+    workarounds:
+      launchctl_setenv: "launchctl setenv VAR value"
+      source_profile_in_script: "source ~/.profile in wrapper script"
+
+# User switching and privilege escalation
+user_switching:
+  su:
+    command: "su username"
+    description: "Switch user without login shell"
+    shell_profile_loaded: false
+    env_preserved: true
+    pwd_preserved: true
+
+  su_login:
+    command: "su - username"
+    description: "Switch user with login shell"
+    shell_profile_loaded: true
+    env_reset: true
+    pwd_changed: true
+    home_changed: true
+
+  sudo:
+    command: "sudo command"
+    description: "Run command as root"
+    shell_profile_loaded: false
+    env_filtered: true
+    env_whitelist: [PATH, TERM, DISPLAY, XAUTHORITY]
+
+  sudo_login:
+    command: "sudo -i"
+    description: "Run login shell as root"
+    shell_profile_loaded: true
+    env_reset: true
+
+  sudo_preserve_env:
+    command: "sudo -E command"
+    description: "Preserve user environment"
+    shell_profile_loaded: false
+    env_preserved: true
+
+# Container and virtualization contexts
+container_contexts:
+  # Docker
+  docker:
+    docker_exec:
+      command: "docker exec -it container bash"
+      shell_type: "non-login, interactive"
+      shell_profile_loaded: false
+      workaround: "docker exec -it container bash -l"
+
+    docker_run:
+      command: "docker run -it image bash"
+      shell_type: "depends on Dockerfile"
+      dockerfile_shell: "SHELL [\"/bin/bash\", \"-l\", \"-c\"]"
+
+  # chroot
+  chroot:
+    command: "chroot /new/root /bin/bash"
+    description: "Change root filesystem"
+    shell_profile_loaded: "depends on chroot environment"
+    minimal_env: true
+
+  # Flatpak
+  flatpak:
+    command: "flatpak run org.app.Name"
+    description: "Sandboxed application"
+    filesystem_isolation: true
+    env_isolated: true
+    shell_profile_loaded: false
+
+  # Snap
+  snap:
+    command: "snap run app"
+    description: "Confined application"
+    confinement: ["strict", "classic", "devmode"]
+    shell_profile_loaded: "only in classic mode"
+
+  # WSL (Windows Subsystem for Linux)
+  wsl:
+    wsl_conf: /etc/wsl.conf
+    environment_handling: "special Windows/Linux integration"
+    init_files:
+      - /etc/profile
+      - ~/.profile
+      - ~/.bashrc
+    windows_path_append: true
+    interop: true
+
+  # Android Termux
+  termux:
+    prefix: /data/data/com.termux/files/usr
+    non_standard_paths: true
+    init_files:
+      - $PREFIX/etc/profile
+      - ~/.bashrc
+      - ~/.bash_profile
+
+# Remote and non-interactive execution
+remote_execution:
+  # SSH with command
+  ssh_non_interactive:
+    command: "ssh user@host 'command'"
+    shell_type: "non-interactive, non-login"
+    bash_behavior: "sources ~/.bashrc but early exits on non-interactive check"
+    zsh_behavior: "sources ~/.zshenv only"
+    workaround: "ssh user@host 'bash -lc command'"
+
+  # SSH forced command
+  ssh_forced_command:
+    location: "~/.ssh/authorized_keys"
+    example: 'command="/path/to/script" ssh-rsa AAA...'
+    shell_profile_loaded: false
+
+  # Git hooks
+  git_hooks:
+    location: ".git/hooks/*"
+    environment: "minimal, from git process"
+    shell_profile_loaded: false
+    workaround: "source profile at start of hook script"
+
+  # CI/CD pipelines
+  ci_cd:
+    github_actions:
+      shell_default: "bash"
+      shell_options: ["-e", "-o pipefail"]
+      shell_profile_loaded: false
+      workaround: "source ~/.profile in step"
+
+    gitlab_ci:
+      shell_default: "bash"
+      shell_profile_loaded: false
+      workaround: "before_script: - source ~/.profile"
+
+    jenkins:
+      shell_configurable: true
+      shell_profile_loaded: false
+      workaround: "#!/bin/bash -l at start of script"
+
+# Terminal multiplexers
+terminal_multiplexers:
+  tmux:
+    new_session: "tmux new -s name"
+    new_window: "Ctrl-b c"
+    new_pane: "Ctrl-b %"
+
+    default_shell: "set-option -g default-shell /bin/zsh"
+    login_shell: "set -g default-command '${SHELL} -l'"
+
+    shell_profile:
+      new_session: "depends on default-command"
+      new_window: "non-login shell"
+      new_pane: "non-login shell"
+
+  screen:
+    new_session: "screen"
+    new_window: "Ctrl-a c"
+
+    login_shell: "shell -$SHELL"
+
+    shell_profile:
+      new_session: "login shell if configured"
+      new_window: "non-login shell"
+
+  zellij:
+    new_tab: "Ctrl-t t"
+    new_pane: "Ctrl-t n"
+
+    default_shell: "configurable in config.yaml"
+    shell_profile: "depends on configuration"
+
+# System environment configuration
+system_environment:
+  # PAM environment
+  pam:
+    system_config: /etc/security/pam_env.conf
+    user_config: ~/.pam_environment
+    loaded_at: "login via PAM"
+    scope: "entire user session"
+
+  # System-wide environment
+  etc_environment:
+    file: /etc/environment
+    format: "KEY=value (no shell syntax)"
+    loaded_at: "PAM session start"
+    scope: "all users, all sessions"
+
+  # Profile.d
+  profile_d:
+    location: /etc/profile.d/*.sh
+    loaded_by: /etc/profile
+    scope: "all users, login shells only"
+
+  # Environment.d (systemd)
+  environment_d:
+    system: /etc/environment.d/*.conf
+    user: ~/.config/environment.d/*.conf
+    format: "KEY=value"
+    loaded_by: "systemd user manager"
+    scope: "systemd user services and graphical session"
+
+# XDG and desktop environment variables
+xdg_environment:
+  base_directories:
+    XDG_CONFIG_HOME: ~/.config
+    XDG_DATA_HOME: ~/.local/share
+    XDG_STATE_HOME: ~/.local/state
+    XDG_CACHE_HOME: ~/.cache
+    XDG_RUNTIME_DIR: /run/user/$UID
+
+  session_type:
+    XDG_SESSION_TYPE: "x11 or wayland"
+    XDG_SESSION_DESKTOP: "gnome, kde, xfce, etc."
+    XDG_CURRENT_DESKTOP: "desktop environment name"
+
+  set_by:
+    - Display manager (GDM, SDDM, LightDM)
+    - systemd-logind
+    - PAM modules

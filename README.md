@@ -238,7 +238,7 @@ gz-shellforge --version
 
 Contributions welcome! Please:
 
-1. Read the [Contributing Guide](docs/developer/30-contributing.md)
+1. Read the [Contributing Guide](CONTRIBUTING.md)
 2. Fork the repository
 3. Create a feature branch
 4. Write tests for new features

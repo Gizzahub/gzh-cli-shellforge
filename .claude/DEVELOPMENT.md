@@ -321,8 +321,8 @@ func NewBuilderService(parser ManifestParser, reader FileReader, writer FileWrit
 - `internal/cli/root.go` - CLI root command
 - `Makefile` - Build automation
 - `examples/manifest.yaml` - Example configuration
-- `ARCHITECTURE.md` - Detailed architecture documentation
-- `TECH_STACK.md` - Library choices and rationale
+- `docs/dev/00-architecture.md` - Detailed architecture documentation
+- `docs/dev/50-tech-stack.md` - Library choices and rationale
 
 ## Troubleshooting
 

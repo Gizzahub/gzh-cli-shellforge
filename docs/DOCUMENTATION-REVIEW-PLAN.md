@@ -313,8 +313,8 @@ MIT
 - [ ] Move existing files:
   - [ ] examples/WORKFLOW.md → docs/user/30-workflows.md
   - [ ] examples/CLI-EXAMPLES.md → docs/user/40-command-reference.md
-  - [ ] ARCHITECTURE.md → docs/developer/00-architecture.md
-  - [ ] TECH_STACK.md → docs/developer/50-tech-stack.md
+  - [x] ARCHITECTURE.md → docs/dev/00-architecture.md (COMPLETED)
+  - [x] TECH_STACK.md → docs/dev/50-tech-stack.md (COMPLETED)
   - [ ] docs/BENCHMARKS.md → docs/developer/60-benchmarks.md
   - [ ] PRD.md → docs/design/prd.md
   - [ ] REQUIREMENTS.md → docs/design/requirements.md

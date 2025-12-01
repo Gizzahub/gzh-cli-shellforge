@@ -15,8 +15,11 @@ os_profiles:
   linux:
     distributions:
       # Ubuntu and Debian-based
+      # NOTE: login_shell lists files in bash's lookup order.
+      # Bash reads /etc/profile first, then checks ~/.bash_profile, ~/.bash_login,
+      # ~/.profile in order and executes ONLY THE FIRST ONE that exists.
       ubuntu:
-        login_shell: [/etc/profile, ~/.profile, ~/.bash_profile, ~/.bash_login]
+        login_shell: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
         interactive_shell: [/etc/bash.bashrc, ~/.bashrc]
         shell_types:
           bash: [~/.bashrc, ~/.bash_profile, ~/.profile]
@@ -25,17 +28,17 @@ os_profiles:
           sh: [~/.profile]
 
       debian:
-        login_shell: [/etc/profile, ~/.profile]
+        login_shell: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
         interactive_shell: [/etc/bash.bashrc, ~/.bashrc]
         shell_types:
-          bash: [~/.bashrc, ~/.profile]
-          zsh: [~/.zshrc, ~/.zprofile]
+          bash: [~/.bashrc, ~/.bash_profile, ~/.profile]
+          zsh: [~/.zshrc, ~/.zprofile, ~/.zlogin]
           fish: [~/.config/fish/config.fish]
           sh: [~/.profile]
 
       # Arch-based distributions
       arch:
-        login_shell: [/etc/profile, ~/.bash_profile]
+        login_shell: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
         interactive_shell: [~/.bashrc]
         shell_types:
           bash: [~/.bashrc, ~/.bash_profile]
@@ -44,7 +47,7 @@ os_profiles:
           sh: [~/.profile]
 
       manjaro:
-        login_shell: [/etc/profile, ~/.bash_profile, ~/.profile]
+        login_shell: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
         interactive_shell: [~/.bashrc]
         shell_types:
           bash: [~/.bashrc, ~/.bash_profile]
@@ -54,7 +57,7 @@ os_profiles:
 
       # RedHat-based distributions (RHEL, CentOS, Fedora)
       redhat:
-        login_shell: [/etc/profile, ~/.bash_profile]
+        login_shell: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
         interactive_shell: [/etc/bashrc, ~/.bashrc]
         shell_types:
           bash: [~/.bashrc, ~/.bash_profile]
@@ -63,7 +66,7 @@ os_profiles:
           sh: [~/.profile]
 
       fedora:
-        login_shell: [/etc/profile, ~/.bash_profile]
+        login_shell: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
         interactive_shell: [/etc/bashrc, ~/.bashrc]
         shell_types:
           bash: [~/.bashrc, ~/.bash_profile]
@@ -72,7 +75,7 @@ os_profiles:
           sh: [~/.profile]
 
       centos:
-        login_shell: [/etc/profile, ~/.bash_profile]
+        login_shell: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
         interactive_shell: [/etc/bashrc, ~/.bashrc]
         shell_types:
           bash: [~/.bashrc, ~/.bash_profile]
@@ -107,10 +110,11 @@ load_priority:
     - /etc/bash.bashrc     # System-wide (Debian/Ubuntu)
     - ~/.bashrc            # User-specific
 
-  # Zsh-specific load order
+  # Zsh-specific load order (login interactive shell)
+  # zshenv is always loaded first, regardless of shell type
   zsh:
-    - /etc/zshenv          # Always loaded first
-    - ~/.zshenv            # User environment variables
+    - /etc/zshenv          # Always loaded first (all shells)
+    - ~/.zshenv            # User environment variables (all shells)
     - /etc/zprofile        # System-wide login shell
     - ~/.zprofile          # User login shell
     - /etc/zshrc           # System-wide interactive
@@ -118,12 +122,18 @@ load_priority:
     - /etc/zlogin          # System-wide login (after zshrc)
     - ~/.zlogin            # User login (after zshrc)
     - ~/.zlogout           # User logout
+    - /etc/zlogout         # System-wide logout
 
-  # Fish-specific
+  # Fish-specific load order (fish 2.3+ for conf.d support)
+  # Reference: https://fishshell.com/docs/current/language.html#configuration
+  # conf.d directories are loaded BEFORE config.fish
+  # Files in conf.d are sorted naturally (01 before 2)
   fish:
-    - /etc/fish/config.fish           # System-wide
-    - ~/.config/fish/config.fish      # User-specific
-    - ~/.config/fish/conf.d/*.fish    # User config directory
+    - $__fish_data_dir/config.fish         # Fish default config (/usr/share/fish/config.fish)
+    - /etc/fish/conf.d/*.fish              # System conf.d (vendor configs)
+    - ~/.config/fish/conf.d/*.fish         # User conf.d
+    - /etc/fish/config.fish                # System config.fish
+    - ~/.config/fish/config.fish           # User config.fish (last)
 
 # Shell detection commands
 shell_detection:
@@ -151,7 +161,7 @@ os_detection:
       ubuntu: [/etc/lsb-release, /etc/os-release]
       debian: [/etc/debian_version, /etc/os-release]
       arch: [/etc/arch-release, /etc/os-release]
-      manjaro: [/etc/lsb-release]
+      manjaro: [/etc/lsb-release, /etc/os-release]
       redhat: [/etc/redhat-release, /etc/os-release]
       fedora: [/etc/fedora-release, /etc/os-release]
       centos: [/etc/centos-release, /etc/os-release]

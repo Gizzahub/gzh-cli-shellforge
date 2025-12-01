@@ -23,7 +23,8 @@ scheduled_execution:
     cron_d: /etc/cron.d/*
 
     environment:
-      default_path: "/usr/bin:/bin"
+      # These are typical defaults; actual values may vary by distribution
+      default_path: "/usr/bin:/bin"  # Example, varies by distro/cron implementation
       default_shell: "/bin/sh"
       minimal_env: true
       no_profile: true
@@ -41,7 +42,8 @@ scheduled_execution:
   # at command
   at:
     command: "at now + 1 hour"
-    environment: "inherits current environment at scheduling time"
+    # at captures environment, umask, cwd at scheduling time
+    environment: "captures current environment at scheduling time (no profile reload at execution)"
     shell_profile_loaded: false
 
   # systemd timer
@@ -54,7 +56,9 @@ scheduled_execution:
       use_environment_file: true
 
     service_file_env:
+      # Environment= : inline definition in unit file
       - "Environment=\"PATH=/usr/local/bin:/usr/bin\""
+      # EnvironmentFile= : load from external file
       - "EnvironmentFile=/path/to/env/file"
 
     workarounds:
@@ -80,8 +84,16 @@ scheduled_execution:
         </dict>
 
     workarounds:
-      launchctl_setenv: "launchctl setenv VAR value"
+      # launchctl setenv is session-only, NOT persistent across reboots
+      launchctl_setenv: "launchctl setenv VAR value (session only, resets on reboot)"
+      # For PATH specifically, use launchctl config (requires reboot)
+      launchctl_config_path: "sudo launchctl config user path /usr/local/bin:/usr/bin:/bin"
+      # Recommended: Create LaunchAgent for persistent env vars
+      launch_agent: "Create plist in ~/Library/LaunchAgents/ with EnvironmentVariables"
       source_profile_in_script: "source ~/.profile in wrapper script"
+    notes:
+      - "/etc/launchd.conf was removed for security reasons"
+      - "$HOME/.launchd.conf was never implemented"
 
 # User switching and privilege escalation
 user_switching:
@@ -89,14 +101,23 @@ user_switching:
     command: "su username"
     description: "Switch user without login shell"
     shell_profile_loaded: false
-    env_preserved: true
+    # Partial preservation: HOME, SHELL, USER, LOGNAME are changed to target user
+    # Most other env vars are preserved from original user
+    env_preserved: "partial (HOME/SHELL/USER/LOGNAME changed to target user)"
+    pwd_preserved: true
+
+  su_preserve:
+    command: "su -m username"  # or su -p
+    description: "Switch user preserving entire environment"
+    shell_profile_loaded: false
+    env_preserved: true  # Full preservation including HOME
     pwd_preserved: true
 
   su_login:
     command: "su - username"
     description: "Switch user with login shell"
     shell_profile_loaded: true
-    env_reset: true
+    env_reset: true  # Clean environment
     pwd_changed: true
     home_changed: true
 
@@ -105,7 +126,8 @@ user_switching:
     description: "Run command as root"
     shell_profile_loaded: false
     env_filtered: true
-    env_whitelist: [PATH, TERM, DISPLAY, XAUTHORITY]
+    # Actual whitelist depends on /etc/sudoers (env_keep, env_check)
+    env_whitelist: [PATH, TERM, DISPLAY, XAUTHORITY]  # Common defaults, varies by sudoers
 
   sudo_login:
     command: "sudo -i"
@@ -126,7 +148,10 @@ container_contexts:
     docker_exec:
       command: "docker exec -it container bash"
       shell_type: "non-login, interactive"
-      shell_profile_loaded: false
+      # Distinguish between login profile and interactive rc
+      login_profile_loaded: false      # /etc/profile, ~/.bash_profile NOT loaded
+      interactive_rc_loaded: true      # ~/.bashrc IS loaded (interactive shell)
+      # Note: Default .bashrc may have early exit guard: [ -z "$PS1" ] && return
       workaround: "docker exec -it container bash -l"
 
     docker_run:
@@ -182,8 +207,16 @@ remote_execution:
   ssh_non_interactive:
     command: "ssh user@host 'command'"
     shell_type: "non-interactive, non-login"
-    bash_behavior: "sources ~/.bashrc but early exits on non-interactive check"
-    zsh_behavior: "sources ~/.zshenv only"
+    bash_behavior:
+      # Standard bash behavior: non-interactive shells read NO rc files by default
+      # Only BASH_ENV file is read if the variable is set
+      default: "reads no rc files (only BASH_ENV if set)"
+      BASH_ENV: "if set, bash reads and executes the file specified by this variable"
+      # Exception: Some distros compile bash with SSH_SOURCE_BASHRC flag
+      debian_ubuntu: "may source ~/.bashrc (SSH_SOURCE_BASHRC compile flag)"
+      other_distros: "typically does not source ~/.bashrc"
+      guard_pattern: "Most .bashrc files have early exit: [[ $- != *i* ]] && return"
+    zsh_behavior: "sources ~/.zshenv only (always loaded regardless of mode)"
     workaround: "ssh user@host 'bash -lc command'"
 
   # SSH forced command
@@ -224,29 +257,35 @@ terminal_multiplexers:
     new_window: "Ctrl-b c"
     new_pane: "Ctrl-b %"
 
+    # default-command empty string (default) = login shell ($SHELL -l)
     default_shell: "set-option -g default-shell /bin/zsh"
     login_shell: "set -g default-command '${SHELL} -l'"
+    non_login_shell: "set -g default-command '${SHELL}'"
 
     shell_profile:
-      new_session: "depends on default-command"
-      new_window: "non-login shell"
-      new_pane: "non-login shell"
+      # By default, tmux starts LOGIN shells (default-command is empty)
+      # This ensures fresh environment even if session persists across logout/login
+      new_session: "login shell by default (sources .bash_profile/.zprofile)"
+      new_window: "login shell by default"
+      new_pane: "login shell by default"
+    note: "If .bashrc not loading, source it from .bash_profile or use default-command '${SHELL}'"
 
   screen:
     new_session: "screen"
     new_window: "Ctrl-a c"
 
+    # shell -$SHELL makes it a login shell (dash prefix)
     login_shell: "shell -$SHELL"
 
     shell_profile:
-      new_session: "login shell if configured"
-      new_window: "non-login shell"
+      new_session: "login shell if configured with 'shell -$SHELL'"
+      new_window: "non-login shell by default"
 
   zellij:
     new_tab: "Ctrl-t t"
     new_pane: "Ctrl-t n"
 
-    default_shell: "configurable in config.yaml"
+    default_shell: "configurable in config.kdl"
     shell_profile:
       new_tab: "depends on configuration"
       new_pane: "depends on configuration"

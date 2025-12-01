@@ -18,13 +18,19 @@
 
 # SSH-specific initialization files
 ssh_profiles:
-  # Executed when SSH connection is established
+  # Execution order: ~/.ssh/rc takes precedence, /etc/ssh/sshrc is fallback
+  # If ~/.ssh/rc exists, ONLY it runs; /etc/ssh/sshrc is NOT executed
+  # Reference: https://man.openbsd.org/sshd.8
+  execution_order:
+    preferred: ~/.ssh/rc       # User rc (if exists, only this runs)
+    fallback: /etc/ssh/sshrc   # System rc (only if user rc doesn't exist)
+
   user:
-    - ~/.ssh/rc              # User SSH session initialization
+    - ~/.ssh/rc              # User SSH session initialization (run by /bin/sh)
     - ~/.ssh/environment     # SSH environment variables (if PermitUserEnvironment=yes)
 
   system:
-    - /etc/ssh/sshrc         # System-wide SSH initialization
+    - /etc/ssh/sshrc         # System-wide SSH initialization (fallback only)
 
   # SSH session detection
   detection:
@@ -32,19 +38,24 @@ ssh_profiles:
     tty_pattern: "^pts/"       # Check if TTY matches pts/* (pseudo-terminal)
 
 # X Window System initialization
+# Reference: https://wiki.debian.org/Xsession
 x_window_profiles:
-  # Display Manager login (GUI login)
+  # Display Manager login (GUI login via GDM, LightDM, SDDM, etc.)
+  # DMs use /etc/X11/Xsession as entry point, NOT xinit/xinitrc
   display_manager:
-    - /etc/X11/Xsession.d/*    # System-wide X session scripts (Debian/Ubuntu)
-    - /etc/X11/xinit/xinitrc   # System X initialization
-    - ~/.xprofile              # User X profile (sourced by display managers)
-    - ~/.xsessionrc            # Debian/Ubuntu specific
+    main_script: /etc/X11/Xsession           # Entry point for DM sessions
+    includes:
+      - /etc/X11/Xsession.d/*                # System-wide X session scripts
+      - ~/.xprofile                          # User X profile (sourced early)
+      - ~/.xsession                          # User session script (if "custom" selected)
+      - ~/.xsessionrc                        # Debian/Ubuntu specific (sourced early)
 
-  # startx / xinit (manual X start)
+  # startx / xinit (manual X start from console)
+  # Uses xinitrc, NOT Xsession
   manual_start:
-    - /etc/X11/xinit/xinitrc   # System default
+    - /etc/X11/xinit/xinitrc   # System default (used if no user xinitrc)
     - ~/.xinitrc               # User X initialization (overrides system)
-    - ~/.xsession              # Alternative to .xinitrc
+    - ~/.xsession              # Fallback if no .xinitrc (some distros)
 
   # X resources and settings
   resources:
@@ -122,7 +133,8 @@ session_types:
     detection:
       tty_pattern: "^tty[0-9]+$"     # /dev/tty1, /dev/tty2, etc.
       display_var: null                # DISPLAY not set
-    init_files: [/etc/profile, ~/.profile, ~/.bash_profile]
+    # Bash login shell order: /etc/profile first, then first existing user file
+    init_files: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
 
   # GUI (X11 or Wayland)
   gui:
@@ -161,7 +173,10 @@ systemd_user:
 display_managers:
   gdm:
     name: "GNOME Display Manager"
-    init_files: [/etc/gdm3/Xsession, ~/.xprofile]
+    init_files:
+      - /etc/gdm3/Xsession      # Debian/Ubuntu
+      - /etc/gdm/Xsession       # Fedora/RHEL
+      - ~/.xprofile
     wayland_support: true
     default_session: "gnome"
 
@@ -196,8 +211,11 @@ shell_modes:
       - "echo $0 | grep '^-'"               # Shell name starts with '-'
       - "[[ -o login ]]"                    # Zsh: check login option
     files_loaded:
+      # NOTE: Bash checks ~/.bash_profile, ~/.bash_login, ~/.profile in order
+      # and executes ONLY THE FIRST ONE that exists
       bash: [/etc/profile, ~/.bash_profile, ~/.bash_login, ~/.profile]
-      zsh: [/etc/zprofile, ~/.zprofile, /etc/zlogin, ~/.zlogin]
+      # Zsh loads zshenv first (always), then login-specific files
+      zsh: [/etc/zshenv, ~/.zshenv, /etc/zprofile, ~/.zprofile, /etc/zshrc, ~/.zshrc, /etc/zlogin, ~/.zlogin]
     use_cases:
       - SSH login
       - Console login (TTY)
@@ -210,7 +228,8 @@ shell_modes:
       - "echo $0 | grep -v '^-'"            # No '-' prefix
     files_loaded:
       bash: [/etc/bash.bashrc, ~/.bashrc]
-      zsh: [/etc/zshrc, ~/.zshrc]
+      # Zsh always loads zshenv first, even for non-login shells
+      zsh: [/etc/zshenv, ~/.zshenv, /etc/zshrc, ~/.zshrc]
     use_cases:
       - New terminal tab/window in GUI
       - bash command without --login
@@ -223,8 +242,8 @@ shell_modes:
       - "[[ $- == *i* ]]"                   # Check if 'i' option is set
       - "test -n \"$PS1\""                  # PS1 is set in interactive mode
     files_loaded:
-      bash: [~/.bashrc]
-      zsh: [~/.zshrc]
+      bash: [/etc/bash.bashrc, ~/.bashrc]   # Debian/Ubuntu use /etc/bash.bashrc
+      zsh: [/etc/zshenv, ~/.zshenv, /etc/zshrc, ~/.zshrc]
     features:
       - Command line editing
       - Job control
@@ -237,7 +256,7 @@ shell_modes:
       - "test -z \"$PS1\""                  # PS1 not set
     files_loaded:
       bash: []                               # Usually nothing (unless BASH_ENV set)
-      zsh: [~/.zshenv]                       # zsh always loads .zshenv
+      zsh: [/etc/zshenv, ~/.zshenv]          # zsh always loads zshenv (system + user)
     use_cases:
       - Script execution
       - "ssh user@host 'command'"

@@ -46,16 +46,20 @@ gui_app_contexts:
 
     solutions:
       vscode:
-        - "Set terminal.integrated.shell.linux in settings.json"
-        - "Use terminal.integrated.shellArgs to add --login"
-        - "Set terminal.integrated.env.linux for environment variables"
-        - "Source ~/.bashrc in integrated terminal"
+        # New method (VSCode 1.56+, recommended)
+        - "Use terminal.integrated.profiles.linux to define shell profiles"
+        - "Set terminal.integrated.defaultProfile.linux to your profile"
+        - "Add args: ['--login'] or args: ['-l'] in profile for login shell"
+        - "Use terminal.integrated.env.linux for environment variables"
+        # Legacy method (deprecated but still works)
+        - "(Deprecated) terminal.integrated.shell.linux / shellArgs.linux"
 
       general:
         - "Launch IDE from terminal instead of desktop"
         - "Modify .desktop file to wrap command with shell"
         - "Use ~/.pam_environment or /etc/environment"
         - "Configure in ~/.config/environment.d/*.conf"
+        # Note: Using bash -lc in .desktop may source both .bash_profile and .bashrc
 
   # Desktop launchers (.desktop files)
   desktop_file_execution:
@@ -74,65 +78,106 @@ gui_app_contexts:
       custom_desktop_file: "Copy to ~/.local/share/applications/ and modify"
 
 # Language version managers and environment tools
+# Structure: init_command and init_files can be shell-specific for precision
 language_version_managers:
   # Ruby
   rbenv:
-    init_command: 'eval "$(rbenv init -)"'
-    init_files: [~/.bashrc, ~/.zshrc, ~/.config/fish/config.fish]
+    init_command:
+      bash: 'eval "$(rbenv init - bash)"'
+      zsh: 'eval "$(rbenv init - zsh)"'
+      fish: 'status --is-interactive; and rbenv init - fish | source'
+      generic: 'eval "$(rbenv init -)"'
+    init_files:
+      bash: [~/.bashrc]
+      zsh: [~/.zshrc]
+      fish: [~/.config/fish/config.fish]
     shims_location: ~/.rbenv/shims
     path_modification: true
     typical_problem: "ruby command not found in GUI IDE"
 
   rvm:
     init_command: "source ~/.rvm/scripts/rvm"
-    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    # RVM is function-based; login shell files recommended
+    # macOS: .bash_profile, Linux: .bashrc
+    init_files:
+      bash:
+        macos: [~/.bash_profile]
+        linux: [~/.bashrc]
+      zsh: [~/.zshrc, ~/.zlogin]
     path_modification: true
     function_definitions: true
     typical_problem: "rvm is a function, not available in sub-shells"
+    note: "RVM recommends login shell initialization"
 
   # Node.js
   nvm:
     init_command: "source ~/.nvm/nvm.sh"
-    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    init_files:
+      bash: [~/.bashrc]
+      zsh: [~/.zshrc]
+      # .profile can cause issues in some environments (WSL)
     lazy_load: true
     function_definitions: true
     typical_problem: "nvm command not found, node version not set"
 
   # Python
   pyenv:
-    init_command: 'eval "$(pyenv init -)"'
-    init_files: [~/.bashrc, ~/.zshrc, ~/.config/fish/config.fish]
+    init_command:
+      base: 'eval "$(pyenv init -)"'
+      # Add virtualenv-init for auto-activation when entering directories
+      virtualenv: 'eval "$(pyenv virtualenv-init -)"'
+    init_files:
+      bash: [~/.bashrc]
+      zsh: [~/.zshrc]
+      fish: [~/.config/fish/config.fish]
     shims_location: ~/.pyenv/shims
     path_modification: true
 
   conda:
-    init_command: 'eval "$(conda shell.bash hook)"'
-    init_files: [~/.bashrc, ~/.zshrc]
+    init_command:
+      bash: 'eval "$(conda shell.bash hook)"'
+      zsh: 'eval "$(conda shell.zsh hook)"'
+      fish: 'eval conda "shell.fish" "hook" | source'
+    init_files:
+      bash: [~/.bashrc]
+      zsh: [~/.zshrc]
+      fish: [~/.config/fish/config.fish]
     path_modification: true
     environment_activation: true
     typical_problem: "conda not available, base environment not activated"
 
   # Java
   jenv:
-    init_command: 'eval "$(jenv init -)"'
-    init_files: [~/.bashrc, ~/.zshrc]
+    init_command:
+      bash: 'eval "$(jenv init - bash)"'
+      zsh: 'eval "$(jenv init - zsh)"'
+      generic: 'eval "$(jenv init -)"'
+    init_files:
+      bash: [~/.bashrc]
+      zsh: [~/.zshrc]
     shims_location: ~/.jenv/shims
     path_modification: true
 
   sdkman:
     init_command: "source ~/.sdkman/bin/sdkman-init.sh"
-    init_files: [~/.bashrc, ~/.zshrc]
+    init_files:
+      bash: [~/.bashrc]
+      zsh: [~/.zshrc]
     path_modification: true
 
   # Go
   gvm:
     init_command: "source ~/.gvm/scripts/gvm"
-    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    init_files:
+      bash: [~/.bashrc, ~/.bash_profile]
+      zsh: [~/.zshrc]
     path_modification: true
 
   # Rust
   rustup:
     init_command: "source ~/.cargo/env"
-    init_files: [~/.bashrc, ~/.zshrc, ~/.profile]
+    init_files:
+      bash: [~/.bashrc, ~/.bash_profile]
+      zsh: [~/.zshrc, ~/.zprofile]
     path_modification: true
     env_file: ~/.cargo/env

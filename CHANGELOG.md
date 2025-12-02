@@ -39,6 +39,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated README version from 0.2.0-alpha to 0.5.1
 - Test count increased with shellmeta and profiles CLI tests
 
+### Refactored
+
+- **CLI Helpers Package**: Extracted common path utilities
+  - `internal/cli/helpers/path.go` - `ExpandHomePath()` and `ResolveBackupDir()` functions
+  - Consolidated 5 duplicate `expandHomePath` functions from CLI commands
+  - Added comprehensive tests in `path_test.go`
+
+- **Shellmeta Loader**: Consolidated duplicate loader functions
+  - Added generic `loadYAML()` helper method
+  - Reduced ~34 lines of duplicate code
+
+- **Shellmeta Query Methods**: Added normalization helpers
+  - `normalizeName()` - Case-insensitive lookups (replaces 15+ inline `strings.ToLower()`)
+  - `normalizeContextName()` - Handles underscore/hyphen variations
+  - `isMacOS()` - macOS alias checking (mac/macos/darwin)
+  - `normalizeShellMode()` - Shell mode alias canonicalization
+  - Simplified `IsProfileLoadedInContext` switch cases
+
 ---
 
 ## [0.5.1] - 2025-11-30

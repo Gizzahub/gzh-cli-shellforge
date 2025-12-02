@@ -24,108 +24,75 @@ func (l *Loader) Load(dir string) (*ShellProfiles, error) {
 	profiles := &ShellProfiles{}
 
 	// Load core.yaml
-	core, err := l.loadCore(filepath.Join(dir, "core.yaml"))
-	if err != nil {
+	if err := l.loadYAML(filepath.Join(dir, "core.yaml"), &profiles.Core); err != nil {
 		return nil, fmt.Errorf("failed to load core.yaml: %w", err)
 	}
-	profiles.Core = core
 
 	// Load contexts.yaml
-	contexts, err := l.loadContexts(filepath.Join(dir, "contexts.yaml"))
-	if err != nil {
+	if err := l.loadYAML(filepath.Join(dir, "contexts.yaml"), &profiles.Contexts); err != nil {
 		return nil, fmt.Errorf("failed to load contexts.yaml: %w", err)
 	}
-	profiles.Contexts = contexts
 
 	// Load dev.yaml
-	dev, err := l.loadDev(filepath.Join(dir, "dev.yaml"))
-	if err != nil {
+	if err := l.loadYAML(filepath.Join(dir, "dev.yaml"), &profiles.Dev); err != nil {
 		return nil, fmt.Errorf("failed to load dev.yaml: %w", err)
 	}
-	profiles.Dev = dev
 
 	// Load automation.yaml
-	automation, err := l.loadAutomation(filepath.Join(dir, "automation.yaml"))
-	if err != nil {
+	if err := l.loadYAML(filepath.Join(dir, "automation.yaml"), &profiles.Automation); err != nil {
 		return nil, fmt.Errorf("failed to load automation.yaml: %w", err)
 	}
-	profiles.Automation = automation
 
 	return profiles, nil
 }
 
+// loadYAML is a generic helper that reads and unmarshals a YAML file into the given target.
+// The target must be a pointer to the destination struct.
+func (l *Loader) loadYAML(path string, target interface{}) error {
+	data, err := afero.ReadFile(l.fs, path)
+	if err != nil {
+		return fmt.Errorf("failed to read %s: %w", filepath.Base(path), err)
+	}
+
+	if err := yaml.Unmarshal(data, target); err != nil {
+		return fmt.Errorf("failed to parse YAML: %w", err)
+	}
+
+	return nil
+}
+
 // LoadCore loads only the core.yaml file.
 func (l *Loader) LoadCore(path string) (*CoreProfiles, error) {
-	return l.loadCore(path)
+	var core CoreProfiles
+	if err := l.loadYAML(path, &core); err != nil {
+		return nil, err
+	}
+	return &core, nil
 }
 
 // LoadContexts loads only the contexts.yaml file.
 func (l *Loader) LoadContexts(path string) (*ContextProfiles, error) {
-	return l.loadContexts(path)
+	var contexts ContextProfiles
+	if err := l.loadYAML(path, &contexts); err != nil {
+		return nil, err
+	}
+	return &contexts, nil
 }
 
 // LoadDev loads only the dev.yaml file.
 func (l *Loader) LoadDev(path string) (*DevProfiles, error) {
-	return l.loadDev(path)
+	var dev DevProfiles
+	if err := l.loadYAML(path, &dev); err != nil {
+		return nil, err
+	}
+	return &dev, nil
 }
 
 // LoadAutomation loads only the automation.yaml file.
 func (l *Loader) LoadAutomation(path string) (*AutomationProfiles, error) {
-	return l.loadAutomation(path)
-}
-
-func (l *Loader) loadCore(path string) (*CoreProfiles, error) {
-	data, err := afero.ReadFile(l.fs, path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
-	}
-
-	var core CoreProfiles
-	if err := yaml.Unmarshal(data, &core); err != nil {
-		return nil, fmt.Errorf("failed to parse YAML: %w", err)
-	}
-
-	return &core, nil
-}
-
-func (l *Loader) loadContexts(path string) (*ContextProfiles, error) {
-	data, err := afero.ReadFile(l.fs, path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
-	}
-
-	var contexts ContextProfiles
-	if err := yaml.Unmarshal(data, &contexts); err != nil {
-		return nil, fmt.Errorf("failed to parse YAML: %w", err)
-	}
-
-	return &contexts, nil
-}
-
-func (l *Loader) loadDev(path string) (*DevProfiles, error) {
-	data, err := afero.ReadFile(l.fs, path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
-	}
-
-	var dev DevProfiles
-	if err := yaml.Unmarshal(data, &dev); err != nil {
-		return nil, fmt.Errorf("failed to parse YAML: %w", err)
-	}
-
-	return &dev, nil
-}
-
-func (l *Loader) loadAutomation(path string) (*AutomationProfiles, error) {
-	data, err := afero.ReadFile(l.fs, path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
-	}
-
 	var automation AutomationProfiles
-	if err := yaml.Unmarshal(data, &automation); err != nil {
-		return nil, fmt.Errorf("failed to parse YAML: %w", err)
+	if err := l.loadYAML(path, &automation); err != nil {
+		return nil, err
 	}
-
 	return &automation, nil
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/diffcomparator"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/filesystem"
@@ -63,11 +64,11 @@ Use this command to review changes before deploying generated configurations.`,
 func runDiff(originalPath, generatedPath string, flags *diffFlags) error {
 	// Expand home directory
 	var err error
-	originalPath, err = expandHomePath(originalPath)
+	originalPath, err = helpers.ExpandHomePath(originalPath)
 	if err != nil {
 		return fmt.Errorf("invalid original path: %w", err)
 	}
-	generatedPath, err = expandHomePath(generatedPath)
+	generatedPath, err = helpers.ExpandHomePath(generatedPath)
 	if err != nil {
 		return fmt.Errorf("invalid generated path: %w", err)
 	}

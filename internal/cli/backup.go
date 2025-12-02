@@ -3,12 +3,12 @@ package cli
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/git"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/snapshot"
@@ -64,7 +64,7 @@ changes and restore previous versions if needed.`,
 
 func runBackup(flags *backupFlags) error {
 	// Expand home directory in file path
-	filePath, err := expandHomePath(flags.file)
+	filePath, err := helpers.ExpandHomePath(flags.file)
 	if err != nil {
 		return fmt.Errorf("invalid file path: %w", err)
 	}
@@ -75,18 +75,9 @@ func runBackup(flags *backupFlags) error {
 	}
 
 	// Determine backup directory
-	backupDir := flags.backupDir
-	if backupDir == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("failed to get home directory: %w", err)
-		}
-		backupDir = filepath.Join(home, ".backup", "shellforge")
-	} else {
-		backupDir, err = expandHomePath(backupDir)
-		if err != nil {
-			return fmt.Errorf("invalid backup directory: %w", err)
-		}
+	backupDir, err := helpers.ResolveBackupDir(flags.backupDir)
+	if err != nil {
+		return err
 	}
 
 	if flags.verbose {
@@ -137,24 +128,6 @@ func runBackup(flags *backupFlags) error {
 	fmt.Printf("  gz-shellforge restore --file %s --snapshot %s\n", filePath, result.Snapshot.FormatTimestamp())
 
 	return nil
-}
-
-// expandHomePath expands ~ to the user's home directory
-func expandHomePath(path string) (string, error) {
-	if len(path) == 0 || path[0] != '~' {
-		return path, nil
-	}
-
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	if len(path) == 1 {
-		return home, nil
-	}
-
-	return filepath.Join(home, path[1:]), nil
 }
 
 // gitRepositoryAdapter adapts git.Repository to app.GitRepository interface

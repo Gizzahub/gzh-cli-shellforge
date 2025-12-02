@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/git"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/snapshot"
@@ -86,24 +87,15 @@ Use --dry-run to preview what would be deleted without making any changes.`,
 
 func runCleanup(flags *cleanupFlags) error {
 	// Expand home directory in file path
-	filePath, err := expandHomePath(flags.file)
+	filePath, err := helpers.ExpandHomePath(flags.file)
 	if err != nil {
 		return fmt.Errorf("invalid file path: %w", err)
 	}
 
 	// Determine backup directory
-	backupDir := flags.backupDir
-	if backupDir == "" {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("failed to get home directory: %w", err)
-		}
-		backupDir = filepath.Join(home, ".backup", "shellforge")
-	} else {
-		backupDir, err = expandHomePath(backupDir)
-		if err != nil {
-			return fmt.Errorf("invalid backup directory: %w", err)
-		}
+	backupDir, err := helpers.ResolveBackupDir(flags.backupDir)
+	if err != nil {
+		return err
 	}
 
 	// Check if backup directory exists

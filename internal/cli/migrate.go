@@ -3,12 +3,12 @@ package cli
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/filesystem"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/rcparser"
 )
@@ -61,12 +61,10 @@ A manifest.yaml file is also generated with detected dependencies and OS support
 
 func runMigrate(rcFilePath string, flags *migrateFlags) error {
 	// Expand home directory
-	if rcFilePath[0] == '~' {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("failed to get home directory: %w", err)
-		}
-		rcFilePath = filepath.Join(home, rcFilePath[1:])
+	var err error
+	rcFilePath, err = helpers.ExpandHomePath(rcFilePath)
+	if err != nil {
+		return fmt.Errorf("invalid RC file path: %w", err)
 	}
 
 	// Check if RC file exists

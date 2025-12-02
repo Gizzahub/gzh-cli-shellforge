@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 )
 
 func TestBackupCmd_Structure(t *testing.T) {
@@ -199,7 +201,7 @@ func TestExpandHomePath(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := expandHomePath(tt.input)
+			got, err := helpers.ExpandHomePath(tt.input)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

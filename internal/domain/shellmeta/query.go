@@ -2,6 +2,23 @@ package shellmeta
 
 import "strings"
 
+// normalizeName converts a name to lowercase for case-insensitive lookups.
+func normalizeName(name string) string {
+	return strings.ToLower(name)
+}
+
+// normalizeContextName handles common naming variations (underscores, hyphens).
+func normalizeContextName(name string) string {
+	name = strings.ToLower(name)
+	// Normalize hyphens to underscores for consistent internal lookup
+	return strings.ReplaceAll(name, "-", "_")
+}
+
+// isMacOS checks if the given OS name refers to macOS (handles common aliases).
+func isMacOS(os string) bool {
+	return os == "mac" || os == "macos" || os == "darwin"
+}
+
 // GetInitFilesForOS returns the initialization files for a specific OS and shell.
 // os should be "mac" or a Linux distribution name (e.g., "ubuntu", "arch").
 // shell should be "bash", "zsh", "fish", or "sh".
@@ -10,11 +27,11 @@ func (p *ShellProfiles) GetInitFilesForOS(os, shell string) []string {
 		return nil
 	}
 
-	os = strings.ToLower(os)
-	shell = strings.ToLower(shell)
+	os = normalizeName(os)
+	shell = normalizeName(shell)
 
 	// Check macOS
-	if os == "mac" || os == "macos" || os == "darwin" {
+	if isMacOS(os) {
 		if files, ok := p.Core.OSProfiles.Mac.ShellTypes[shell]; ok {
 			return files
 		}
@@ -37,9 +54,9 @@ func (p *ShellProfiles) GetLoginShellFiles(os string) []string {
 		return nil
 	}
 
-	os = strings.ToLower(os)
+	os = normalizeName(os)
 
-	if os == "mac" || os == "macos" || os == "darwin" {
+	if isMacOS(os) {
 		return p.Core.OSProfiles.Mac.LoginShell
 	}
 
@@ -56,9 +73,9 @@ func (p *ShellProfiles) GetInteractiveShellFiles(os string) []string {
 		return nil
 	}
 
-	os = strings.ToLower(os)
+	os = normalizeName(os)
 
-	if os == "mac" || os == "macos" || os == "darwin" {
+	if isMacOS(os) {
 		return p.Core.OSProfiles.Mac.InteractiveShell
 	}
 
@@ -75,9 +92,9 @@ func (p *ShellProfiles) GetDefaultShell(os string) string {
 		return ""
 	}
 
-	os = strings.ToLower(os)
+	os = normalizeName(os)
 
-	if os == "mac" || os == "macos" || os == "darwin" {
+	if isMacOS(os) {
 		return p.Core.DefaultShells.Mac
 	}
 
@@ -94,7 +111,7 @@ func (p *ShellProfiles) GetLanguageVersionManager(name string) *LanguageVersionM
 		return nil
 	}
 
-	name = strings.ToLower(name)
+	name = normalizeName(name)
 	if mgr, ok := p.Dev.LanguageVersionManagers[name]; ok {
 		return &mgr
 	}
@@ -108,7 +125,7 @@ func (p *ShellProfiles) GetDesktopEnvironment(name string) *DesktopEnvironment {
 		return nil
 	}
 
-	name = strings.ToLower(name)
+	name = normalizeName(name)
 	if de, ok := p.Contexts.DesktopEnvironments[name]; ok {
 		return &de
 	}
@@ -122,12 +139,33 @@ func (p *ShellProfiles) GetDisplayManager(name string) *DisplayManager {
 		return nil
 	}
 
-	name = strings.ToLower(name)
+	name = normalizeName(name)
 	if dm, ok := p.Contexts.DisplayManagers[name]; ok {
 		return &dm
 	}
 
 	return nil
+}
+
+// normalizeShellMode converts shell mode aliases to canonical names.
+func normalizeShellMode(mode string) string {
+	mode = normalizeName(mode)
+	switch mode {
+	case "login":
+		return "login_shell"
+	case "nonlogin", "non-login", "non_login":
+		return "non_login_shell"
+	case "interactive":
+		return "interactive_shell"
+	case "noninteractive", "non-interactive", "non_interactive":
+		return "non_interactive_shell"
+	case "restricted":
+		return "restricted_shell"
+	case "posix":
+		return "posix_mode"
+	default:
+		return mode
+	}
 }
 
 // GetShellMode returns information about a shell execution mode.
@@ -136,23 +174,7 @@ func (p *ShellProfiles) GetShellMode(mode string) *ShellMode {
 		return nil
 	}
 
-	mode = strings.ToLower(mode)
-	// Handle common aliases
-	switch mode {
-	case "login":
-		mode = "login_shell"
-	case "nonlogin", "non-login":
-		mode = "non_login_shell"
-	case "interactive":
-		mode = "interactive_shell"
-	case "noninteractive", "non-interactive":
-		mode = "non_interactive_shell"
-	case "restricted":
-		mode = "restricted_shell"
-	case "posix":
-		mode = "posix_mode"
-	}
-
+	mode = normalizeShellMode(mode)
 	if sm, ok := p.Contexts.ShellModes[mode]; ok {
 		return &sm
 	}
@@ -166,7 +188,7 @@ func (p *ShellProfiles) GetTerminalMultiplexer(name string) *TerminalMultiplexer
 		return nil
 	}
 
-	name = strings.ToLower(name)
+	name = normalizeName(name)
 	if tm, ok := p.Automation.TerminalMultiplexers[name]; ok {
 		return &tm
 	}
@@ -180,7 +202,7 @@ func (p *ShellProfiles) GetUserSwitch(name string) *UserSwitch {
 		return nil
 	}
 
-	name = strings.ToLower(name)
+	name = normalizeName(name)
 	if us, ok := p.Automation.UserSwitching[name]; ok {
 		return &us
 	}
@@ -233,26 +255,26 @@ func (p *ShellProfiles) IsProfileLoadedInContext(context string) bool {
 		return true // Default to true if no automation info
 	}
 
-	context = strings.ToLower(context)
+	context = normalizeContextName(context)
 
 	switch context {
 	case "cron":
 		return p.Automation.ScheduledExecution.Cron.ShellProfileLoaded
 	case "at":
 		return p.Automation.ScheduledExecution.At.ShellProfileLoaded
-	case "docker_exec", "docker-exec":
+	case "docker_exec":
 		return p.Automation.ContainerContexts.Docker.DockerExec.ShellProfileLoaded
 	case "flatpak":
 		return p.Automation.ContainerContexts.Flatpak.ShellProfileLoaded
-	case "git_hooks", "git-hooks":
+	case "git_hooks":
 		return p.Automation.RemoteExecution.GitHooks.ShellProfileLoaded
-	case "github_actions", "github-actions":
+	case "github_actions":
 		return p.Automation.RemoteExecution.CICD.GithubActions.ShellProfileLoaded
-	case "gitlab_ci", "gitlab-ci":
+	case "gitlab_ci":
 		return p.Automation.RemoteExecution.CICD.GitlabCI.ShellProfileLoaded
 	case "jenkins":
 		return p.Automation.RemoteExecution.CICD.Jenkins.ShellProfileLoaded
-	case "ssh_forced_command", "ssh-forced-command":
+	case "ssh_forced_command":
 		return p.Automation.RemoteExecution.SSHForcedCommand.ShellProfileLoaded
 	}
 

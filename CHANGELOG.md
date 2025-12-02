@@ -34,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test assertions**: Updated CLI test error patterns to match new messages
   - CLI exit code test now matches `--os flag is required` message format
 
+- **Flag shorthand conflicts**: Resolved `-f` flag overloading
+  - `diff --format` now uses `-F` shorthand (was `-f`)
+  - `list --filter` now uses `-F` shorthand (was `-f`)
+  - `-f` reserved for `--file` in backup/restore/cleanup commands
+
 ### Changed
 
 - Updated README version from 0.2.0-alpha to 0.5.1

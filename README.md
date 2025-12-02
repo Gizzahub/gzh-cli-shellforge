@@ -192,7 +192,7 @@ Go implementation is significantly faster than Python version:
 
 ## Status
 
-**Version**: 0.2.0-alpha
+**Version**: 0.5.1
 **Test Coverage**: 70.1% (235 tests passing)
 **Status**: Active development
 
@@ -229,7 +229,7 @@ make install
 
 ```bash
 gz-shellforge --version
-# Output: shellforge version 0.2.0-alpha
+# Output: shellforge version 0.5.1
 ```
 
 ---

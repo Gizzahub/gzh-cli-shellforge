@@ -134,7 +134,7 @@ func TestLoader_LoadAutomation(t *testing.T) {
 	// Check user switching
 	if su, ok := automation.UserSwitching["su"]; !ok {
 		t.Error("su should exist")
-	} else if su.ShellProfileLoaded {
+	} else if loaded, isBool := su.ShellProfileLoaded.(bool); isBool && loaded {
 		t.Error("su should have ShellProfileLoaded = false")
 	}
 
@@ -298,6 +298,9 @@ default_shells:
 	// contexts.yaml
 	contextsYAML := `
 ssh_profiles:
+  execution_order:
+    preferred: ~/.ssh/rc
+    fallback: /etc/ssh/sshrc
   user:
     - ~/.ssh/rc
     - ~/.ssh/environment
@@ -309,7 +312,9 @@ ssh_profiles:
 
 x_window_profiles:
   display_manager:
-    - ~/.xprofile
+    main_script: /etc/X11/Xsession
+    includes:
+      - ~/.xprofile
   manual_start:
     - ~/.xinitrc
   resources:

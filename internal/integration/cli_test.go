@@ -461,7 +461,7 @@ func TestCLI_ExitCodes(t *testing.T) {
 			name:         "build missing required flag",
 			args:         []string{"build"},
 			expectError:  true,
-			errorPattern: "required flag",
+			errorPattern: "--os flag is required",
 		},
 		{
 			name:         "invalid flag",

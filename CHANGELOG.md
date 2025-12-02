@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Shell Profiles Metadata Package**: Query shell initialization information
+  - `internal/domain/shellmeta/` - Go package for shell profile metadata
+  - Loader for YAML-based shell profile definitions
+  - Query API for OS, shell, desktop environment, language version managers
+  - Integration tests with real YAML data files
+  - 96.9% test coverage
+
+- **Profiles CLI Command**: New command to query shell initialization metadata
+  - `profiles list [category]` - List distributions, managers, desktops, modes, multiplexers
+  - `profiles show <type> <name>` - Show detailed OS, manager, desktop, mode info
+  - `profiles check <context>` - Check if profiles load in cron, docker, CI/CD contexts
+  - Useful for understanding shell initialization across environments
+  - 14 test functions with comprehensive coverage
+
+### Fixed
+
+- **Type alignment**: Fixed Go type definitions to match evolved YAML schema
+  - `XWindowProfiles.DisplayManager` now uses struct for complex display manager config
+  - `SSHProfiles` includes `ExecutionOrder` field
+  - Flexible types for `LanguageVersionMgr.InitCommand` and `InitFiles`
+  - Various `ShellProfileLoaded` fields support both bool and string values
+
+- **Test assertions**: Updated CLI test error patterns to match new messages
+  - CLI exit code test now matches `--os flag is required` message format
+
+### Changed
+
+- Updated README version from 0.2.0-alpha to 0.5.1
+- Test count increased with shellmeta and profiles CLI tests
+
 ---
 
 ## [0.5.1] - 2025-11-30

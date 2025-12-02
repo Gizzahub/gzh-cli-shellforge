@@ -4,8 +4,8 @@
 
 Transform your monolithic `.zshrc`/`.bashrc` into organized, maintainable modules with automatic dependency resolution and OS-specific filtering.
 
-[![Tests](https://img.shields.io/badge/tests-285_passing-brightgreen)]()
-[![Coverage](https://img.shields.io/badge/coverage-77.5%25-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-291_passing-brightgreen)]()
+[![Coverage](https://img.shields.io/badge/coverage-78.0%25-brightgreen)]()
 [![Go Version](https://img.shields.io/badge/go-1.21%2B-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 

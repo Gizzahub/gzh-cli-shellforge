@@ -36,6 +36,7 @@ single shell configuration file.`,
 	cmd.AddCommand(newTemplateCmd())
 	cmd.AddCommand(newMigrateCmd())
 	cmd.AddCommand(newDiffCmd())
+	cmd.AddCommand(newProfilesCmd())
 
 	return cmd
 }

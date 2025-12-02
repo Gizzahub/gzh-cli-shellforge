@@ -436,3 +436,122 @@ func TestShellProfiles_NilProfiles(t *testing.T) {
 		t.Error("ListSupportedDistributions() should return nil for nil Core")
 	}
 }
+
+// Tests for normalization helper functions
+
+func TestNormalizeName(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"Mac", "mac"},
+		{"MAC", "mac"},
+		{"mac", "mac"},
+		{"Ubuntu", "ubuntu"},
+		{"GNOME", "gnome"},
+		{"ZSH", "zsh"},
+		{"", ""},
+		{"MixedCase", "mixedcase"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got := normalizeName(tt.input)
+			if got != tt.want {
+				t.Errorf("normalizeName(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeContextName(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{"docker-exec", "docker_exec"},
+		{"docker_exec", "docker_exec"},
+		{"github-actions", "github_actions"},
+		{"GITHUB-ACTIONS", "github_actions"},
+		{"gitlab-ci", "gitlab_ci"},
+		{"git-hooks", "git_hooks"},
+		{"ssh-forced-command", "ssh_forced_command"},
+		{"cron", "cron"},
+		{"", ""},
+		{"multi-hyphen-name", "multi_hyphen_name"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got := normalizeContextName(tt.input)
+			if got != tt.want {
+				t.Errorf("normalizeContextName(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsMacOS(t *testing.T) {
+	tests := []struct {
+		input string
+		want  bool
+	}{
+		{"mac", true},
+		{"macos", true},
+		{"darwin", true},
+		{"Mac", false}, // isMacOS expects lowercase input
+		{"linux", false},
+		{"ubuntu", false},
+		{"windows", false},
+		{"", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got := isMacOS(tt.input)
+			if got != tt.want {
+				t.Errorf("isMacOS(%q) = %v, want %v", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeShellMode(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		// Aliases that should be normalized
+		{"login", "login_shell"},
+		{"LOGIN", "login_shell"},
+		{"nonlogin", "non_login_shell"},
+		{"non-login", "non_login_shell"},
+		{"non_login", "non_login_shell"},
+		{"interactive", "interactive_shell"},
+		{"INTERACTIVE", "interactive_shell"},
+		{"noninteractive", "non_interactive_shell"},
+		{"non-interactive", "non_interactive_shell"},
+		{"non_interactive", "non_interactive_shell"},
+		{"restricted", "restricted_shell"},
+		{"RESTRICTED", "restricted_shell"},
+		{"posix", "posix_mode"},
+		{"POSIX", "posix_mode"},
+		// Already canonical names
+		{"login_shell", "login_shell"},
+		{"non_login_shell", "non_login_shell"},
+		{"interactive_shell", "interactive_shell"},
+		// Unknown modes should pass through (lowercased)
+		{"unknown", "unknown"},
+		{"custom_mode", "custom_mode"},
+		{"", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got := normalizeShellMode(tt.input)
+			if got != tt.want {
+				t.Errorf("normalizeShellMode(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}

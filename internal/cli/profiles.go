@@ -283,26 +283,26 @@ func runProfilesShow(itemType, name string, flags *profilesFlags) error {
 
 	switch itemType {
 	case "os", "distribution", "distro":
-		return showOSProfile(profiles, name, flags)
+		return showOSProfile(profiles, name)
 
 	case "manager", "version-manager", "lang":
-		return showLanguageManager(profiles, name, flags)
+		return showLanguageManager(profiles, name)
 
 	case "desktop", "de":
-		return showDesktopEnvironment(profiles, name, flags)
+		return showDesktopEnvironment(profiles, name)
 
 	case "mode", "shell-mode":
-		return showShellMode(profiles, name, flags)
+		return showShellMode(profiles, name)
 
 	case "multiplexer", "mux":
-		return showMultiplexer(profiles, name, flags)
+		return showMultiplexer(profiles, name)
 
 	default:
 		return fmt.Errorf("unknown type: %s\n\nAvailable: os, manager, desktop, mode, multiplexer", itemType)
 	}
 }
 
-func showOSProfile(profiles *shellmeta.ShellProfiles, name string, flags *profilesFlags) error {
+func showOSProfile(profiles *shellmeta.ShellProfiles, name string) error {
 	loginFiles := profiles.GetLoginShellFiles(name)
 	interactiveFiles := profiles.GetInteractiveShellFiles(name)
 	defaultShell := profiles.GetDefaultShell(name)
@@ -350,7 +350,7 @@ func showOSProfile(profiles *shellmeta.ShellProfiles, name string, flags *profil
 	return nil
 }
 
-func showLanguageManager(profiles *shellmeta.ShellProfiles, name string, flags *profilesFlags) error {
+func showLanguageManager(profiles *shellmeta.ShellProfiles, name string) error {
 	mgr := profiles.GetLanguageVersionManager(name)
 	if mgr == nil {
 		return fmt.Errorf("language manager not found: %s\n\nUse 'profiles list managers' to see available options", name)
@@ -400,7 +400,7 @@ func showLanguageManager(profiles *shellmeta.ShellProfiles, name string, flags *
 	return nil
 }
 
-func showDesktopEnvironment(profiles *shellmeta.ShellProfiles, name string, flags *profilesFlags) error {
+func showDesktopEnvironment(profiles *shellmeta.ShellProfiles, name string) error {
 	de := profiles.GetDesktopEnvironment(name)
 	if de == nil {
 		return fmt.Errorf("desktop environment not found: %s\n\nUse 'profiles list desktops' to see available options", name)
@@ -446,7 +446,7 @@ func showDesktopEnvironment(profiles *shellmeta.ShellProfiles, name string, flag
 	return nil
 }
 
-func showShellMode(profiles *shellmeta.ShellProfiles, name string, flags *profilesFlags) error {
+func showShellMode(profiles *shellmeta.ShellProfiles, name string) error {
 	mode := profiles.GetShellMode(name)
 	if mode == nil {
 		return fmt.Errorf("shell mode not found: %s\n\nUse 'profiles list modes' to see available options", name)
@@ -500,7 +500,7 @@ func showShellMode(profiles *shellmeta.ShellProfiles, name string, flags *profil
 	return nil
 }
 
-func showMultiplexer(profiles *shellmeta.ShellProfiles, name string, flags *profilesFlags) error {
+func showMultiplexer(profiles *shellmeta.ShellProfiles, name string) error {
 	mux := profiles.GetTerminalMultiplexer(name)
 	if mux == nil {
 		return fmt.Errorf("terminal multiplexer not found: %s\n\nAvailable: tmux, screen, zellij", name)

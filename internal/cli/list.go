@@ -57,7 +57,7 @@ Use --verbose to show detailed information including full file paths.`,
 	cmd.Flags().StringVarP(&flags.manifest, "manifest", "m", "manifest.yaml", "Path to manifest file")
 	cmd.Flags().StringVarP(&flags.configDir, "config-dir", "c", "modules", "Directory containing module files")
 	cmd.Flags().BoolVarP(&flags.verbose, "verbose", "v", false, "Show detailed output")
-	cmd.Flags().StringVarP(&flags.filterOS, "filter", "f", "", "Filter modules by OS (Mac, Linux)")
+	cmd.Flags().StringVarP(&flags.filterOS, "filter", "F", "", "Filter modules by OS (Mac, Linux)")
 
 	return cmd
 }

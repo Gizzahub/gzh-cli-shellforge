@@ -49,7 +49,7 @@ func TestListCmd_FlagShortcuts(t *testing.T) {
 		{"config-dir", "c"},
 		{"manifest", "m"},
 		{"verbose", "v"},
-		{"filter", "f"},
+		{"filter", "F"},
 	}
 
 	for _, tt := range tests {

@@ -28,7 +28,7 @@ func TestDiffCmd_Flags(t *testing.T) {
 		shorthand string
 		hasFlag   bool
 	}{
-		{"format flag exists", "format", "string", "f", true},
+		{"format flag exists", "format", "string", "F", true},
 		{"verbose flag exists", "verbose", "bool", "v", true},
 	}
 
@@ -86,7 +86,7 @@ func TestDiffCmd_FlagShortcuts(t *testing.T) {
 		short string
 		long  string
 	}{
-		{"format", "-f", "--format"},
+		{"format", "-F", "--format"},
 		{"verbose", "-v", "--verbose"},
 	}
 

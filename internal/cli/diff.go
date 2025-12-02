@@ -55,7 +55,7 @@ Use this command to review changes before deploying generated configurations.`,
 		},
 	}
 
-	cmd.Flags().StringVarP(&flags.format, "format", "f", "summary", "Output format (summary, unified, context, side-by-side)")
+	cmd.Flags().StringVarP(&flags.format, "format", "F", "summary", "Output format (summary, unified, context, side-by-side)")
 	cmd.Flags().BoolVarP(&flags.verbose, "verbose", "v", false, "Show detailed output")
 
 	return cmd

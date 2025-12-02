@@ -175,9 +175,9 @@ func TestProfilesCheckCommand_Help(t *testing.T) {
 
 func TestProfilesCommand_Examples(t *testing.T) {
 	tests := []struct {
-		name    string
-		cmd     func() *cobra.Command
-		wantEx  []string
+		name   string
+		cmd    func() *cobra.Command
+		wantEx []string
 	}{
 		{
 			name:   "list command examples",

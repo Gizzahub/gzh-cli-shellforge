@@ -78,14 +78,14 @@ type DefaultShells struct {
 // ContextProfiles contains execution context information.
 // Loaded from contexts.yaml
 type ContextProfiles struct {
-	SSHProfiles          SSHProfiles                    `yaml:"ssh_profiles"`
-	XWindowProfiles      XWindowProfiles                `yaml:"x_window_profiles"`
-	DesktopEnvironments  map[string]DesktopEnvironment  `yaml:"desktop_environments"`
-	SessionTypes         map[string]SessionType         `yaml:"session_types"`
-	SystemdUser          SystemdUser                    `yaml:"systemd_user"`
-	DisplayManagers      map[string]DisplayManager      `yaml:"display_managers"`
-	ShellModes           map[string]ShellMode           `yaml:"shell_modes"`
-	XDGEnvironment       XDGEnvironment                 `yaml:"xdg_environment"`
+	SSHProfiles         SSHProfiles                   `yaml:"ssh_profiles"`
+	XWindowProfiles     XWindowProfiles               `yaml:"x_window_profiles"`
+	DesktopEnvironments map[string]DesktopEnvironment `yaml:"desktop_environments"`
+	SessionTypes        map[string]SessionType        `yaml:"session_types"`
+	SystemdUser         SystemdUser                   `yaml:"systemd_user"`
+	DisplayManagers     map[string]DisplayManager     `yaml:"display_managers"`
+	ShellModes          map[string]ShellMode          `yaml:"shell_modes"`
+	XDGEnvironment      XDGEnvironment                `yaml:"xdg_environment"`
 }
 
 // SSHProfiles defines SSH-specific initialization files.
@@ -194,7 +194,7 @@ type XDGEnvironment struct {
 // DevProfiles contains development environment information.
 // Loaded from dev.yaml
 type DevProfiles struct {
-	GUIAppContexts          GUIAppContexts                 `yaml:"gui_app_contexts"`
+	GUIAppContexts          GUIAppContexts                `yaml:"gui_app_contexts"`
 	LanguageVersionManagers map[string]LanguageVersionMgr `yaml:"language_version_managers"`
 }
 
@@ -222,8 +222,8 @@ type LaunchScenario struct {
 
 // DesktopFileExecution defines .desktop file execution behavior.
 type DesktopFileExecution struct {
-	Location    []string         `yaml:"location"`
-	ExecField   ExecFieldInfo    `yaml:"exec_field"`
+	Location    []string          `yaml:"location"`
+	ExecField   ExecFieldInfo     `yaml:"exec_field"`
 	Workarounds DesktopWorkaround `yaml:"workarounds"`
 }
 
@@ -243,8 +243,8 @@ type DesktopWorkaround struct {
 // LanguageVersionMgr defines a language version manager configuration.
 // InitCommand and InitFiles can be strings, []string, or nested maps depending on complexity.
 type LanguageVersionMgr struct {
-	InitCommand           interface{} `yaml:"init_command"`             // string or map[string]string
-	InitFiles             interface{} `yaml:"init_files"`               // []string or map[string]interface{}
+	InitCommand           interface{} `yaml:"init_command"` // string or map[string]string
+	InitFiles             interface{} `yaml:"init_files"`   // []string or map[string]interface{}
 	ShimsLocation         string      `yaml:"shims_location,omitempty"`
 	PathModification      bool        `yaml:"path_modification,omitempty"`
 	FunctionDefinitions   bool        `yaml:"function_definitions,omitempty"`
@@ -258,12 +258,12 @@ type LanguageVersionMgr struct {
 // AutomationProfiles contains automation and isolated environment information.
 // Loaded from automation.yaml
 type AutomationProfiles struct {
-	ScheduledExecution    ScheduledExecution            `yaml:"scheduled_execution"`
-	UserSwitching         map[string]UserSwitch         `yaml:"user_switching"`
-	ContainerContexts     ContainerContexts             `yaml:"container_contexts"`
-	RemoteExecution       RemoteExecution               `yaml:"remote_execution"`
-	TerminalMultiplexers  map[string]TerminalMultiplexer `yaml:"terminal_multiplexers"`
-	SystemEnvironment     SystemEnvironment             `yaml:"system_environment"`
+	ScheduledExecution   ScheduledExecution             `yaml:"scheduled_execution"`
+	UserSwitching        map[string]UserSwitch          `yaml:"user_switching"`
+	ContainerContexts    ContainerContexts              `yaml:"container_contexts"`
+	RemoteExecution      RemoteExecution                `yaml:"remote_execution"`
+	TerminalMultiplexers map[string]TerminalMultiplexer `yaml:"terminal_multiplexers"`
+	SystemEnvironment    SystemEnvironment              `yaml:"system_environment"`
 }
 
 // ScheduledExecution defines scheduled job environments.
@@ -276,12 +276,12 @@ type ScheduledExecution struct {
 
 // CronConfig defines cron job environment.
 type CronConfig struct {
-	UserCrontab        string               `yaml:"user_crontab"`
-	SystemCrontab      string               `yaml:"system_crontab"`
-	CronD              string               `yaml:"cron_d"`
-	Environment        CronEnvironment      `yaml:"environment"`
-	ShellProfileLoaded bool                 `yaml:"shell_profile_loaded"`
-	Workarounds        CronWorkarounds      `yaml:"workarounds"`
+	UserCrontab        string          `yaml:"user_crontab"`
+	SystemCrontab      string          `yaml:"system_crontab"`
+	CronD              string          `yaml:"cron_d"`
+	Environment        CronEnvironment `yaml:"environment"`
+	ShellProfileLoaded bool            `yaml:"shell_profile_loaded"`
+	Workarounds        CronWorkarounds `yaml:"workarounds"`
 }
 
 // CronEnvironment defines cron's minimal environment.
@@ -308,11 +308,11 @@ type AtConfig struct {
 
 // SystemdTimerConfig defines systemd timer environment.
 type SystemdTimerConfig struct {
-	UserTimers     string                    `yaml:"user_timers"`
-	SystemTimers   string                    `yaml:"system_timers"`
-	Environment    SystemdTimerEnvironment   `yaml:"environment"`
-	ServiceFileEnv []string                  `yaml:"service_file_env"`
-	Workarounds    SystemdTimerWorkarounds   `yaml:"workarounds"`
+	UserTimers     string                  `yaml:"user_timers"`
+	SystemTimers   string                  `yaml:"system_timers"`
+	Environment    SystemdTimerEnvironment `yaml:"environment"`
+	ServiceFileEnv []string                `yaml:"service_file_env"`
+	Workarounds    SystemdTimerWorkarounds `yaml:"workarounds"`
 }
 
 // SystemdTimerEnvironment defines systemd timer environment settings.
@@ -361,7 +361,7 @@ type LaunchdWorkarounds struct {
 type UserSwitch struct {
 	Command            string      `yaml:"command"`
 	Description        string      `yaml:"description"`
-	ShellProfileLoaded interface{} `yaml:"shell_profile_loaded"`  // bool or string
+	ShellProfileLoaded interface{} `yaml:"shell_profile_loaded"`    // bool or string
 	EnvPreserved       interface{} `yaml:"env_preserved,omitempty"` // bool or string (e.g., "partial")
 	EnvReset           bool        `yaml:"env_reset,omitempty"`
 	EnvFiltered        bool        `yaml:"env_filtered,omitempty"`
@@ -495,21 +495,21 @@ type CICDPlatformConfig struct {
 
 // TerminalMultiplexer defines terminal multiplexer configuration.
 type TerminalMultiplexer struct {
-	NewSession   string                   `yaml:"new_session,omitempty"`
-	NewWindow    string                   `yaml:"new_window,omitempty"`
-	NewPane      string                   `yaml:"new_pane,omitempty"`
-	NewTab       string                   `yaml:"new_tab,omitempty"`
-	DefaultShell string                   `yaml:"default_shell,omitempty"`
-	LoginShell   string                   `yaml:"login_shell,omitempty"`
-	ShellProfile map[string]string        `yaml:"shell_profile,omitempty"`
+	NewSession   string            `yaml:"new_session,omitempty"`
+	NewWindow    string            `yaml:"new_window,omitempty"`
+	NewPane      string            `yaml:"new_pane,omitempty"`
+	NewTab       string            `yaml:"new_tab,omitempty"`
+	DefaultShell string            `yaml:"default_shell,omitempty"`
+	LoginShell   string            `yaml:"login_shell,omitempty"`
+	ShellProfile map[string]string `yaml:"shell_profile,omitempty"`
 }
 
 // SystemEnvironment defines system-wide environment configuration.
 type SystemEnvironment struct {
-	PAM           PAMConfig           `yaml:"pam"`
+	PAM            PAMConfig            `yaml:"pam"`
 	EtcEnvironment EtcEnvironmentConfig `yaml:"etc_environment"`
-	ProfileD      ProfileDConfig      `yaml:"profile_d"`
-	EnvironmentD  EnvironmentDConfig  `yaml:"environment_d"`
+	ProfileD       ProfileDConfig       `yaml:"profile_d"`
+	EnvironmentD   EnvironmentDConfig   `yaml:"environment_d"`
 }
 
 // PAMConfig defines PAM environment configuration.

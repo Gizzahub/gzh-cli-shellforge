@@ -24,11 +24,11 @@ func TestShellProfiles_GetInitFilesForOS(t *testing.T) {
 	profiles := loadTestProfiles(t)
 
 	tests := []struct {
-		name     string
-		os       string
-		shell    string
-		wantLen  int
-		wantNil  bool
+		name    string
+		os      string
+		shell   string
+		wantLen int
+		wantNil bool
 	}{
 		{"Mac bash", "mac", "bash", 2, false},
 		{"Mac zsh", "Mac", "ZSH", 2, false},

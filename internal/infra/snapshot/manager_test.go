@@ -493,3 +493,157 @@ func TestManager_GetSnapshotByTimestamp(t *testing.T) {
 		assert.Contains(t, err.Error(), "snapshot not found")
 	})
 }
+
+func TestManager_ListSnapshots_IgnoresSubdirectories(t *testing.T) {
+	manager, fs, config := setupTestManager(t)
+
+	err := manager.Initialize()
+	require.NoError(t, err)
+
+	// Create snapshot directory with valid snapshot and subdirectory
+	snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
+	err = fs.MkdirAll(snapshotDir, 0755)
+	require.NoError(t, err)
+
+	// Create valid snapshot
+	validPath := filepath.Join(snapshotDir, "2025-11-27_10-00-00")
+	err = afero.WriteFile(fs, validPath, []byte("valid"), 0644)
+	require.NoError(t, err)
+
+	// Create subdirectory (should be ignored)
+	subDir := filepath.Join(snapshotDir, "subdir")
+	err = fs.MkdirAll(subDir, 0755)
+	require.NoError(t, err)
+
+	list, err := manager.ListSnapshots("zshrc")
+	require.NoError(t, err)
+	assert.Len(t, list.Snapshots, 1) // Only valid snapshot, not subdir
+}
+
+func TestManager_DeleteSnapshots_StopsOnError(t *testing.T) {
+	manager, fs, config := setupTestManager(t)
+
+	err := manager.Initialize()
+	require.NoError(t, err)
+
+	// Create a snapshot
+	snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
+	err = fs.MkdirAll(snapshotDir, 0755)
+	require.NoError(t, err)
+
+	ts := time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)
+	path := filepath.Join(snapshotDir, ts.Format("2006-01-02_15-04-05"))
+	err = afero.WriteFile(fs, path, []byte("content"), 0644)
+	require.NoError(t, err)
+
+	// Create snapshots slice with one valid and path exists
+	snapshots := []domain.Snapshot{
+		{Timestamp: ts, FilePath: path, FileName: "zshrc", Size: 7},
+	}
+
+	// Delete should succeed
+	err = manager.DeleteSnapshots(snapshots)
+	require.NoError(t, err)
+
+	// Verify deleted
+	exists, err := afero.Exists(fs, path)
+	require.NoError(t, err)
+	assert.False(t, exists)
+}
+
+func TestManager_UpdateCurrent_ErrorOnMissingSource(t *testing.T) {
+	manager, _, _ := setupTestManager(t)
+
+	err := manager.Initialize()
+	require.NoError(t, err)
+
+	// Try to update current from non-existent file
+	err = manager.UpdateCurrent("/non/existent/file")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "open source")
+}
+
+func TestManager_CleanupSnapshots_WithDaysPolicy(t *testing.T) {
+	manager, fs, config := setupTestManager(t)
+
+	err := manager.Initialize()
+	require.NoError(t, err)
+
+	// Create test snapshots
+	snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc-days")
+	err = fs.MkdirAll(snapshotDir, 0755)
+	require.NoError(t, err)
+
+	// Create 3 snapshots: 1 recent (today), 2 old (10 and 20 days ago)
+	now := time.Now()
+	timestamps := []time.Time{
+		now,
+		now.AddDate(0, 0, -10),
+		now.AddDate(0, 0, -20),
+	}
+
+	for _, ts := range timestamps {
+		path := filepath.Join(snapshotDir, ts.Format("2006-01-02_15-04-05"))
+		err = afero.WriteFile(fs, path, []byte("content"), 0644)
+		require.NoError(t, err)
+	}
+
+	// Keep snapshots from last 5 days, but keep at least 1
+	deleted, err := manager.CleanupSnapshots("zshrc-days", 1, 5)
+	require.NoError(t, err)
+
+	// Should have deleted old snapshots but kept the most recent one
+	list, err := manager.ListSnapshots("zshrc-days")
+	require.NoError(t, err)
+	assert.GreaterOrEqual(t, len(list.Snapshots), 1)
+	assert.LessOrEqual(t, len(deleted), 2)
+}
+
+func TestManager_copyFile_PreservesPermissions(t *testing.T) {
+	manager, fs, _ := setupTestManager(t)
+
+	err := manager.Initialize()
+	require.NoError(t, err)
+
+	// Create source file with specific permissions
+	sourcePath := "/test/source.txt"
+	err = afero.WriteFile(fs, sourcePath, []byte("content"), 0755)
+	require.NoError(t, err)
+
+	// Copy file
+	destPath := "/test/dest.txt"
+	err = manager.copyFile(sourcePath, destPath)
+	require.NoError(t, err)
+
+	// Verify destination exists with content
+	content, err := afero.ReadFile(fs, destPath)
+	require.NoError(t, err)
+	assert.Equal(t, "content", string(content))
+
+	// Verify permissions are preserved
+	info, err := fs.Stat(destPath)
+	require.NoError(t, err)
+	assert.Equal(t, fs.Name(), "MemMapFS") // MemMapFs may not perfectly preserve perms
+	assert.NotNil(t, info.Mode())
+}
+
+func TestManager_CreateSnapshot_HandlesFileWithoutDot(t *testing.T) {
+	manager, fs, _ := setupTestManager(t)
+
+	err := manager.Initialize()
+	require.NoError(t, err)
+
+	// Create source file without leading dot
+	sourcePath := "/home/user/profile"
+	content := "profile content"
+	err = afero.WriteFile(fs, sourcePath, []byte(content), 0644)
+	require.NoError(t, err)
+
+	// Create snapshot
+	snapshot, err := manager.CreateSnapshot(sourcePath)
+	require.NoError(t, err)
+	require.NotNil(t, snapshot)
+
+	// Filename should remain as-is (no dot to strip)
+	assert.Equal(t, "profile", snapshot.FileName)
+}

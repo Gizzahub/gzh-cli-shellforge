@@ -9,6 +9,7 @@ import (
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/output"
 )
 
 type cleanupFlags struct {
@@ -107,16 +108,14 @@ func runCleanup(flags *cleanupFlags) error {
 		return fmt.Errorf("keep-days must be at least 1")
 	}
 
-	if flags.verbose {
-		fmt.Printf("Cleanup configuration:\n")
-		fmt.Printf("  File:        %s\n", filePath)
-		fmt.Printf("  Backup dir:  %s\n", backupDir)
-		fmt.Printf("  Keep count:  %d\n", flags.keepCount)
-		fmt.Printf("  Keep days:   %d\n", flags.keepDays)
-		fmt.Printf("  Git enabled: %t\n", !flags.noGit)
-		fmt.Printf("  Dry run:     %t\n", flags.dryRun)
-		fmt.Println()
-	}
+	output.NewConfigPrinter("Cleanup configuration").
+		Add("File", filePath).
+		Add("Backup dir", backupDir).
+		Add("Keep count", flags.keepCount).
+		Add("Keep days", flags.keepDays).
+		Add("Git enabled", !flags.noGit).
+		Add("Dry run", flags.dryRun).
+		Print(flags.verbose)
 
 	// Initialize services
 	services := factory.NewBackupServices(factory.BackupOptions{
@@ -139,21 +138,24 @@ func runCleanup(flags *cleanupFlags) error {
 
 	// Display results
 	if flags.dryRun {
-		fmt.Printf("🔍 Dry run - no changes made\n\n")
+		output.DryRunNotice()
 	}
 
 	if result.DeletedCount == 0 {
-		fmt.Printf("✓ No snapshots to delete\n\n")
-		fmt.Printf("Summary:\n")
-		fmt.Printf("  Total snapshots: %d\n", result.RemainingCount)
-		fmt.Printf("  Policy: keep %d snapshots or %d days\n", flags.keepCount, flags.keepDays)
+		output.SuccessResult("No snapshots to delete")
+		fmt.Println()
+		output.NewSummary().
+			Add("Total snapshots", result.RemainingCount).
+			Add("Policy", fmt.Sprintf("keep %d snapshots or %d days", flags.keepCount, flags.keepDays)).
+			Print()
 		return nil
 	}
 
 	if flags.dryRun {
 		fmt.Printf("Would delete %d snapshot(s):\n\n", result.DeletedCount)
 	} else {
-		fmt.Printf("✓ Cleanup completed successfully\n\n")
+		output.SuccessResult("Cleanup completed successfully")
+		fmt.Println()
 		fmt.Printf("Deleted %d snapshot(s):\n\n", result.DeletedCount)
 	}
 
@@ -162,30 +164,25 @@ func runCleanup(flags *cleanupFlags) error {
 		fmt.Printf("  %d. %s (%s)\n", i+1, snapshot.FormatTimestamp(), snapshot.FormatSize())
 	}
 
-	fmt.Printf("\nSummary:\n")
+	summary := output.NewSummary()
 	if flags.dryRun {
-		fmt.Printf("  Would delete: %d\n", result.DeletedCount)
+		summary.Add("Would delete", result.DeletedCount)
 	} else {
-		fmt.Printf("  Deleted:      %d\n", result.DeletedCount)
+		summary.Add("Deleted", result.DeletedCount)
 	}
-	fmt.Printf("  Remaining:    %d\n", result.RemainingCount)
-	fmt.Printf("  Policy:       keep %d snapshots or %d days\n", flags.keepCount, flags.keepDays)
+	summary.Add("Remaining", result.RemainingCount).
+		Add("Policy", fmt.Sprintf("keep %d snapshots or %d days", flags.keepCount, flags.keepDays))
 
-	if config.GitEnabled && !flags.dryRun {
-		if result.DeletedCount > 0 {
-			fmt.Printf("  Git:          Committed\n")
-		}
+	if config.GitEnabled && !flags.dryRun && result.DeletedCount > 0 {
+		summary.Add("Git", "Committed")
 	}
+	summary.Print()
 
-	if flags.verbose && result.Message != "" {
-		fmt.Printf("\nDetails:\n")
-		fmt.Printf("  %s\n", result.Message)
-	}
+	output.PrintDetails(flags.verbose, result.Message)
 
 	if flags.dryRun && result.DeletedCount > 0 {
-		fmt.Printf("\nTo apply this cleanup:\n")
-		fmt.Printf("  gz-shellforge cleanup --file %s --keep-count %d --keep-days %d\n",
-			filePath, flags.keepCount, flags.keepDays)
+		output.PrintApplyHint(fmt.Sprintf("gz-shellforge cleanup --file %s --keep-count %d --keep-days %d",
+			filePath, flags.keepCount, flags.keepDays))
 	}
 
 	return nil

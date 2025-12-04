@@ -8,6 +8,7 @@ import (
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/output"
 )
 
 type backupFlags struct {
@@ -76,13 +77,11 @@ func runBackup(flags *backupFlags) error {
 		return err
 	}
 
-	if flags.verbose {
-		fmt.Printf("Backup configuration:\n")
-		fmt.Printf("  Source file: %s\n", filePath)
-		fmt.Printf("  Backup dir:  %s\n", backupDir)
-		fmt.Printf("  Git enabled: %t\n", !flags.noGit)
-		fmt.Println()
-	}
+	output.NewConfigPrinter("Backup configuration").
+		Add("Source file", filePath).
+		Add("Backup dir", backupDir).
+		Add("Git enabled", !flags.noGit).
+		Print(flags.verbose)
 
 	// Initialize services
 	services := factory.NewBackupServices(factory.BackupOptions{
@@ -99,28 +98,19 @@ func runBackup(flags *backupFlags) error {
 	}
 
 	// Display results
-	fmt.Printf("✓ Backup created successfully\n")
-	fmt.Printf("\n")
-	fmt.Printf("Snapshot:\n")
-	fmt.Printf("  Timestamp: %s\n", result.Snapshot.FormatTimestamp())
-	fmt.Printf("  Size:      %s\n", result.Snapshot.FormatSize())
-	fmt.Printf("  Location:  %s\n", result.Snapshot.FilePath)
+	output.SuccessResult("Backup created successfully")
+	fmt.Println()
 
-	if config.GitEnabled {
-		if result.GitCommitted {
-			fmt.Printf("  Git:       Committed\n")
-		} else {
-			fmt.Printf("  Git:       Not committed (see details below)\n")
-		}
-	}
+	(&output.SnapshotInfo{
+		Timestamp:    result.Snapshot.FormatTimestamp(),
+		Size:         result.Snapshot.FormatSize(),
+		Location:     result.Snapshot.FilePath,
+		ShowGit:      config.GitEnabled,
+		GitCommitted: result.GitCommitted,
+	}).Print()
 
-	if flags.verbose {
-		fmt.Printf("\nDetails:\n")
-		fmt.Printf("  %s\n", result.Message)
-	}
-
-	fmt.Printf("\nTo restore this backup:\n")
-	fmt.Printf("  gz-shellforge restore --file %s --snapshot %s\n", filePath, result.Snapshot.FormatTimestamp())
+	output.PrintDetails(flags.verbose, result.Message)
+	output.PrintRestoreHint(filePath, result.Snapshot.FormatTimestamp())
 
 	return nil
 }

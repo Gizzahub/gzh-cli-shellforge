@@ -9,6 +9,7 @@ import (
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/output"
 )
 
 type restoreFlags struct {
@@ -83,15 +84,13 @@ func runRestore(flags *restoreFlags) error {
 		return fmt.Errorf("backup directory does not exist: %s", backupDir)
 	}
 
-	if flags.verbose {
-		fmt.Printf("Restore configuration:\n")
-		fmt.Printf("  Target file: %s\n", filePath)
-		fmt.Printf("  Snapshot:    %s\n", flags.snapshot)
-		fmt.Printf("  Backup dir:  %s\n", backupDir)
-		fmt.Printf("  Git enabled: %t\n", !flags.noGit)
-		fmt.Printf("  Dry run:     %t\n", flags.dryRun)
-		fmt.Println()
-	}
+	output.NewConfigPrinter("Restore configuration").
+		Add("Target file", filePath).
+		Add("Snapshot", flags.snapshot).
+		Add("Backup dir", backupDir).
+		Add("Git enabled", !flags.noGit).
+		Add("Dry run", flags.dryRun).
+		Print(flags.verbose)
 
 	// Initialize services
 	services := factory.NewBackupServices(factory.BackupOptions{
@@ -112,32 +111,24 @@ func runRestore(flags *restoreFlags) error {
 
 	// Display results
 	if flags.dryRun {
-		fmt.Printf("🔍 Dry run - no changes made\n\n")
+		output.DryRunNotice()
 	} else {
-		fmt.Printf("✓ Restore completed successfully\n\n")
+		output.SuccessResult("Restore completed successfully")
+		fmt.Println()
 	}
 
-	fmt.Printf("Snapshot:\n")
-	fmt.Printf("  Timestamp: %s\n", result.Snapshot.FormatTimestamp())
-	fmt.Printf("  Size:      %s\n", result.Snapshot.FormatSize())
-	fmt.Printf("  Target:    %s\n", result.TargetPath)
+	(&output.SnapshotInfo{
+		Timestamp:    result.Snapshot.FormatTimestamp(),
+		Size:         result.Snapshot.FormatSize(),
+		Target:       result.TargetPath,
+		ShowGit:      config.GitEnabled && !flags.dryRun,
+		GitCommitted: result.GitCommitted,
+	}).Print()
 
-	if config.GitEnabled && !flags.dryRun {
-		if result.GitCommitted {
-			fmt.Printf("  Git:       Committed\n")
-		} else {
-			fmt.Printf("  Git:       Not committed (see details below)\n")
-		}
-	}
-
-	if flags.verbose && result.Message != "" {
-		fmt.Printf("\nDetails:\n")
-		fmt.Printf("  %s\n", result.Message)
-	}
+	output.PrintDetails(flags.verbose, result.Message)
 
 	if flags.dryRun {
-		fmt.Printf("\nTo apply this restore:\n")
-		fmt.Printf("  gz-shellforge restore --file %s --snapshot %s\n", filePath, flags.snapshot)
+		output.PrintApplyHint(fmt.Sprintf("gz-shellforge restore --file %s --snapshot %s", filePath, flags.snapshot))
 	}
 
 	return nil

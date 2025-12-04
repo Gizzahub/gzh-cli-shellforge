@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	clierrors "github.com/gizzahub/gzh-cli-shellforge/internal/cli/errors"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 )
@@ -104,7 +105,7 @@ Common OS values: Mac, Linux, BSD, Windows`)
 	// Execute build
 	result, err := builder.Build(opts)
 	if err != nil {
-		return fmt.Errorf("build failed: %w", err)
+		return clierrors.WrapError("build", err)
 	}
 
 	// Display results
@@ -126,7 +127,7 @@ Common OS values: Mac, Linux, BSD, Windows`)
 		// Expand home directory in output path
 		outputPath, err := helpers.ExpandHomePath(flags.output)
 		if err != nil {
-			return fmt.Errorf("invalid output path: %w", err)
+			return clierrors.InvalidPath("output", err)
 		}
 
 		fmt.Printf("✓ Configuration written to: %s\n", outputPath)

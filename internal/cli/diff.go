@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	clierrors "github.com/gizzahub/gzh-cli-shellforge/internal/cli/errors"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
@@ -65,11 +66,11 @@ func runDiff(originalPath, generatedPath string, flags *diffFlags) error {
 	var err error
 	originalPath, err = helpers.ExpandHomePath(originalPath)
 	if err != nil {
-		return fmt.Errorf("invalid original path: %w", err)
+		return clierrors.InvalidPath("original", err)
 	}
 	generatedPath, err = helpers.ExpandHomePath(generatedPath)
 	if err != nil {
-		return fmt.Errorf("invalid generated path: %w", err)
+		return clierrors.InvalidPath("generated", err)
 	}
 
 	// Validate format
@@ -93,7 +94,7 @@ func runDiff(originalPath, generatedPath string, flags *diffFlags) error {
 	// Perform comparison
 	result, err := diffService.Compare(originalPath, generatedPath, format)
 	if err != nil {
-		return fmt.Errorf("comparison failed: %w", err)
+		return clierrors.WrapError("comparison", err)
 	}
 
 	// Display results

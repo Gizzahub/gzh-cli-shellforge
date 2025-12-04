@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	clierrors "github.com/gizzahub/gzh-cli-shellforge/internal/cli/errors"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/output"
@@ -70,7 +71,7 @@ func runRestore(flags *restoreFlags) error {
 	// Expand home directory in file path
 	filePath, err := helpers.ExpandHomePath(flags.file)
 	if err != nil {
-		return fmt.Errorf("invalid file path: %w", err)
+		return clierrors.InvalidPath("file", err)
 	}
 
 	// Determine backup directory
@@ -81,7 +82,7 @@ func runRestore(flags *restoreFlags) error {
 
 	// Check if backup directory exists
 	if _, err := os.Stat(backupDir); os.IsNotExist(err) {
-		return fmt.Errorf("backup directory does not exist: %s", backupDir)
+		return clierrors.DirNotFound(backupDir)
 	}
 
 	output.NewConfigPrinter("Restore configuration").
@@ -106,7 +107,7 @@ func runRestore(flags *restoreFlags) error {
 	// Perform restore
 	result, err := backupService.Restore(fileName, flags.snapshot, filePath, flags.dryRun)
 	if err != nil {
-		return fmt.Errorf("restore failed: %w", err)
+		return clierrors.WrapError("restore", err)
 	}
 
 	// Display results

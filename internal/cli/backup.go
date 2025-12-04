@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	clierrors "github.com/gizzahub/gzh-cli-shellforge/internal/cli/errors"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/output"
@@ -63,12 +64,12 @@ func runBackup(flags *backupFlags) error {
 	// Expand home directory in file path
 	filePath, err := helpers.ExpandHomePath(flags.file)
 	if err != nil {
-		return fmt.Errorf("invalid file path: %w", err)
+		return clierrors.InvalidPath("file", err)
 	}
 
 	// Check if file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return fmt.Errorf("file does not exist: %s", filePath)
+		return clierrors.FileNotFound(filePath)
 	}
 
 	// Determine backup directory
@@ -94,7 +95,7 @@ func runBackup(flags *backupFlags) error {
 	// Perform backup
 	result, err := backupService.Backup(filePath, flags.message)
 	if err != nil {
-		return fmt.Errorf("backup failed: %w", err)
+		return clierrors.WrapError("backup", err)
 	}
 
 	// Display results

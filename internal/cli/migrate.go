@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	clierrors "github.com/gizzahub/gzh-cli-shellforge/internal/cli/errors"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/rcparser"
@@ -63,12 +64,12 @@ func runMigrate(rcFilePath string, flags *migrateFlags) error {
 	var err error
 	rcFilePath, err = helpers.ExpandHomePath(rcFilePath)
 	if err != nil {
-		return fmt.Errorf("invalid RC file path: %w", err)
+		return clierrors.InvalidPath("RC file", err)
 	}
 
 	// Check if RC file exists
 	if _, err := os.Stat(rcFilePath); os.IsNotExist(err) {
-		return fmt.Errorf("RC file not found: %s", rcFilePath)
+		return clierrors.FileNotFound(rcFilePath)
 	}
 
 	// Initialize services
@@ -80,7 +81,7 @@ func runMigrate(rcFilePath string, flags *migrateFlags) error {
 	if flags.dryRun {
 		result, err := service.Analyze(rcFilePath)
 		if err != nil {
-			return fmt.Errorf("migration analysis failed: %w", err)
+			return clierrors.WrapError("migration analysis", err)
 		}
 
 		printAnalysisResult(result, flags.verbose)
@@ -92,7 +93,7 @@ func runMigrate(rcFilePath string, flags *migrateFlags) error {
 
 	result, err := service.Migrate(rcFilePath, flags.outputDir, flags.manifestPath)
 	if err != nil {
-		return fmt.Errorf("migration failed: %w", err)
+		return clierrors.WrapError("migration", err)
 	}
 
 	printMigrationResult(result, flags.verbose)

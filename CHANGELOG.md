@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Refactored
+
+- **CLI Architecture Improvements**: Complete refactoring for code reusability and maintainability
+  - **Phase 1 - ServiceFactory**: Centralized dependency injection for all CLI commands
+    - Created `internal/cli/factory/` package with `Services` and `BackupServices` structs
+    - Eliminated duplicate service initialization across 10+ CLI files
+    - Extracted `GitRepositoryAdapter` to shared factory package
+  - **Phase 2 - Output Package**: Standardized CLI output formatting
+    - Created `internal/cli/output/` package with `ConfigPrinter` (fluent API) and result helpers
+    - Replaced ~90 lines of duplicate `fmt.Printf` patterns with reusable functions
+    - Consistent verbose output formatting across backup, restore, cleanup commands
+  - **Phase 2 - Error Handling**: Unified error message formatting
+    - Created `internal/cli/errors/` package with standardized error helpers
+    - Applied consistent error wrapping across all 10 CLI command files
+    - Error helpers: `WrapError`, `InvalidPath`, `FileNotFound`, `DirNotFound`, `MinValue`
+  - **Phase 3 - Performance Optimization**: Improved string processing efficiency
+    - Optimized `splitLines()` function in migrate.go using `strings.Builder` (O(n²) → O(n))
+    - Refactored git command execution with helper methods in `repository.go`
+    - Reduced boilerplate code in git operations (Add, ConfigUser, GetStatus methods)
+  - **Phase 4 - Error Consistency Completion**: Finalized error handling migration
+    - Updated validate.go, list.go, template.go to use `clierrors` package
+    - Fixed test assertion in list_test.go to match new error format
+  - **Impact**: ~150 lines removed, 3 new packages created, improved code maintainability
+
 ## [0.6.0] - 2025-12-02
 
 ### Added

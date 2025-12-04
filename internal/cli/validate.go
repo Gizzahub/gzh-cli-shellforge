@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	clierrors "github.com/gizzahub/gzh-cli-shellforge/internal/cli/errors"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
@@ -70,7 +71,7 @@ func runValidate(flags *validateFlags) error {
 
 	manifest, err := parser.Parse(flags.manifest)
 	if err != nil {
-		return fmt.Errorf("✗ Manifest parsing failed: %w", err)
+		return clierrors.WrapError("manifest parsing", err)
 	}
 
 	if flags.verbose {
@@ -103,7 +104,7 @@ func runValidate(flags *validateFlags) error {
 	// We'll use a simple resolver to check both common OSes
 	resolver := &dependencyValidator{}
 	if err := resolver.checkCircularDependencies(manifest); err != nil {
-		return fmt.Errorf("✗ Circular dependency detected: %w", err)
+		return clierrors.WrapError("circular dependency check", err)
 	}
 
 	if flags.verbose {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	clierrors "github.com/gizzahub/gzh-cli-shellforge/internal/cli/errors"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
@@ -66,7 +67,7 @@ func runList(cmd *cobra.Command, flags *listFlags) error {
 	services := factory.NewServices()
 	manifest, err := services.Parser.Parse(flags.manifest)
 	if err != nil {
-		return fmt.Errorf("failed to parse manifest: %w", err)
+		return clierrors.WrapError("manifest parsing", err)
 	}
 
 	// Validate manifest

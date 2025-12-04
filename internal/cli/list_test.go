@@ -156,7 +156,7 @@ func TestRunList_MissingManifest(t *testing.T) {
 
 	err := runList(cmd, flags)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to parse manifest")
+	assert.Contains(t, err.Error(), "manifest parsing failed")
 }
 
 func TestListCmd_LongDescription(t *testing.T) {

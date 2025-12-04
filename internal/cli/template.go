@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	clierrors "github.com/gizzahub/gzh-cli-shellforge/internal/cli/errors"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/template"
@@ -103,13 +104,13 @@ func runTemplateGenerate(templateType, moduleName string, flags *templateFlags) 
 	// Get template
 	tmpl, ok := template.GetBuiltinTemplate(domain.TemplateType(templateType))
 	if !ok {
-		return fmt.Errorf("template not found: %s", templateType)
+		return clierrors.WrapError("template lookup", fmt.Errorf("template not found: %s", templateType))
 	}
 
 	// Parse fields
 	fieldMap, err := parseFields(flags.fields)
 	if err != nil {
-		return err
+		return clierrors.WrapError("field parsing", err)
 	}
 
 	// Create template data
@@ -138,7 +139,7 @@ func runTemplateGenerate(templateType, moduleName string, flags *templateFlags) 
 	// Generate module
 	result, err := service.Generate(tmpl, data, flags.configDir)
 	if err != nil {
-		return fmt.Errorf("failed to generate module: %w", err)
+		return clierrors.WrapError("module generation", err)
 	}
 
 	// Display results

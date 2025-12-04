@@ -16,6 +16,28 @@ func NewRepository(dir string) *Repository {
 	return &Repository{dir: dir}
 }
 
+// runGitCommand executes a git command and returns any error
+func (r *Repository) runGitCommand(subcommand string, args ...string) error {
+	allArgs := append([]string{"-C", r.dir, subcommand}, args...)
+	cmd := exec.Command("git", allArgs...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("git %s failed: %w (%s)", subcommand, err, strings.TrimSpace(string(output)))
+	}
+	return nil
+}
+
+// runGitCommandWithOutput executes a git command and returns its output
+func (r *Repository) runGitCommandWithOutput(subcommand string, args ...string) (string, error) {
+	allArgs := append([]string{"-C", r.dir, subcommand}, args...)
+	cmd := exec.Command("git", allArgs...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("git %s failed: %w (%s)", subcommand, err, strings.TrimSpace(string(output)))
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
 // IsGitInstalled checks if git is available on the system
 func IsGitInstalled() bool {
 	cmd := exec.Command("git", "--version")
@@ -52,15 +74,7 @@ func (r *Repository) Add(paths ...string) error {
 	if len(paths) == 0 {
 		paths = []string{"."}
 	}
-
-	args := append([]string{"-C", r.dir, "add"}, paths...)
-	cmd := exec.Command("git", args...)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("git add failed: %w (%s)", err, strings.TrimSpace(string(output)))
-	}
-
-	return nil
+	return r.runGitCommand("add", paths...)
 }
 
 // Commit creates a commit with the given message
@@ -91,30 +105,18 @@ func (r *Repository) AddAndCommit(message string, paths ...string) error {
 
 // ConfigUser sets git user configuration for the repository
 func (r *Repository) ConfigUser(name, email string) error {
-	// Set user name
-	cmd := exec.Command("git", "-C", r.dir, "config", "user.name", name)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to set user.name: %w (%s)", err, strings.TrimSpace(string(output)))
+	if err := r.runGitCommand("config", "user.name", name); err != nil {
+		return fmt.Errorf("failed to set user.name: %w", err)
 	}
-
-	// Set user email
-	cmd = exec.Command("git", "-C", r.dir, "config", "user.email", email)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to set user.email: %w (%s)", err, strings.TrimSpace(string(output)))
+	if err := r.runGitCommand("config", "user.email", email); err != nil {
+		return fmt.Errorf("failed to set user.email: %w", err)
 	}
-
 	return nil
 }
 
 // GetStatus returns the current git status
 func (r *Repository) GetStatus() (string, error) {
-	cmd := exec.Command("git", "-C", r.dir, "status", "--short")
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("git status failed: %w", err)
-	}
-
-	return strings.TrimSpace(string(output)), nil
+	return r.runGitCommandWithOutput("status", "--short")
 }
 
 // HasChanges checks if there are uncommitted changes

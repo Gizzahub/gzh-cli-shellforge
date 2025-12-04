@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -168,28 +169,31 @@ func printMigrationResult(result *app.MigrateResult, verbose bool) {
 }
 
 func splitLines(content string, maxLines int) []string {
-	lines := []string{}
-	current := ""
+	var sb strings.Builder
+	lines := make([]string, 0, maxLines+1)
 	count := 0
+	totalLen := len(content)
+	processedLen := 0
 
 	for _, c := range content {
+		processedLen++
 		if c == '\n' {
-			lines = append(lines, current)
-			current = ""
+			lines = append(lines, sb.String())
+			sb.Reset()
 			count++
 			if count >= maxLines {
-				if len(content) > len(current) {
+				if processedLen < totalLen {
 					lines = append(lines, "...")
 				}
 				break
 			}
 		} else {
-			current += string(c)
+			sb.WriteRune(c)
 		}
 	}
 
-	if current != "" && count < maxLines {
-		lines = append(lines, current)
+	if sb.Len() > 0 && count < maxLines {
+		lines = append(lines, sb.String())
 	}
 
 	return lines

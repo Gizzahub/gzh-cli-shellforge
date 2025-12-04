@@ -2,15 +2,12 @@ package cli
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/filesystem"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/yamlparser"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 )
 
 type buildFlags struct {
@@ -90,14 +87,9 @@ Common OS values: Mac, Linux, BSD, Windows`)
 		fmt.Println()
 	}
 
-	// Create filesystem abstraction
-	fs := afero.NewOsFs()
-
 	// Create services
-	parser := yamlparser.New(fs)
-	reader := filesystem.NewReader(fs)
-	writer := filesystem.NewWriter(fs)
-	builder := app.NewBuilderService(parser, reader, writer)
+	services := factory.NewServices()
+	builder := services.NewBuilder()
 
 	// Build options
 	opts := app.BuildOptions{
@@ -132,13 +124,9 @@ Common OS values: Mac, Linux, BSD, Windows`)
 		fmt.Println(result.Output)
 	} else {
 		// Expand home directory in output path
-		outputPath := flags.output
-		if len(outputPath) > 0 && outputPath[0] == '~' {
-			home, err := os.UserHomeDir()
-			if err != nil {
-				return fmt.Errorf("failed to expand home directory: %w", err)
-			}
-			outputPath = filepath.Join(home, outputPath[1:])
+		outputPath, err := helpers.ExpandHomePath(flags.output)
+		if err != nil {
+			return fmt.Errorf("invalid output path: %w", err)
 		}
 
 		fmt.Printf("✓ Configuration written to: %s\n", outputPath)

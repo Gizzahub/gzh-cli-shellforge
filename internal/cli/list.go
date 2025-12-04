@@ -5,11 +5,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/filesystem"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/yamlparser"
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
+
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
 type listFlags struct {
@@ -63,10 +62,9 @@ Use --verbose to show detailed information including full file paths.`,
 }
 
 func runList(cmd *cobra.Command, flags *listFlags) error {
-	// Parse manifest
-	fs := afero.NewOsFs()
-	parser := yamlparser.New(fs)
-	manifest, err := parser.Parse(flags.manifest)
+	// Create services and parse manifest
+	services := factory.NewServices()
+	manifest, err := services.Parser.Parse(flags.manifest)
 	if err != nil {
 		return fmt.Errorf("failed to parse manifest: %w", err)
 	}
@@ -101,7 +99,7 @@ func runList(cmd *cobra.Command, flags *listFlags) error {
 	cmd.Printf("Manifest: %s\n\n", flags.manifest)
 
 	// Check if module files exist
-	reader := filesystem.NewReader(fs)
+	reader := services.Reader
 
 	// Display modules
 	for i, module := range modules {

@@ -5,12 +5,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/filesystem"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/yamlparser"
 )
 
 type validateFlags struct {
@@ -60,12 +58,10 @@ func runValidate(flags *validateFlags) error {
 		fmt.Println()
 	}
 
-	// Create filesystem abstraction
-	fs := afero.NewOsFs()
-
 	// Create services
-	parser := yamlparser.New(fs)
-	reader := filesystem.NewReader(fs)
+	services := factory.NewServices()
+	parser := services.Parser
+	reader := services.Reader
 
 	// 1. Parse manifest
 	if flags.verbose {

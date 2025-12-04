@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/filesystem"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/rcparser"
 )
 
@@ -72,12 +71,10 @@ func runMigrate(rcFilePath string, flags *migrateFlags) error {
 		return fmt.Errorf("RC file not found: %s", rcFilePath)
 	}
 
-	// Initialize filesystem, parser, and service
-	fs := afero.NewOsFs()
-	reader := filesystem.NewReader(fs)
-	writer := filesystem.NewWriter(fs)
-	parser := rcparser.New(fs)
-	service := app.NewMigrationService(parser, reader, writer)
+	// Initialize services
+	services := factory.NewServices()
+	parser := rcparser.New(services.Fs)
+	service := app.NewMigrationService(parser, services.Reader, services.Writer)
 
 	// Dry-run mode: analyze only
 	if flags.dryRun {

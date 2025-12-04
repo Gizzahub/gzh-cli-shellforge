@@ -3,14 +3,13 @@ package cli
 import (
 	"fmt"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/diffcomparator"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/filesystem"
 )
 
 type diffFlags struct {
@@ -87,10 +86,9 @@ func runDiff(originalPath, generatedPath string, flags *diffFlags) error {
 	}
 
 	// Initialize services
-	fs := afero.NewOsFs()
-	reader := filesystem.NewReader(fs)
-	comparator := diffcomparator.NewComparator(fs)
-	diffService := app.NewDiffService(comparator, reader)
+	services := factory.NewServices()
+	comparator := diffcomparator.NewComparator(services.Fs)
+	diffService := app.NewDiffService(comparator, services.Reader)
 
 	// Perform comparison
 	result, err := diffService.Compare(originalPath, generatedPath, format)

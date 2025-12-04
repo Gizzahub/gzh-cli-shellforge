@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/filesystem"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/template"
 )
 
@@ -132,10 +131,9 @@ func runTemplateGenerate(templateType, moduleName string, flags *templateFlags) 
 	}
 
 	// Initialize services
-	fs := afero.NewOsFs()
+	services := factory.NewServices()
 	renderer := template.NewRenderer()
-	writer := filesystem.NewWriter(fs)
-	service := app.NewTemplateService(renderer, writer)
+	service := app.NewTemplateService(renderer, services.Writer)
 
 	// Generate module
 	result, err := service.Generate(tmpl, data, flags.configDir)

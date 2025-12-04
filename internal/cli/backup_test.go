@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 )
 
@@ -220,6 +221,6 @@ func TestGitRepositoryAdapter(t *testing.T) {
 	t.Run("adapter can be created", func(t *testing.T) {
 		// We can't actually create a git.Repository without a real directory
 		// This test just verifies the types exist
-		assert.NotNil(t, newGitRepositoryAdapter)
+		assert.NotNil(t, factory.NewGitRepositoryAdapter)
 	})
 }

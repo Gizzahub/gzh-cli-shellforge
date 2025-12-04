@@ -4,14 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/git"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/snapshot"
 )
 
 type backupFlags struct {
@@ -89,13 +85,12 @@ func runBackup(flags *backupFlags) error {
 	}
 
 	// Initialize services
-	fs := afero.NewOsFs()
-	config := domain.NewBackupConfig(backupDir)
-	config.GitEnabled = !flags.noGit
-
-	snapshotMgr := snapshot.NewManager(fs, config)
-	gitRepo := newGitRepositoryAdapter(git.NewRepository(backupDir))
-	backupService := app.NewBackupService(snapshotMgr, gitRepo, config)
+	services := factory.NewBackupServices(factory.BackupOptions{
+		BackupDir:  backupDir,
+		GitEnabled: !flags.noGit,
+	})
+	config := services.Config
+	backupService := services.BackupService
 
 	// Perform backup
 	result, err := backupService.Backup(filePath, flags.message)
@@ -128,37 +123,4 @@ func runBackup(flags *backupFlags) error {
 	fmt.Printf("  gz-shellforge restore --file %s --snapshot %s\n", filePath, result.Snapshot.FormatTimestamp())
 
 	return nil
-}
-
-// gitRepositoryAdapter adapts git.Repository to app.GitRepository interface
-type gitRepositoryAdapter struct {
-	repo *git.Repository
-}
-
-func newGitRepositoryAdapter(repo *git.Repository) *gitRepositoryAdapter {
-	return &gitRepositoryAdapter{repo: repo}
-}
-
-func (a *gitRepositoryAdapter) IsGitInstalled() bool {
-	return git.IsGitInstalled()
-}
-
-func (a *gitRepositoryAdapter) Init() error {
-	return a.repo.Init()
-}
-
-func (a *gitRepositoryAdapter) IsInitialized() bool {
-	return a.repo.IsInitialized()
-}
-
-func (a *gitRepositoryAdapter) ConfigUser(name, email string) error {
-	return a.repo.ConfigUser(name, email)
-}
-
-func (a *gitRepositoryAdapter) AddAndCommit(message string, paths ...string) error {
-	return a.repo.AddAndCommit(message, paths...)
-}
-
-func (a *gitRepositoryAdapter) HasChanges() (bool, error) {
-	return a.repo.HasChanges()
 }

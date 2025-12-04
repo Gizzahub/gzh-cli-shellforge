@@ -5,14 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/git"
-	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/snapshot"
 )
 
 type cleanupFlags struct {
@@ -123,15 +119,14 @@ func runCleanup(flags *cleanupFlags) error {
 	}
 
 	// Initialize services
-	fs := afero.NewOsFs()
-	config := domain.NewBackupConfig(backupDir)
-	config.GitEnabled = !flags.noGit
-	config.KeepCount = flags.keepCount
-	config.KeepDays = flags.keepDays
-
-	snapshotMgr := snapshot.NewManager(fs, config)
-	gitRepo := newGitRepositoryAdapter(git.NewRepository(backupDir))
-	backupService := app.NewBackupService(snapshotMgr, gitRepo, config)
+	services := factory.NewBackupServices(factory.BackupOptions{
+		BackupDir:  backupDir,
+		GitEnabled: !flags.noGit,
+		KeepCount:  flags.keepCount,
+		KeepDays:   flags.keepDays,
+	})
+	config := services.Config
+	backupService := services.BackupService
 
 	// Extract file name from path for snapshot lookup
 	fileName := filepath.Base(filePath)

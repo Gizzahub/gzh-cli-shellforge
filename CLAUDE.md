@@ -21,6 +21,29 @@ This file provides LLM-optimized guidance for Claude Code when working with this
 
 ---
 
+## Shared Library (gzh-cli-core)
+
+**IMPORTANT**: Use `gzh-cli-core` for common utilities. DO NOT create local duplicates.
+
+| Package | Import | Purpose |
+|---------|--------|---------|
+| logger | `gzh-cli-core/logger` | Structured logging |
+| testutil | `gzh-cli-core/testutil` | Test helpers (TempDir, Assert*, Capture) |
+| errors | `gzh-cli-core/errors` | Error types and wrapping |
+| config | `gzh-cli-core/config` | Config loading utilities |
+| cli | `gzh-cli-core/cli` | CLI flags and output |
+| version | `gzh-cli-core/version` | Version info |
+
+```go
+import (
+    "github.com/gizzahub/gzh-cli-core/logger"
+    "github.com/gizzahub/gzh-cli-core/errors"
+    "github.com/gizzahub/gzh-cli-core/testutil"
+)
+```
+
+---
+
 ## Module-Specific Guides (AGENTS.md)
 
 **Read these before modifying code:**
@@ -36,11 +59,12 @@ This file provides LLM-optimized guidance for Claude Code when working with this
 
 | Package | Purpose | Key Functions |
 |---------|---------|---------------|
-| `internal/errors` | Custom error types | `Wrap()`, `WrapWithMessage()` |
-| `internal/logger` | Structured logging | `New()`, `Info()`, `Error()` |
-| `internal/shell` | Shell command execution | Safe command execution |
-| `internal/parser` | Shell output parsing | Parse shell output |
-| `internal/validation` | Input validation | Path, command validation |
+| `internal/app` | Application services | Builder, Service implementations |
+| `internal/cli` | CLI commands | Command handlers |
+| `internal/cli/errors` | CLI error handling | Error display |
+| `internal/cli/output` | CLI output | Result formatting |
+| `internal/domain` | Domain models | Module, Manifest, Graph |
+| `internal/infra` | Infrastructure | File system, External services |
 
 ## Public Packages (pkg/)
 
@@ -126,25 +150,19 @@ make lint-diff      # Lint changed files only
 ├── cmd/
 │   └── shellforge/
 │       ├── AGENTS.md           # Module-specific guide
-│       ├── main.go             # Entry point
-│       ├── root.go             # Root command
-│       └── *.go                # Subcommands
+│       └── main.go             # Entry point
 ├── internal/                    # Private packages
-│   ├── errors/                 # Custom error types
-│   ├── logger/                 # Structured logging
-│   ├── shell/                  # Shell command executor
-│   ├── parser/                 # Output parsing
-│   └── validation/             # Input validation
-├── pkg/                         # Public packages
-│   ├── dotfiles/               # Dotfile management
-│   ├── shell/                  # Shell configuration
-│   ├── template/               # Template engine
-│   ├── backup/                 # Backup operations
-│   └── sync/                   # Synchronization
+│   ├── app/                    # Application services
+│   ├── cli/                    # CLI commands
+│   │   ├── errors/             # CLI error handling
+│   │   ├── output/             # CLI output formatting
+│   │   └── factory/            # Command factory
+│   ├── domain/                 # Domain models
+│   ├── infra/                  # Infrastructure
+│   └── integration/            # Integration helpers
+├── data/                        # Data files
 ├── docs/                        # Documentation
 ├── examples/                    # Usage examples
-├── tests/                       # Integration tests
-├── .make/                       # Modular Makefile
 ├── .golangci.yml               # Linter config
 ├── CLAUDE.md                   # This file
 ├── go.mod                      # Go module

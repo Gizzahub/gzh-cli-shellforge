@@ -5,10 +5,12 @@ go 1.25.1
 require (
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/spf13/afero v1.15.0
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
 )
+
+replace github.com/gizzahub/gzh-cli-core => ../gzh-cli-core
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

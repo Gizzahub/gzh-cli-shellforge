@@ -13,7 +13,9 @@
 - `~/.zshrc`, `~/.bashrc` — 인터랙티브 쉘 설정
 - `~/.zprofile`, `~/.bash_profile` — 로그인 쉘 설정
 - `~/.profile` — 공통 프로파일
-- `/etc/profile`, `/etc/zshrc` — 시스템 전역 설정
+- `~/.config/fish/config.fish` — Fish 쉘 설정
+- `~/.config/fish/conf.d/*.fish` — Fish 모듈형 설정 (자동 로드)
+- `/etc/profile`, `/etc/zshrc` — 시스템 전역 설정 (예정)
 
 ### 해결하는 문제
 
@@ -37,10 +39,13 @@
 gz-shellforge build
 
 # 빌드 출력 디렉토리 지정
-gz-shellforge build --outdir ./build
+gz-shellforge build --output-dir ./staging
 
-# 특정 파일만 출력 (단일 파일 모드)
-gz-shellforge build --output ~/.zshrc.new
+# 특정 타겟만 빌드
+gz-shellforge build --target zshrc --target zprofile
+
+# 다른 쉘용으로 빌드
+gz-shellforge build --shell fish
 ```
 
 - **모든 대상 파일을 한번에 빌드** (zshrc, profile, zprofile 등)
@@ -79,6 +84,25 @@ modules:
 - Mac, Linux 환경별 모듈 자동 필터링
 - 하나의 저장소로 다중 환경 관리
 - 불필요한 조건문 제거
+
+### 3.1 Fish 쉘 지원
+
+```bash
+# Fish 쉘용 빌드
+gz-shellforge build --shell fish
+
+# Fish conf.d 모듈형 설정 (모듈별 개별 파일 생성)
+gz-shellforge build --shell fish --target conf.d
+```
+
+**지원 타겟**:
+- `config` → `~/.config/fish/config.fish` (단일 파일)
+- `conf.d` → `~/.config/fish/conf.d/*.fish` (모듈별 파일)
+
+**XDG_CONFIG_HOME 지원**:
+- `$XDG_CONFIG_HOME` 환경변수 자동 인식
+- 기본값: `~/.config`
+- 사용자 지정 경로 지원 (예: `~/.myconfig/fish/`)
 
 ### 4. 마이그레이션 도구 (Migrate)
 
@@ -167,40 +191,40 @@ modules/
 ### manifest.yaml 형식
 
 ```yaml
-# 출력 대상 파일 정의
-targets:
-  - name: zshrc
-    path: ~/.zshrc
-    shell: zsh
-  - name: zprofile
-    path: ~/.zprofile
-    shell: zsh
-  - name: profile
-    path: ~/.profile
-    shell: common
-  - name: bashrc
-    path: ~/.bashrc
-    shell: bash
+version: "2"
 
-# 모듈 정의
+shell:
+  type: zsh  # zsh, bash, fish
+
+output:
+  directory: ~
+  backup: true
+
 modules:
+  # zshenv - 모든 쉘에서 로드 (환경변수)
   - name: os-detection
     file: init.d/00-os-detection.sh
-    requires: []
+    target: zshenv       # 대상 RC 파일 (zshrc, zprofile, zshenv 등)
+    priority: 10         # 우선순위 (0-100, 낮을수록 먼저)
     os: [Mac, Linux]
-    targets: [zshrc, bashrc]  # 적용 대상 파일
+    description: Detect operating system
 
+  # zprofile - 로그인 쉘에서만 로드 (PATH 설정)
   - name: brew-path
     file: init.d/05-brew-path.sh
+    target: zprofile
+    priority: 10
     requires: [os-detection]
     os: [Mac]
-    targets: [zprofile, profile]
+    description: Initialize Homebrew PATH
 
-  - name: nvm
-    file: rc_pre.d/nvm.sh
-    requires: [brew-path]
+  # zshrc - 인터랙티브 쉘 설정 (별칭, 함수)
+  - name: aliases
+    file: rc_post.d/aliases.sh
+    target: zshrc
+    priority: 80
     os: [Mac, Linux]
-    targets: [zshrc, bashrc]
+    description: Common aliases and functions
 ```
 
 ---
@@ -239,7 +263,7 @@ modules:
 
 - Zsh
 - Bash
-- ⏳ Fish (예정)
+- Fish (XDG_CONFIG_HOME 지원, conf.d 모듈형 설정)
 
 ### 요구사항
 
@@ -263,12 +287,13 @@ modules:
 - ✅ 6종 템플릿 생성
 - ✅ Git 기반 백업/복원
 - ✅ 4가지 형식 diff 비교
+- ✅ Fish 쉘 지원 (config, conf.d)
+- ✅ XDG_CONFIG_HOME 환경변수 지원
 
 ### 개발 예정
 
 - ⏳ 커스텀 검증기 플러그인 시스템
 - ⏳ BSD 지원 (FreeBSD 13+)
-- ⏳ Fish 쉘 지원
 - ⏳ 시스템 전역 설정 (/etc/profile, /etc/zshrc)
 
 ---

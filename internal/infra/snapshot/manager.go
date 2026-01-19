@@ -28,12 +28,12 @@ func NewManager(fs afero.Fs, config *domain.BackupConfig) *Manager {
 // Initialize creates the backup directory structure
 func (m *Manager) Initialize() error {
 	// Create snapshots directory
-	if err := m.fs.MkdirAll(m.config.SnapshotsDir, 0755); err != nil {
+	if err := m.fs.MkdirAll(m.config.SnapshotsDir, 0o755); err != nil {
 		return domain.NewSnapshotError("initialize", m.config.SnapshotsDir, err)
 	}
 
 	// Create current directory
-	if err := m.fs.MkdirAll(m.config.CurrentDir, 0755); err != nil {
+	if err := m.fs.MkdirAll(m.config.CurrentDir, 0o755); err != nil {
 		return domain.NewSnapshotError("initialize", m.config.CurrentDir, err)
 	}
 
@@ -63,7 +63,7 @@ func (m *Manager) CreateSnapshot(sourcePath string) (*domain.Snapshot, error) {
 
 	// Create snapshot directory for this file
 	snapshotDir := filepath.Join(m.config.SnapshotsDir, fileName)
-	if err := m.fs.MkdirAll(snapshotDir, 0755); err != nil {
+	if err := m.fs.MkdirAll(snapshotDir, 0o755); err != nil {
 		return nil, domain.NewSnapshotError("create directory", snapshotDir, err)
 	}
 
@@ -190,7 +190,7 @@ func (m *Manager) RestoreSnapshot(snapshot *domain.Snapshot, targetPath string) 
 
 	// Create target directory if needed
 	targetDir := filepath.Dir(targetPath)
-	if err := m.fs.MkdirAll(targetDir, 0755); err != nil {
+	if err := m.fs.MkdirAll(targetDir, 0o755); err != nil {
 		return domain.NewSnapshotError("create target directory", targetDir, err)
 	}
 

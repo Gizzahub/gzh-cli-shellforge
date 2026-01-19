@@ -52,7 +52,7 @@ function mkcd() {
 
 	// Write RC file
 	rcPath := "/test/.zshrc"
-	err := afero.WriteFile(fs, rcPath, []byte(rcContent), 0644)
+	err := afero.WriteFile(fs, rcPath, []byte(rcContent), 0o644)
 	require.NoError(t, err)
 
 	// Step 1: Migrate RC file
@@ -172,8 +172,8 @@ line2_modified
 line3
 line4`
 
-	afero.WriteFile(fs, "/original.sh", []byte(original), 0644)
-	afero.WriteFile(fs, "/generated.sh", []byte(generated), 0644)
+	afero.WriteFile(fs, "/original.sh", []byte(original), 0o644)
+	afero.WriteFile(fs, "/generated.sh", []byte(generated), 0o644)
 
 	reader := filesystem.NewReader(fs)
 	comparator := diffcomparator.NewComparator(fs)

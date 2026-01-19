@@ -69,7 +69,7 @@ func TestManager_CreateSnapshot(t *testing.T) {
 		// Create source file
 		sourcePath := "/home/user/.zshrc"
 		content := "# zsh configuration\nexport PATH=/usr/local/bin:$PATH"
-		err := afero.WriteFile(fs, sourcePath, []byte(content), 0644)
+		err := afero.WriteFile(fs, sourcePath, []byte(content), 0o644)
 		require.NoError(t, err)
 
 		// Create snapshot
@@ -95,7 +95,7 @@ func TestManager_CreateSnapshot(t *testing.T) {
 
 	t.Run("handles file with leading dot", func(t *testing.T) {
 		sourcePath := "/home/user/.bashrc"
-		err := afero.WriteFile(fs, sourcePath, []byte("bash config"), 0644)
+		err := afero.WriteFile(fs, sourcePath, []byte("bash config"), 0o644)
 		require.NoError(t, err)
 
 		snapshot, err := manager.CreateSnapshot(sourcePath)
@@ -114,7 +114,7 @@ func TestManager_CreateSnapshot(t *testing.T) {
 
 	t.Run("creates multiple snapshots with different timestamps", func(t *testing.T) {
 		sourcePath := "/home/user/.profile"
-		err := afero.WriteFile(fs, sourcePath, []byte("profile"), 0644)
+		err := afero.WriteFile(fs, sourcePath, []byte("profile"), 0o644)
 		require.NoError(t, err)
 
 		// Create first snapshot
@@ -151,7 +151,7 @@ func TestManager_ListSnapshots(t *testing.T) {
 	t.Run("lists all snapshots for a file", func(t *testing.T) {
 		// Create test snapshots directly
 		snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
-		err := fs.MkdirAll(snapshotDir, 0755)
+		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
 		timestamps := []string{
@@ -162,7 +162,7 @@ func TestManager_ListSnapshots(t *testing.T) {
 
 		for _, ts := range timestamps {
 			path := filepath.Join(snapshotDir, ts)
-			err := afero.WriteFile(fs, path, []byte("content"), 0644)
+			err := afero.WriteFile(fs, path, []byte("content"), 0o644)
 			require.NoError(t, err)
 		}
 
@@ -185,17 +185,17 @@ func TestManager_ListSnapshots(t *testing.T) {
 
 	t.Run("ignores files with invalid timestamp format", func(t *testing.T) {
 		snapshotDir := filepath.Join(config.SnapshotsDir, "testfile")
-		err := fs.MkdirAll(snapshotDir, 0755)
+		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
 		// Create valid snapshot
 		validPath := filepath.Join(snapshotDir, "2025-11-27_10-00-00")
-		err = afero.WriteFile(fs, validPath, []byte("valid"), 0644)
+		err = afero.WriteFile(fs, validPath, []byte("valid"), 0o644)
 		require.NoError(t, err)
 
 		// Create invalid snapshot (wrong format)
 		invalidPath := filepath.Join(snapshotDir, "invalid-timestamp.txt")
-		err = afero.WriteFile(fs, invalidPath, []byte("invalid"), 0644)
+		err = afero.WriteFile(fs, invalidPath, []byte("invalid"), 0o644)
 		require.NoError(t, err)
 
 		list, err := manager.ListSnapshots("testfile")
@@ -213,11 +213,11 @@ func TestManager_DeleteSnapshot(t *testing.T) {
 	t.Run("deletes existing snapshot", func(t *testing.T) {
 		// Create test snapshot
 		snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
-		err := fs.MkdirAll(snapshotDir, 0755)
+		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
 		snapshotPath := filepath.Join(snapshotDir, "2025-11-27_10-00-00")
-		err = afero.WriteFile(fs, snapshotPath, []byte("content"), 0644)
+		err = afero.WriteFile(fs, snapshotPath, []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		// Create snapshot object
@@ -258,14 +258,14 @@ func TestManager_DeleteSnapshots(t *testing.T) {
 	t.Run("deletes multiple snapshots", func(t *testing.T) {
 		// Create test snapshots
 		snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
-		err := fs.MkdirAll(snapshotDir, 0755)
+		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
 		var snapshots []domain.Snapshot
 		for i := 1; i <= 3; i++ {
 			ts := time.Date(2025, 11, i, 10, 0, 0, 0, time.UTC)
 			path := filepath.Join(snapshotDir, ts.Format("2006-01-02_15-04-05"))
-			err = afero.WriteFile(fs, path, []byte("content"), 0644)
+			err = afero.WriteFile(fs, path, []byte("content"), 0o644)
 			require.NoError(t, err)
 
 			snapshots = append(snapshots, domain.Snapshot{
@@ -298,12 +298,12 @@ func TestManager_RestoreSnapshot(t *testing.T) {
 	t.Run("restores snapshot to target path", func(t *testing.T) {
 		// Create test snapshot
 		snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
-		err := fs.MkdirAll(snapshotDir, 0755)
+		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
 		snapshotPath := filepath.Join(snapshotDir, "2025-11-27_10-00-00")
 		content := "restored content"
-		err = afero.WriteFile(fs, snapshotPath, []byte(content), 0644)
+		err = afero.WriteFile(fs, snapshotPath, []byte(content), 0o644)
 		require.NoError(t, err)
 
 		timestamp, _ := time.Parse("2006-01-02_15-04-05", "2025-11-27_10-00-00")
@@ -327,11 +327,11 @@ func TestManager_RestoreSnapshot(t *testing.T) {
 
 	t.Run("creates target directory if needed", func(t *testing.T) {
 		snapshotDir := filepath.Join(config.SnapshotsDir, "bashrc")
-		err := fs.MkdirAll(snapshotDir, 0755)
+		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
 		snapshotPath := filepath.Join(snapshotDir, "2025-11-27_10-00-00")
-		err = afero.WriteFile(fs, snapshotPath, []byte("content"), 0644)
+		err = afero.WriteFile(fs, snapshotPath, []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		timestamp, _ := time.Parse("2006-01-02_15-04-05", "2025-11-27_10-00-00")
@@ -373,7 +373,7 @@ func TestManager_UpdateCurrent(t *testing.T) {
 	t.Run("updates current copy of file", func(t *testing.T) {
 		sourcePath := "/home/user/.zshrc"
 		content := "current zsh config"
-		err := afero.WriteFile(fs, sourcePath, []byte(content), 0644)
+		err := afero.WriteFile(fs, sourcePath, []byte(content), 0o644)
 		require.NoError(t, err)
 
 		err = manager.UpdateCurrent(sourcePath)
@@ -393,7 +393,7 @@ func TestManager_UpdateCurrent(t *testing.T) {
 
 	t.Run("strips leading dot from filename", func(t *testing.T) {
 		sourcePath := "/home/user/.profile"
-		err := afero.WriteFile(fs, sourcePath, []byte("profile"), 0644)
+		err := afero.WriteFile(fs, sourcePath, []byte("profile"), 0o644)
 		require.NoError(t, err)
 
 		err = manager.UpdateCurrent(sourcePath)
@@ -416,14 +416,14 @@ func TestManager_CleanupSnapshots(t *testing.T) {
 	t.Run("deletes snapshots according to retention policy", func(t *testing.T) {
 		// Create test snapshots
 		snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
-		err := fs.MkdirAll(snapshotDir, 0755)
+		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
 		// Create 5 snapshots
 		for i := 1; i <= 5; i++ {
 			ts := time.Now().AddDate(0, 0, -i)
 			path := filepath.Join(snapshotDir, ts.Format("2006-01-02_15-04-05"))
-			err = afero.WriteFile(fs, path, []byte("content"), 0644)
+			err = afero.WriteFile(fs, path, []byte("content"), 0o644)
 			require.NoError(t, err)
 		}
 
@@ -441,12 +441,12 @@ func TestManager_CleanupSnapshots(t *testing.T) {
 	t.Run("keeps at least one snapshot when policy would delete all", func(t *testing.T) {
 		// Create one snapshot
 		snapshotDir := filepath.Join(config.SnapshotsDir, "testfile")
-		err := fs.MkdirAll(snapshotDir, 0755)
+		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
 		ts := time.Now().AddDate(0, 0, -100) // 100 days old
 		path := filepath.Join(snapshotDir, ts.Format("2006-01-02_15-04-05"))
-		err = afero.WriteFile(fs, path, []byte("content"), 0644)
+		err = afero.WriteFile(fs, path, []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		// Try to keep only snapshots from last 7 days (this one is 100 days old)
@@ -470,12 +470,12 @@ func TestManager_GetSnapshotByTimestamp(t *testing.T) {
 	t.Run("finds snapshot by timestamp string", func(t *testing.T) {
 		// Create test snapshot
 		snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
-		err := fs.MkdirAll(snapshotDir, 0755)
+		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
 		timestampStr := "2025-11-27_14-30-45"
 		path := filepath.Join(snapshotDir, timestampStr)
-		err = afero.WriteFile(fs, path, []byte("content"), 0644)
+		err = afero.WriteFile(fs, path, []byte("content"), 0o644)
 		require.NoError(t, err)
 
 		// Find snapshot
@@ -502,17 +502,17 @@ func TestManager_ListSnapshots_IgnoresSubdirectories(t *testing.T) {
 
 	// Create snapshot directory with valid snapshot and subdirectory
 	snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
-	err = fs.MkdirAll(snapshotDir, 0755)
+	err = fs.MkdirAll(snapshotDir, 0o755)
 	require.NoError(t, err)
 
 	// Create valid snapshot
 	validPath := filepath.Join(snapshotDir, "2025-11-27_10-00-00")
-	err = afero.WriteFile(fs, validPath, []byte("valid"), 0644)
+	err = afero.WriteFile(fs, validPath, []byte("valid"), 0o644)
 	require.NoError(t, err)
 
 	// Create subdirectory (should be ignored)
 	subDir := filepath.Join(snapshotDir, "subdir")
-	err = fs.MkdirAll(subDir, 0755)
+	err = fs.MkdirAll(subDir, 0o755)
 	require.NoError(t, err)
 
 	list, err := manager.ListSnapshots("zshrc")
@@ -528,12 +528,12 @@ func TestManager_DeleteSnapshots_StopsOnError(t *testing.T) {
 
 	// Create a snapshot
 	snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc")
-	err = fs.MkdirAll(snapshotDir, 0755)
+	err = fs.MkdirAll(snapshotDir, 0o755)
 	require.NoError(t, err)
 
 	ts := time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)
 	path := filepath.Join(snapshotDir, ts.Format("2006-01-02_15-04-05"))
-	err = afero.WriteFile(fs, path, []byte("content"), 0644)
+	err = afero.WriteFile(fs, path, []byte("content"), 0o644)
 	require.NoError(t, err)
 
 	// Create snapshots slice with one valid and path exists
@@ -571,7 +571,7 @@ func TestManager_CleanupSnapshots_WithDaysPolicy(t *testing.T) {
 
 	// Create test snapshots
 	snapshotDir := filepath.Join(config.SnapshotsDir, "zshrc-days")
-	err = fs.MkdirAll(snapshotDir, 0755)
+	err = fs.MkdirAll(snapshotDir, 0o755)
 	require.NoError(t, err)
 
 	// Create 3 snapshots: 1 recent (today), 2 old (10 and 20 days ago)
@@ -584,7 +584,7 @@ func TestManager_CleanupSnapshots_WithDaysPolicy(t *testing.T) {
 
 	for _, ts := range timestamps {
 		path := filepath.Join(snapshotDir, ts.Format("2006-01-02_15-04-05"))
-		err = afero.WriteFile(fs, path, []byte("content"), 0644)
+		err = afero.WriteFile(fs, path, []byte("content"), 0o644)
 		require.NoError(t, err)
 	}
 
@@ -607,7 +607,7 @@ func TestManager_copyFile_PreservesPermissions(t *testing.T) {
 
 	// Create source file with specific permissions
 	sourcePath := "/test/source.txt"
-	err = afero.WriteFile(fs, sourcePath, []byte("content"), 0755)
+	err = afero.WriteFile(fs, sourcePath, []byte("content"), 0o755)
 	require.NoError(t, err)
 
 	// Copy file
@@ -636,7 +636,7 @@ func TestManager_CreateSnapshot_HandlesFileWithoutDot(t *testing.T) {
 	// Create source file without leading dot
 	sourcePath := "/home/user/profile"
 	content := "profile content"
-	err = afero.WriteFile(fs, sourcePath, []byte(content), 0644)
+	err = afero.WriteFile(fs, sourcePath, []byte(content), 0o644)
 	require.NoError(t, err)
 
 	// Create snapshot

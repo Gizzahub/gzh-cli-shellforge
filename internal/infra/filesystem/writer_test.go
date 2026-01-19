@@ -55,7 +55,7 @@ func TestWriter_WriteFile(t *testing.T) {
 
 			// For overwrite test, create existing file
 			if tt.name == "overwrite existing file" {
-				afero.WriteFile(fs, tt.path, []byte("old content"), 0644)
+				afero.WriteFile(fs, tt.path, []byte("old content"), 0o644)
 			}
 
 			// Write file

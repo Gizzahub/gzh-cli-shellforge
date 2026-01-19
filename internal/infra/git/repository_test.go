@@ -110,7 +110,7 @@ func TestRepository_Add(t *testing.T) {
 	t.Run("adds single file", func(t *testing.T) {
 		// Create a test file
 		testFile := filepath.Join(tmpDir, "test.txt")
-		err := os.WriteFile(testFile, []byte("test content"), 0644)
+		err := os.WriteFile(testFile, []byte("test content"), 0o644)
 		require.NoError(t, err)
 
 		// Add the file
@@ -126,7 +126,7 @@ func TestRepository_Add(t *testing.T) {
 	t.Run("adds all files when no paths specified", func(t *testing.T) {
 		// Create another test file
 		testFile2 := filepath.Join(tmpDir, "test2.txt")
-		err := os.WriteFile(testFile2, []byte("test content 2"), 0644)
+		err := os.WriteFile(testFile2, []byte("test content 2"), 0o644)
 		require.NoError(t, err)
 
 		// Add all files
@@ -143,9 +143,9 @@ func TestRepository_Add(t *testing.T) {
 		// Create test files
 		testFile3 := filepath.Join(tmpDir, "test3.txt")
 		testFile4 := filepath.Join(tmpDir, "test4.txt")
-		err := os.WriteFile(testFile3, []byte("test content 3"), 0644)
+		err := os.WriteFile(testFile3, []byte("test content 3"), 0o644)
 		require.NoError(t, err)
-		err = os.WriteFile(testFile4, []byte("test content 4"), 0644)
+		err = os.WriteFile(testFile4, []byte("test content 4"), 0o644)
 		require.NoError(t, err)
 
 		// Add multiple files
@@ -177,7 +177,7 @@ func TestRepository_Commit(t *testing.T) {
 	t.Run("creates commit with staged changes", func(t *testing.T) {
 		// Create and stage a file
 		testFile := filepath.Join(tmpDir, "commit_test.txt")
-		err := os.WriteFile(testFile, []byte("commit test"), 0644)
+		err := os.WriteFile(testFile, []byte("commit test"), 0o644)
 		require.NoError(t, err)
 
 		err = repo.Add("commit_test.txt")
@@ -217,7 +217,7 @@ func TestRepository_AddAndCommit(t *testing.T) {
 	t.Run("stages and commits in one operation", func(t *testing.T) {
 		// Create a test file
 		testFile := filepath.Join(tmpDir, "addcommit_test.txt")
-		err := os.WriteFile(testFile, []byte("add and commit test"), 0644)
+		err := os.WriteFile(testFile, []byte("add and commit test"), 0o644)
 		require.NoError(t, err)
 
 		// Add and commit
@@ -234,9 +234,9 @@ func TestRepository_AddAndCommit(t *testing.T) {
 		// Create test files
 		testFile1 := filepath.Join(tmpDir, "file1.txt")
 		testFile2 := filepath.Join(tmpDir, "file2.txt")
-		err := os.WriteFile(testFile1, []byte("file 1"), 0644)
+		err := os.WriteFile(testFile1, []byte("file 1"), 0o644)
 		require.NoError(t, err)
-		err = os.WriteFile(testFile2, []byte("file 2"), 0644)
+		err = os.WriteFile(testFile2, []byte("file 2"), 0o644)
 		require.NoError(t, err)
 
 		// Add and commit all
@@ -273,7 +273,7 @@ func TestRepository_GetStatus(t *testing.T) {
 	t.Run("returns status for untracked files", func(t *testing.T) {
 		// Create an untracked file
 		testFile := filepath.Join(tmpDir, "untracked.txt")
-		err := os.WriteFile(testFile, []byte("untracked"), 0644)
+		err := os.WriteFile(testFile, []byte("untracked"), 0o644)
 		require.NoError(t, err)
 
 		status, err := repo.GetStatus()
@@ -317,7 +317,7 @@ func TestRepository_HasChanges(t *testing.T) {
 	t.Run("returns true for untracked files", func(t *testing.T) {
 		// Create an untracked file
 		testFile := filepath.Join(tmpDir, "changes_test.txt")
-		err := os.WriteFile(testFile, []byte("changes"), 0644)
+		err := os.WriteFile(testFile, []byte("changes"), 0o644)
 		require.NoError(t, err)
 
 		hasChanges, err := repo.HasChanges()
@@ -338,7 +338,7 @@ func TestRepository_HasChanges(t *testing.T) {
 	t.Run("returns true for modified tracked files", func(t *testing.T) {
 		// Modify the tracked file
 		testFile := filepath.Join(tmpDir, "changes_test.txt")
-		err := os.WriteFile(testFile, []byte("modified content"), 0644)
+		err := os.WriteFile(testFile, []byte("modified content"), 0o644)
 		require.NoError(t, err)
 
 		hasChanges, err := repo.HasChanges()

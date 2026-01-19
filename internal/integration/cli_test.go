@@ -147,17 +147,17 @@ func TestCLI_Build(t *testing.T) {
     description: Test module
     os: [Mac, Linux]
 `
-	require.NoError(t, os.WriteFile(manifestPath, []byte(manifestContent), 0644))
+	require.NoError(t, os.WriteFile(manifestPath, []byte(manifestContent), 0o644))
 
 	// Create test module
 	modulesDir := filepath.Join(tempDir, "modules")
-	require.NoError(t, os.MkdirAll(modulesDir, 0755))
+	require.NoError(t, os.MkdirAll(modulesDir, 0o755))
 	moduleContent := `#!/bin/bash
 # Test module
 export TEST_VAR="test"
 `
 	modulePath := filepath.Join(modulesDir, "test.sh")
-	require.NoError(t, os.WriteFile(modulePath, []byte(moduleContent), 0644))
+	require.NoError(t, os.WriteFile(modulePath, []byte(moduleContent), 0o644))
 
 	outputPath := filepath.Join(tempDir, "output.sh")
 
@@ -227,13 +227,13 @@ func TestCLI_Validate(t *testing.T) {
     description: Test module
     os: [Mac, Linux]
 `
-	require.NoError(t, os.WriteFile(manifestPath, []byte(manifestContent), 0644))
+	require.NoError(t, os.WriteFile(manifestPath, []byte(manifestContent), 0o644))
 
 	modulesDir := filepath.Join(tempDir, "modules")
-	require.NoError(t, os.MkdirAll(modulesDir, 0755))
+	require.NoError(t, os.MkdirAll(modulesDir, 0o755))
 	moduleContent := "#!/bin/bash\necho 'test'\n"
 	modulePath := filepath.Join(modulesDir, "test.sh")
-	require.NoError(t, os.WriteFile(modulePath, []byte(moduleContent), 0644))
+	require.NoError(t, os.WriteFile(modulePath, []byte(moduleContent), 0o644))
 
 	t.Run("valid manifest", func(t *testing.T) {
 		cmd := exec.Command(binary, "validate",
@@ -254,7 +254,7 @@ func TestCLI_Validate(t *testing.T) {
     file: modules/missing.sh
     description: Missing module
 `
-		require.NoError(t, os.WriteFile(badManifest, []byte(badContent), 0644))
+		require.NoError(t, os.WriteFile(badManifest, []byte(badContent), 0o644))
 
 		cmd := exec.Command(binary, "validate",
 			"--manifest", badManifest,
@@ -290,7 +290,7 @@ export PATH="/usr/local/bin:$PATH"
 # --- Aliases ---
 alias gs='git status'
 `
-	require.NoError(t, os.WriteFile(rcPath, []byte(rcContent), 0644))
+	require.NoError(t, os.WriteFile(rcPath, []byte(rcContent), 0o644))
 
 	outputDir := filepath.Join(tempDir, "modules")
 	manifestPath := filepath.Join(tempDir, "manifest.yaml")
@@ -358,7 +358,7 @@ line1
 line2
 line3
 `
-	require.NoError(t, os.WriteFile(file1, []byte(file1Content), 0644))
+	require.NoError(t, os.WriteFile(file1, []byte(file1Content), 0o644))
 
 	file2 := filepath.Join(tempDir, "file2.sh")
 	file2Content := `#!/bin/bash
@@ -367,7 +367,7 @@ line2_modified
 line3
 line4
 `
-	require.NoError(t, os.WriteFile(file2, []byte(file2Content), 0644))
+	require.NoError(t, os.WriteFile(file2, []byte(file2Content), 0o644))
 
 	tests := []struct {
 		name     string
@@ -421,7 +421,7 @@ line4
 
 	t.Run("identical files", func(t *testing.T) {
 		file3 := filepath.Join(tempDir, "file3.sh")
-		require.NoError(t, os.WriteFile(file3, []byte(file1Content), 0644))
+		require.NoError(t, os.WriteFile(file3, []byte(file1Content), 0o644))
 
 		cmd := exec.Command(binary, "diff", file1, file3, "--format", "summary")
 		output, err := cmd.CombinedOutput()

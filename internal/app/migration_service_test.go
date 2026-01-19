@@ -48,7 +48,7 @@ type mockFileWriter struct {
 }
 
 func (m *mockFileWriter) WriteFile(path string, content string) error {
-	return afero.WriteFile(m.fs, path, []byte(content), 0644)
+	return afero.WriteFile(m.fs, path, []byte(content), 0o644)
 }
 
 func TestNewMigrationService(t *testing.T) {

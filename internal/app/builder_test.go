@@ -34,11 +34,11 @@ func TestBuilderService_Build(t *testing.T) {
     requires: [a]
     os: [Mac]
 `
-				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0644)
+				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0o644)
 
 				// Create module files
-				afero.WriteFile(fs, "a.sh", []byte("echo a"), 0644)
-				afero.WriteFile(fs, "b.sh", []byte("echo b"), 0644)
+				afero.WriteFile(fs, "a.sh", []byte("echo a"), 0o644)
+				afero.WriteFile(fs, "b.sh", []byte("echo b"), 0o644)
 			},
 			opts: BuildOptions{
 				ConfigDir: ".",
@@ -73,10 +73,10 @@ func TestBuilderService_Build(t *testing.T) {
     file: both.sh
     os: [Mac, Linux]
 `
-				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0644)
-				afero.WriteFile(fs, "mac.sh", []byte("# Mac"), 0644)
-				afero.WriteFile(fs, "linux.sh", []byte("# Linux"), 0644)
-				afero.WriteFile(fs, "both.sh", []byte("# Both"), 0644)
+				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0o644)
+				afero.WriteFile(fs, "mac.sh", []byte("# Mac"), 0o644)
+				afero.WriteFile(fs, "linux.sh", []byte("# Linux"), 0o644)
+				afero.WriteFile(fs, "both.sh", []byte("# Both"), 0o644)
 			},
 			opts: BuildOptions{
 				ConfigDir: ".",
@@ -101,8 +101,8 @@ func TestBuilderService_Build(t *testing.T) {
     file: test.sh
     os: [Mac]
 `
-				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0644)
-				afero.WriteFile(fs, "test.sh", []byte("echo test"), 0644)
+				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0o644)
+				afero.WriteFile(fs, "test.sh", []byte("echo test"), 0o644)
 			},
 			opts: BuildOptions{
 				ConfigDir: ".",
@@ -124,7 +124,7 @@ func TestBuilderService_Build(t *testing.T) {
     file: missing.sh
     os: [Mac]
 `
-				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0644)
+				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0o644)
 				// Don't create missing.sh
 			},
 			opts: BuildOptions{
@@ -153,9 +153,9 @@ func TestBuilderService_Build(t *testing.T) {
     requires: [a]
     os: [Mac]
 `
-				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0644)
-				afero.WriteFile(fs, "a.sh", []byte("echo a"), 0644)
-				afero.WriteFile(fs, "b.sh", []byte("echo b"), 0644)
+				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0o644)
+				afero.WriteFile(fs, "a.sh", []byte("echo a"), 0o644)
+				afero.WriteFile(fs, "b.sh", []byte("echo b"), 0o644)
 			},
 			opts: BuildOptions{
 				ConfigDir: ".",
@@ -175,8 +175,8 @@ func TestBuilderService_Build(t *testing.T) {
     description: This is a test module
     os: [Mac]
 `
-				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0644)
-				afero.WriteFile(fs, "doc.sh", []byte("echo documented"), 0644)
+				afero.WriteFile(fs, "manifest.yaml", []byte(manifest), 0o644)
+				afero.WriteFile(fs, "doc.sh", []byte("echo documented"), 0o644)
 			},
 			opts: BuildOptions{
 				ConfigDir: ".",

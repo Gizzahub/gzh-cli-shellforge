@@ -156,7 +156,7 @@ func TestLoader_FileNotFound(t *testing.T) {
 
 func TestLoader_InvalidYAML(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	_ = afero.WriteFile(fs, "/invalid/core.yaml", []byte("invalid: yaml: content:"), 0644)
+	_ = afero.WriteFile(fs, "/invalid/core.yaml", []byte("invalid: yaml: content:"), 0o644)
 
 	loader := NewLoader(fs)
 	_, err := loader.LoadCore("/invalid/core.yaml")
@@ -167,7 +167,7 @@ func TestLoader_InvalidYAML(t *testing.T) {
 
 func TestLoader_InvalidContextsYAML(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	_ = afero.WriteFile(fs, "/invalid/contexts.yaml", []byte("invalid: yaml: content:"), 0644)
+	_ = afero.WriteFile(fs, "/invalid/contexts.yaml", []byte("invalid: yaml: content:"), 0o644)
 
 	loader := NewLoader(fs)
 	_, err := loader.LoadContexts("/invalid/contexts.yaml")
@@ -178,7 +178,7 @@ func TestLoader_InvalidContextsYAML(t *testing.T) {
 
 func TestLoader_InvalidDevYAML(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	_ = afero.WriteFile(fs, "/invalid/dev.yaml", []byte("invalid: yaml: content:"), 0644)
+	_ = afero.WriteFile(fs, "/invalid/dev.yaml", []byte("invalid: yaml: content:"), 0o644)
 
 	loader := NewLoader(fs)
 	_, err := loader.LoadDev("/invalid/dev.yaml")
@@ -189,7 +189,7 @@ func TestLoader_InvalidDevYAML(t *testing.T) {
 
 func TestLoader_InvalidAutomationYAML(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	_ = afero.WriteFile(fs, "/invalid/automation.yaml", []byte("invalid: yaml: content:"), 0644)
+	_ = afero.WriteFile(fs, "/invalid/automation.yaml", []byte("invalid: yaml: content:"), 0o644)
 
 	loader := NewLoader(fs)
 	_, err := loader.LoadAutomation("/invalid/automation.yaml")
@@ -200,8 +200,8 @@ func TestLoader_InvalidAutomationYAML(t *testing.T) {
 
 func TestLoader_MissingContextsFile(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	_ = fs.MkdirAll("/partial", 0755)
-	_ = afero.WriteFile(fs, "/partial/core.yaml", []byte("default_shells:\n  mac: zsh"), 0644)
+	_ = fs.MkdirAll("/partial", 0o755)
+	_ = afero.WriteFile(fs, "/partial/core.yaml", []byte("default_shells:\n  mac: zsh"), 0o644)
 
 	loader := NewLoader(fs)
 	_, err := loader.Load("/partial")
@@ -212,9 +212,9 @@ func TestLoader_MissingContextsFile(t *testing.T) {
 
 func TestLoader_MissingDevFile(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	_ = fs.MkdirAll("/partial", 0755)
-	_ = afero.WriteFile(fs, "/partial/core.yaml", []byte("default_shells:\n  mac: zsh"), 0644)
-	_ = afero.WriteFile(fs, "/partial/contexts.yaml", []byte("ssh_profiles:\n  user: []"), 0644)
+	_ = fs.MkdirAll("/partial", 0o755)
+	_ = afero.WriteFile(fs, "/partial/core.yaml", []byte("default_shells:\n  mac: zsh"), 0o644)
+	_ = afero.WriteFile(fs, "/partial/contexts.yaml", []byte("ssh_profiles:\n  user: []"), 0o644)
 
 	loader := NewLoader(fs)
 	_, err := loader.Load("/partial")
@@ -225,10 +225,10 @@ func TestLoader_MissingDevFile(t *testing.T) {
 
 func TestLoader_MissingAutomationFile(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	_ = fs.MkdirAll("/partial", 0755)
-	_ = afero.WriteFile(fs, "/partial/core.yaml", []byte("default_shells:\n  mac: zsh"), 0644)
-	_ = afero.WriteFile(fs, "/partial/contexts.yaml", []byte("ssh_profiles:\n  user: []"), 0644)
-	_ = afero.WriteFile(fs, "/partial/dev.yaml", []byte("language_version_managers: {}"), 0644)
+	_ = fs.MkdirAll("/partial", 0o755)
+	_ = afero.WriteFile(fs, "/partial/core.yaml", []byte("default_shells:\n  mac: zsh"), 0o644)
+	_ = afero.WriteFile(fs, "/partial/contexts.yaml", []byte("ssh_profiles:\n  user: []"), 0o644)
+	_ = afero.WriteFile(fs, "/partial/dev.yaml", []byte("language_version_managers: {}"), 0o644)
 
 	loader := NewLoader(fs)
 	_, err := loader.Load("/partial")
@@ -241,7 +241,7 @@ func setupTestFiles(t *testing.T, fs afero.Fs) {
 	t.Helper()
 
 	// Create directory
-	_ = fs.MkdirAll("/data/shell-profiles", 0755)
+	_ = fs.MkdirAll("/data/shell-profiles", 0o755)
 
 	// core.yaml
 	coreYAML := `
@@ -293,7 +293,7 @@ default_shells:
   linux:
     ubuntu: "bash"
 `
-	_ = afero.WriteFile(fs, "/data/shell-profiles/core.yaml", []byte(coreYAML), 0644)
+	_ = afero.WriteFile(fs, "/data/shell-profiles/core.yaml", []byte(coreYAML), 0o644)
 
 	// contexts.yaml
 	contextsYAML := `
@@ -389,7 +389,7 @@ xdg_environment:
   set_by:
     - Display manager
 `
-	_ = afero.WriteFile(fs, "/data/shell-profiles/contexts.yaml", []byte(contextsYAML), 0644)
+	_ = afero.WriteFile(fs, "/data/shell-profiles/contexts.yaml", []byte(contextsYAML), 0o644)
 
 	// dev.yaml
 	devYAML := `
@@ -455,7 +455,7 @@ language_version_managers:
     environment_activation: true
     typical_problem: "conda not activated"
 `
-	_ = afero.WriteFile(fs, "/data/shell-profiles/dev.yaml", []byte(devYAML), 0644)
+	_ = afero.WriteFile(fs, "/data/shell-profiles/dev.yaml", []byte(devYAML), 0o644)
 
 	// automation.yaml
 	automationYAML := `
@@ -657,5 +657,5 @@ system_environment:
     loaded_by: "systemd"
     scope: "systemd services"
 `
-	_ = afero.WriteFile(fs, "/data/shell-profiles/automation.yaml", []byte(automationYAML), 0644)
+	_ = afero.WriteFile(fs, "/data/shell-profiles/automation.yaml", []byte(automationYAML), 0o644)
 }

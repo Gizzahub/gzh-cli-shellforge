@@ -92,7 +92,7 @@ func TestParser_Parse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create in-memory filesystem
 			fs := afero.NewMemMapFs()
-			afero.WriteFile(fs, "manifest.yaml", []byte(tt.content), 0644)
+			afero.WriteFile(fs, "manifest.yaml", []byte(tt.content), 0o644)
 
 			// Parse
 			parser := New(fs)

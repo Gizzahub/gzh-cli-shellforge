@@ -24,8 +24,8 @@ func TestComparator_Compare_IdenticalFiles(t *testing.T) {
 
 	// Create identical files
 	content := "line1\nline2\nline3\n"
-	afero.WriteFile(fs, "/original.sh", []byte(content), 0644)
-	afero.WriteFile(fs, "/generated.sh", []byte(content), 0644)
+	afero.WriteFile(fs, "/original.sh", []byte(content), 0o644)
+	afero.WriteFile(fs, "/generated.sh", []byte(content), 0o644)
 
 	result, err := comp.Compare("/original.sh", "/generated.sh", domain.DiffFormatSummary)
 
@@ -44,10 +44,10 @@ func TestComparator_Compare_AddedLines(t *testing.T) {
 	comp := NewComparator(fs)
 
 	originalContent := "line1\nline2\n"
-	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
+	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
 
 	generatedContent := "line1\nline2\nline3\nline4\n"
-	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 	result, err := comp.Compare("/original.sh", "/generated.sh", domain.DiffFormatSummary)
 
@@ -63,10 +63,10 @@ func TestComparator_Compare_UnifiedFormat(t *testing.T) {
 	comp := NewComparator(fs)
 
 	originalContent := "line1\nline2\nline3\n"
-	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
+	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
 
 	generatedContent := "line1\nline2_modified\nline3\nline4\n"
-	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 	result, err := comp.Compare("/original.sh", "/generated.sh", domain.DiffFormatUnified)
 
@@ -84,10 +84,10 @@ func TestComparator_Compare_ContextFormat(t *testing.T) {
 	comp := NewComparator(fs)
 
 	originalContent := "line1\nline2\nline3\n"
-	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
+	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
 
 	generatedContent := "line1\nline2_modified\nline3\n"
-	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 	result, err := comp.Compare("/original.sh", "/generated.sh", domain.DiffFormatContext)
 
@@ -104,10 +104,10 @@ func TestComparator_Compare_SideBySideFormat(t *testing.T) {
 	comp := NewComparator(fs)
 
 	originalContent := "line1\nline2\nline3\n"
-	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
+	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
 
 	generatedContent := "line1\nline2_modified\nline3\nline4\n"
-	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 	result, err := comp.Compare("/original.sh", "/generated.sh", domain.DiffFormatSideBySide)
 
@@ -125,10 +125,10 @@ func TestComparator_Compare_RemovedLines(t *testing.T) {
 	comp := NewComparator(fs)
 
 	originalContent := "line1\nline2\nline3\nline4\n"
-	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
+	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
 
 	generatedContent := "line1\nline3\n"
-	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 	result, err := comp.Compare("/original.sh", "/generated.sh", domain.DiffFormatSummary)
 
@@ -144,10 +144,10 @@ func TestComparator_Compare_ModifiedLines(t *testing.T) {
 	comp := NewComparator(fs)
 
 	originalContent := "line1\nline2\nline3\n"
-	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
+	afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
 
 	generatedContent := "line1_modified\nline2\nline3_modified\n"
-	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+	afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 	result, err := comp.Compare("/original.sh", "/generated.sh", domain.DiffFormatSummary)
 
@@ -171,8 +171,8 @@ func TestComparator_Compare_EmptyFiles(t *testing.T) {
 	fs := afero.NewMemMapFs()
 	comp := NewComparator(fs)
 
-	afero.WriteFile(fs, "/empty1.sh", []byte(""), 0644)
-	afero.WriteFile(fs, "/empty2.sh", []byte(""), 0644)
+	afero.WriteFile(fs, "/empty1.sh", []byte(""), 0o644)
+	afero.WriteFile(fs, "/empty2.sh", []byte(""), 0o644)
 
 	result, err := comp.Compare("/empty1.sh", "/empty2.sh", domain.DiffFormatSummary)
 

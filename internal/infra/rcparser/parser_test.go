@@ -26,7 +26,7 @@ export NVM_DIR="$HOME/.nvm"
 alias ll='ls -la'
 alias gs='git status'
 `
-		afero.WriteFile(fs, "/test.zshrc", []byte(content), 0644)
+		afero.WriteFile(fs, "/test.zshrc", []byte(content), 0o644)
 
 		parser := New(fs)
 		result, err := parser.ParseFile("/test.zshrc")
@@ -71,7 +71,7 @@ alias gs='git status'
 
 	t.Run("handles empty file", func(t *testing.T) {
 		fs := afero.NewMemMapFs()
-		afero.WriteFile(fs, "/empty.zshrc", []byte(""), 0644)
+		afero.WriteFile(fs, "/empty.zshrc", []byte(""), 0o644)
 
 		parser := New(fs)
 		result, err := parser.ParseFile("/empty.zshrc")
@@ -87,7 +87,7 @@ alias gs='git status'
 export PATH=/usr/local/bin:$PATH
 export EDITOR=vim
 `
-		afero.WriteFile(fs, "/preamble.zshrc", []byte(content), 0644)
+		afero.WriteFile(fs, "/preamble.zshrc", []byte(content), 0o644)
 
 		parser := New(fs)
 		result, err := parser.ParseFile("/preamble.zshrc")
@@ -105,7 +105,7 @@ if [ "$MACHINE" = "Mac" ]; then
   eval "$(brew shellenv)"
 fi
 `
-		afero.WriteFile(fs, "/test.zshrc", []byte(content), 0644)
+		afero.WriteFile(fs, "/test.zshrc", []byte(content), 0o644)
 
 		parser := New(fs)
 		result, err := parser.ParseFile("/test.zshrc")
@@ -130,7 +130,7 @@ case $MACHINE in
     ;;
 esac
 `
-		afero.WriteFile(fs, "/test.zshrc", []byte(content), 0644)
+		afero.WriteFile(fs, "/test.zshrc", []byte(content), 0o644)
 
 		parser := New(fs)
 		result, err := parser.ParseFile("/test.zshrc")
@@ -147,7 +147,7 @@ esac
 		content := `# --- Test Section ---
 echo "test"
 `
-		afero.WriteFile(fs, "/test.zshrc", []byte(content), 0644)
+		afero.WriteFile(fs, "/test.zshrc", []byte(content), 0o644)
 
 		parser := New(fs)
 		result, err := parser.ParseFile("/test.zshrc")

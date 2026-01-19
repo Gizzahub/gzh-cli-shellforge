@@ -16,12 +16,12 @@ func DryRunNotice() {
 
 // SnapshotInfo prints snapshot information in a consistent format
 type SnapshotInfo struct {
-	Timestamp   string
-	Size        string
-	Location    string
-	Target      string
-	GitStatus   string
-	ShowGit     bool
+	Timestamp    string
+	Size         string
+	Location     string
+	Target       string
+	GitStatus    string
+	ShowGit      bool
 	GitCommitted bool
 }
 

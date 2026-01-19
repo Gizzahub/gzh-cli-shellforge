@@ -19,7 +19,7 @@ func TestReader_ReadFile(t *testing.T) {
 		{
 			name: "read existing file",
 			setup: func(fs afero.Fs) {
-				afero.WriteFile(fs, "test.txt", []byte("hello world"), 0644)
+				afero.WriteFile(fs, "test.txt", []byte("hello world"), 0o644)
 			},
 			path:     "test.txt",
 			expected: "hello world",
@@ -28,7 +28,7 @@ func TestReader_ReadFile(t *testing.T) {
 		{
 			name: "read file with newlines",
 			setup: func(fs afero.Fs) {
-				afero.WriteFile(fs, "multiline.txt", []byte("line1\nline2\nline3"), 0644)
+				afero.WriteFile(fs, "multiline.txt", []byte("line1\nline2\nline3"), 0o644)
 			},
 			path:     "multiline.txt",
 			expected: "line1\nline2\nline3",
@@ -43,8 +43,8 @@ func TestReader_ReadFile(t *testing.T) {
 		{
 			name: "read nested file",
 			setup: func(fs afero.Fs) {
-				fs.MkdirAll("a/b/c", 0755)
-				afero.WriteFile(fs, "a/b/c/nested.txt", []byte("nested content"), 0644)
+				fs.MkdirAll("a/b/c", 0o755)
+				afero.WriteFile(fs, "a/b/c/nested.txt", []byte("nested content"), 0o644)
 			},
 			path:     "a/b/c/nested.txt",
 			expected: "nested content",
@@ -84,7 +84,7 @@ func TestReader_FileExists(t *testing.T) {
 		{
 			name: "file exists",
 			setup: func(fs afero.Fs) {
-				afero.WriteFile(fs, "exists.txt", []byte("content"), 0644)
+				afero.WriteFile(fs, "exists.txt", []byte("content"), 0o644)
 			},
 			path:     "exists.txt",
 			expected: true,
@@ -98,7 +98,7 @@ func TestReader_FileExists(t *testing.T) {
 		{
 			name: "directory exists",
 			setup: func(fs afero.Fs) {
-				fs.MkdirAll("testdir", 0755)
+				fs.MkdirAll("testdir", 0o755)
 			},
 			path:     "testdir",
 			expected: true,
@@ -106,8 +106,8 @@ func TestReader_FileExists(t *testing.T) {
 		{
 			name: "nested file exists",
 			setup: func(fs afero.Fs) {
-				fs.MkdirAll("a/b", 0755)
-				afero.WriteFile(fs, "a/b/file.txt", []byte("test"), 0644)
+				fs.MkdirAll("a/b", 0o755)
+				afero.WriteFile(fs, "a/b/file.txt", []byte("test"), 0o644)
 			},
 			path:     "a/b/file.txt",
 			expected: true,

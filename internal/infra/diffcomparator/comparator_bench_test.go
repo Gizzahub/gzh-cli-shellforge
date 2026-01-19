@@ -29,8 +29,8 @@ func BenchmarkComparator_Compare_Identical(b *testing.B) {
 
 			// Generate file content
 			content := generateFileContent(size.lines)
-			afero.WriteFile(fs, "/original.sh", []byte(content), 0644)
-			afero.WriteFile(fs, "/generated.sh", []byte(content), 0644)
+			afero.WriteFile(fs, "/original.sh", []byte(content), 0o644)
+			afero.WriteFile(fs, "/generated.sh", []byte(content), 0o644)
 
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -65,8 +65,8 @@ func BenchmarkComparator_Compare_Additions(b *testing.B) {
 			originalContent := generateFileContent(scenario.originalLines)
 			generatedContent := originalContent + generateFileContent(scenario.addedLines)
 
-			afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
-			afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+			afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
+			afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -101,8 +101,8 @@ func BenchmarkComparator_Compare_Modifications(b *testing.B) {
 			originalContent := generateFileContent(scenario.totalLines)
 			generatedContent := modifyContent(originalContent, scenario.modifiedPct)
 
-			afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
-			afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+			afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
+			afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -136,8 +136,8 @@ func BenchmarkComparator_Compare_Formats(b *testing.B) {
 			fs := afero.NewMemMapFs()
 			comp := NewComparator(fs)
 
-			afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
-			afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+			afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
+			afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
@@ -170,8 +170,8 @@ func BenchmarkComparator_Compare_RealWorld(b *testing.B) {
 			originalContent := generateShellConfig(scenario.originalSize)
 			generatedContent := applyRealWorldChanges(originalContent, scenario.changeType)
 
-			afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0644)
-			afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0644)
+			afero.WriteFile(fs, "/original.sh", []byte(originalContent), 0o644)
+			afero.WriteFile(fs, "/generated.sh", []byte(generatedContent), 0o644)
 
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {

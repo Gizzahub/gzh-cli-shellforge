@@ -122,6 +122,24 @@ func (r *TargetResolver) GetDefaultTarget() string {
 	}
 }
 
+// GetRelativePath returns the home-relative path for a target (e.g., ".zshrc", ".config/fish/config.fish").
+// This is used for deploy metadata.
+func (r *TargetResolver) GetRelativePath(target string) (string, error) {
+	target = strings.ToLower(target)
+
+	shellMap, ok := r.pathMaps[r.shellType]
+	if !ok {
+		return "", NewValidationError("unsupported shell type: %s", r.shellType)
+	}
+
+	relPath, ok := shellMap[target]
+	if !ok {
+		return "", NewValidationError("invalid target '%s' for shell type '%s'", target, r.shellType)
+	}
+
+	return relPath, nil
+}
+
 // GetTargetDescription returns a human-readable description of what a target file does.
 func GetTargetDescription(target string) string {
 	descriptions := map[string]string{

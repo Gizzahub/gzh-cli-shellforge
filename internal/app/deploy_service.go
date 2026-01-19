@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
+
+	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
 // DirectoryReader extends FileReader with directory listing.
@@ -14,10 +15,11 @@ type DirectoryReader interface {
 	ListDir(path string) ([]string, error)
 }
 
-// BackupWriter extends FileWriter with backup support.
+// BackupWriter extends FileWriter with backup and directory support.
 type BackupWriter interface {
 	FileWriter
 	Copy(src, dst string) error
+	MkdirAll(path string) error
 }
 
 // DeployService implements the deploy use case.
@@ -83,36 +85,63 @@ func (s *DeployService) Deploy(opts DeployOptions) (*DeployResult, error) {
 		return nil, fmt.Errorf("build directory not found: %s\n\nRun 'gz-shellforge build' first to generate configuration files", opts.BuildDir)
 	}
 
-	// List files in build directory
-	files, err := s.reader.ListDir(opts.BuildDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list build directory: %w", err)
+	// Read metadata file
+	metaPath := filepath.Join(opts.BuildDir, domain.MetadataFileName)
+	if !s.reader.FileExists(metaPath) {
+		return nil, fmt.Errorf("metadata file not found: %s\n\nRun 'gz-shellforge build' to regenerate", metaPath)
 	}
 
-	if len(files) == 0 {
-		return nil, fmt.Errorf("no files found in build directory: %s\n\nRun 'gz-shellforge build' first to generate configuration files", opts.BuildDir)
+	metaContent, err := s.reader.ReadFile(metaPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read metadata: %w", err)
+	}
+
+	metadata, err := domain.ParseBuildMetadata([]byte(metaContent))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse metadata: %w", err)
+	}
+
+	if len(metadata.Files) == 0 {
+		return nil, fmt.Errorf("no files found in build metadata\n\nRun 'gz-shellforge build' first to generate configuration files")
 	}
 
 	result := &DeployResult{
-		TotalFiles:  len(files),
+		TotalFiles:  len(metadata.Files),
 		BackupPaths: make(map[string]string),
 		DeployedAt:  time.Now(),
 	}
 
-	// Process each file
-	for _, file := range files {
-		sourcePath := filepath.Join(opts.BuildDir, file)
-		destPath := s.resolveDestPath(file, opts.HomeDir)
+	// Process each file from metadata
+	for _, fileInfo := range metadata.Files {
+		sourcePath := filepath.Join(opts.BuildDir, fileInfo.Source)
+		destPath := filepath.Join(opts.HomeDir, fileInfo.DestPath)
 
 		deployed := DeployedFile{
 			SourcePath: sourcePath,
 			DestPath:   destPath,
 		}
 
+		// Check source file exists
+		if !s.reader.FileExists(sourcePath) {
+			deployed.Error = fmt.Errorf("source file not found: %s", sourcePath)
+			result.ErrorCount++
+			result.DeployedFiles = append(result.DeployedFiles, deployed)
+			continue
+		}
+
 		// Skip if dry-run
 		if opts.DryRun {
 			deployed.Skipped = true
 			result.SkippedCount++
+			result.DeployedFiles = append(result.DeployedFiles, deployed)
+			continue
+		}
+
+		// Ensure destination directory exists (for nested paths like .config/fish/)
+		destDir := filepath.Dir(destPath)
+		if err := s.ensureDir(destDir); err != nil {
+			deployed.Error = fmt.Errorf("failed to create directory %s: %w", destDir, err)
+			result.ErrorCount++
 			result.DeployedFiles = append(result.DeployedFiles, deployed)
 			continue
 		}
@@ -146,30 +175,9 @@ func (s *DeployService) Deploy(opts DeployOptions) (*DeployResult, error) {
 	return result, nil
 }
 
-// resolveDestPath converts a build file name to its actual destination path.
-// For example: ".zshrc" -> "~/.zshrc"
-func (s *DeployService) resolveDestPath(filename string, homeDir string) string {
-	// RC files typically go to home directory
-	if strings.HasPrefix(filename, ".") {
-		return filepath.Join(homeDir, filename)
-	}
-
-	// Handle non-dotfiles (e.g., "zshrc" -> "~/.zshrc")
-	knownRCFiles := map[string]string{
-		"zshrc":        ".zshrc",
-		"zprofile":     ".zprofile",
-		"zshenv":       ".zshenv",
-		"bashrc":       ".bashrc",
-		"profile":      ".profile",
-		"bash_profile": ".bash_profile",
-	}
-
-	if dotName, ok := knownRCFiles[filename]; ok {
-		return filepath.Join(homeDir, dotName)
-	}
-
-	// Default: prefix with dot and place in home
-	return filepath.Join(homeDir, "."+filename)
+// ensureDir creates a directory if it doesn't exist.
+func (s *DeployService) ensureDir(dir string) error {
+	return s.writer.MkdirAll(dir)
 }
 
 // createBackup creates a timestamped backup of a file.

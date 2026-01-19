@@ -45,3 +45,8 @@ func (w *Writer) Copy(src, dst string) error {
 	// Write to destination
 	return afero.WriteFile(w.fs, dst, data, 0o644)
 }
+
+// MkdirAll creates a directory and all parent directories.
+func (w *Writer) MkdirAll(path string) error {
+	return w.fs.MkdirAll(path, 0o755)
+}

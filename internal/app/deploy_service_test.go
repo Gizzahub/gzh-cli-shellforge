@@ -3,6 +3,9 @@ package app
 import (
 	"path/filepath"
 	"testing"
+	"time"
+
+	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
 // MockDirectoryReader implements DirectoryReader for testing.
@@ -73,9 +76,26 @@ func (m *MockBackupWriter) Copy(src, dst string) error {
 	return nil
 }
 
+func (m *MockBackupWriter) MkdirAll(path string) error {
+	// Mock implementation - just track that the directory was created
+	return nil
+}
+
 func (m *MockBackupWriter) GetFile(path string) (string, bool) {
 	content, ok := m.files[path]
 	return content, ok
+}
+
+// createTestMetadata creates a JSON metadata file content for testing.
+func createTestMetadata(files []domain.BuildFileInfo) string {
+	meta := &domain.BuildMetadata{
+		Shell:       "zsh",
+		OS:          "Mac",
+		GeneratedAt: time.Now(),
+		Files:       files,
+	}
+	data, _ := meta.ToJSON()
+	return string(data)
 }
 
 func TestDeployService_Deploy_Success(t *testing.T) {
@@ -83,8 +103,14 @@ func TestDeployService_Deploy_Success(t *testing.T) {
 	writer := NewMockBackupWriter()
 	service := NewDeployService(reader, writer)
 
-	// Setup: build directory with files
+	// Setup: build directory with files and metadata
 	reader.AddDirectory("./build", []string{".zshrc", ".zprofile"})
+	reader.AddFile("build/.zshrc", "zshrc content")
+	reader.AddFile("build/.zprofile", "zprofile content")
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{
+		{Source: ".zshrc", Target: "zshrc", DestPath: ".zshrc"},
+		{Source: ".zprofile", Target: "zprofile", DestPath: ".zprofile"},
+	}))
 
 	opts := DeployOptions{
 		BuildDir: "./build",
@@ -113,12 +139,48 @@ func TestDeployService_Deploy_Success(t *testing.T) {
 	}
 }
 
+func TestDeployService_Deploy_FishNestedPath(t *testing.T) {
+	reader := NewMockDirectoryReader()
+	writer := NewMockBackupWriter()
+	service := NewDeployService(reader, writer)
+
+	// Setup: fish shell with nested config path
+	reader.AddDirectory("./build", []string{"config.fish"})
+	reader.AddFile("build/config.fish", "fish config content")
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{
+		{Source: "config.fish", Target: "config", DestPath: ".config/fish/config.fish"},
+	}))
+
+	opts := DeployOptions{
+		BuildDir: "./build",
+		HomeDir:  "/home/test",
+	}
+
+	result, err := service.Deploy(opts)
+	if err != nil {
+		t.Fatalf("Deploy() error = %v", err)
+	}
+
+	if result.DeployedCount != 1 {
+		t.Errorf("DeployedCount = %d, want 1", result.DeployedCount)
+	}
+
+	// Verify file was written to nested path
+	if _, ok := writer.GetFile("/home/test/.config/fish/config.fish"); !ok {
+		t.Error("Expected config.fish to be deployed to ~/.config/fish/config.fish")
+	}
+}
+
 func TestDeployService_Deploy_DryRun(t *testing.T) {
 	reader := NewMockDirectoryReader()
 	writer := NewMockBackupWriter()
 	service := NewDeployService(reader, writer)
 
 	reader.AddDirectory("./build", []string{".zshrc"})
+	reader.AddFile("build/.zshrc", "zshrc content")
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{
+		{Source: ".zshrc", Target: "zshrc", DestPath: ".zshrc"},
+	}))
 
 	opts := DeployOptions{
 		BuildDir: "./build",
@@ -152,6 +214,10 @@ func TestDeployService_Deploy_WithBackup(t *testing.T) {
 
 	// Setup: build directory and existing destination file
 	reader.AddDirectory("./build", []string{".zshrc"})
+	reader.AddFile("build/.zshrc", "new zshrc content")
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{
+		{Source: ".zshrc", Target: "zshrc", DestPath: ".zshrc"},
+	}))
 	reader.AddFile("/home/test/.zshrc", "existing content")
 
 	opts := DeployOptions{
@@ -191,12 +257,13 @@ func TestDeployService_Deploy_BuildDirNotFound(t *testing.T) {
 	}
 }
 
-func TestDeployService_Deploy_EmptyBuildDir(t *testing.T) {
+func TestDeployService_Deploy_MetadataNotFound(t *testing.T) {
 	reader := NewMockDirectoryReader()
 	writer := NewMockBackupWriter()
 	service := NewDeployService(reader, writer)
 
-	reader.AddDirectory("./build", []string{})
+	// Build directory exists but no metadata
+	reader.AddDirectory("./build", []string{".zshrc"})
 
 	opts := DeployOptions{
 		BuildDir: "./build",
@@ -205,32 +272,25 @@ func TestDeployService_Deploy_EmptyBuildDir(t *testing.T) {
 
 	_, err := service.Deploy(opts)
 	if err == nil {
-		t.Error("Deploy() expected error for empty build directory")
+		t.Error("Deploy() expected error for missing metadata file")
 	}
 }
 
-func TestDeployService_resolveDestPath(t *testing.T) {
-	service := &DeployService{}
+func TestDeployService_Deploy_EmptyMetadata(t *testing.T) {
+	reader := NewMockDirectoryReader()
+	writer := NewMockBackupWriter()
+	service := NewDeployService(reader, writer)
 
-	tests := []struct {
-		filename string
-		homeDir  string
-		want     string
-	}{
-		{".zshrc", "/home/user", "/home/user/.zshrc"},
-		{".zprofile", "/home/user", "/home/user/.zprofile"},
-		{"zshrc", "/home/user", "/home/user/.zshrc"},
-		{"bashrc", "/home/user", "/home/user/.bashrc"},
-		{"profile", "/home/user", "/home/user/.profile"},
-		{"custom", "/home/user", "/home/user/.custom"},
+	reader.AddDirectory("./build", []string{})
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{}))
+
+	opts := DeployOptions{
+		BuildDir: "./build",
+		HomeDir:  "/home/test",
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.filename, func(t *testing.T) {
-			got := service.resolveDestPath(tt.filename, tt.homeDir)
-			if got != tt.want {
-				t.Errorf("resolveDestPath(%q, %q) = %q, want %q", tt.filename, tt.homeDir, got, tt.want)
-			}
-		})
+	_, err := service.Deploy(opts)
+	if err == nil {
+		t.Error("Deploy() expected error for empty metadata")
 	}
 }

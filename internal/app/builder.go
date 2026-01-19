@@ -179,6 +179,9 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 	}
 	sort.Strings(targetNames)
 
+	// Collect metadata for deploy
+	var metaFiles []domain.BuildFileInfo
+
 	for _, target := range targetNames {
 		mods := targetGroups[target]
 		if len(mods) == 0 {
@@ -186,6 +189,12 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 		}
 
 		filePath, err := resolver.Resolve(target)
+		if err != nil {
+			return nil, err
+		}
+
+		// Get relative path for deploy metadata
+		destPath, err := resolver.GetRelativePath(target)
 		if err != nil {
 			return nil, err
 		}
@@ -209,6 +218,31 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 		}
 
 		results = append(results, result)
+
+		// Add to metadata
+		metaFiles = append(metaFiles, domain.BuildFileInfo{
+			Source:   filepath.Base(filePath),
+			Target:   target,
+			DestPath: destPath,
+		})
+	}
+
+	// Write metadata file (unless dry-run)
+	if !opts.DryRun {
+		metadata := &domain.BuildMetadata{
+			Shell:       shellType,
+			OS:          opts.OS,
+			GeneratedAt: now,
+			Files:       metaFiles,
+		}
+		metaJSON, err := metadata.ToJSON()
+		if err != nil {
+			return nil, fmt.Errorf("failed to serialize metadata: %w", err)
+		}
+		metaPath := filepath.Join(outputDir, domain.MetadataFileName)
+		if err := s.fileWriter.WriteFile(metaPath, string(metaJSON)); err != nil {
+			return nil, fmt.Errorf("failed to write metadata: %w", err)
+		}
 	}
 
 	return &BuildResult{

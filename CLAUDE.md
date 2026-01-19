@@ -49,8 +49,8 @@ import (
 
 | Package | Purpose |
 |---------|---------|
-| `internal/app` | Application services, Builder |
-| `internal/cli` | Command handlers |
+| `internal/app` | Application services (Builder, DeployService) |
+| `internal/cli` | Command handlers (build, deploy, validate, etc.) |
 | `internal/cli/errors` | CLI error handling |
 | `internal/cli/output` | Result formatting |
 | `internal/domain` | Module, Manifest, Graph |
@@ -92,6 +92,45 @@ make test-coverage
 - Test coverage: 80%+ for core logic
 - **Sanitize shell inputs** - prevent command injection
 - **Safe file operations** - validate paths, check permissions
+
+---
+
+## CLI Commands
+
+### Build & Deploy Workflow
+
+```bash
+# Build configuration (OS auto-detected, outputs to ./build/)
+gz-shellforge build
+
+# Preview build output
+gz-shellforge build --dry-run
+
+# Deploy to home directory with backup
+gz-shellforge deploy --backup
+
+# Full workflow
+gz-shellforge build && gz-shellforge deploy --dry-run
+gz-shellforge build && gz-shellforge deploy --backup
+```
+
+### Key Commands
+
+| Command | Purpose |
+|---------|---------|
+| `build` | Generate shell config from modules (OS auto-detected, default: ./build/) |
+| `deploy` | Copy built files to actual paths (~/.zshrc, etc.) |
+| `validate` | Check manifest and module files |
+| `list` | List available modules |
+| `backup` | Backup current shell configurations |
+| `restore` | Restore from backup |
+
+### Build Options
+
+- `--os` - Target OS (auto-detected if omitted)
+- `--output-dir` - Output directory (default: `./build/`)
+- `--dry-run` - Preview without writing files
+- `--backup` - Backup existing files before overwriting
 
 ---
 
@@ -145,4 +184,4 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ---
 
-**Last Updated**: 2025-01-19
+**Last Updated**: 2026-01-19

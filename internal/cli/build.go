@@ -52,8 +52,14 @@ The build process:
   4. Groups modules by target RC file (v2) or combines them (legacy)
   5. Sorts modules by priority within each target
   6. Writes the output file(s)`,
-		Example: `  # Multi-target build for macOS (writes ~/.zshrc, ~/.zprofile, etc.)
-  gz-shellforge build --os Mac --output-dir ~
+		Example: `  # Build to default ./build/ directory (OS auto-detected)
+  gz-shellforge build
+
+  # Build with explicit OS and output directory
+  gz-shellforge build --os Mac --output-dir ~/staging
+
+  # Dry run to preview output (OS auto-detected)
+  gz-shellforge build --dry-run
 
   # Build for bash on Linux
   gz-shellforge build --os Linux --shell bash --output-dir ~
@@ -61,27 +67,21 @@ The build process:
   # Build only specific targets
   gz-shellforge build --os Mac --target zshrc --target zprofile
 
-  # Dry run to preview output
-  gz-shellforge build --os Mac --dry-run
-
-  # Build to staging directory
-  gz-shellforge build --os Mac --output-dir ./staging
-
   # Legacy: single file output
   gz-shellforge build --os Mac --single-output ~/.zshrc
 
   # With backup of existing files
-  gz-shellforge build --os Mac --output-dir ~ --backup`,
+  gz-shellforge build --output-dir ~ --backup`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runBuild(flags)
 		},
 	}
 
-	// Required flags
-	cmd.Flags().StringVar(&flags.targetOS, "os", "", "Target operating system (Mac, Linux, etc.) - REQUIRED")
+	// OS flag (auto-detected if not specified)
+	cmd.Flags().StringVar(&flags.targetOS, "os", "", "Target operating system (auto-detected if not specified)")
 
 	// Multi-target options (v2)
-	cmd.Flags().StringVarP(&flags.outputDir, "output-dir", "d", "", "Output directory for RC files")
+	cmd.Flags().StringVarP(&flags.outputDir, "output-dir", "d", "", "Output directory for RC files (default: ./build)")
 	cmd.Flags().StringVarP(&flags.shell, "shell", "s", "", "Shell type (zsh, bash, fish)")
 	cmd.Flags().StringArrayVarP(&flags.targets, "target", "t", nil, "Specific targets to build (can be repeated)")
 	cmd.Flags().BoolVar(&flags.backup, "backup", false, "Create backup of existing files")
@@ -103,35 +103,25 @@ The build process:
 }
 
 func runBuild(flags *buildFlags) error {
-	// Validate required flags
+	// Auto-detect OS if not specified
 	if flags.targetOS == "" {
-		return fmt.Errorf(`--os flag is required
-
-Please specify your target operating system:
-  gz-shellforge build --os Mac              # For macOS
-  gz-shellforge build --os Linux            # For Linux
-  gz-shellforge build --os Mac --dry-run    # Preview without writing
-
-Common OS values: Mac, Linux, BSD, Windows`)
+		flags.targetOS = helpers.DetectOS()
+		if flags.verbose {
+			fmt.Printf("Auto-detected OS: %s\n", flags.targetOS)
+		}
 	}
 
 	// Determine build mode
 	isLegacyMode := flags.singleOutput != ""
 	hasOutputDir := flags.outputDir != ""
 
-	// Validate output specification
+	// Set default output directory if not specified
 	if !flags.dryRun && !isLegacyMode && !hasOutputDir {
-		return fmt.Errorf(`output not specified
-
-Use one of the following:
-  --output-dir, -d    Output directory for multi-target build
-  --single-output, -o Single output file (legacy mode)
-  --dry-run           Preview without writing files
-
-Examples:
-  gz-shellforge build --os Mac --output-dir ~
-  gz-shellforge build --os Mac --single-output ~/.zshrc
-  gz-shellforge build --os Mac --dry-run`)
+		flags.outputDir = "./build"
+		hasOutputDir = true
+		if flags.verbose {
+			fmt.Printf("Using default output directory: %s\n", flags.outputDir)
+		}
 	}
 
 	if isLegacyMode && hasOutputDir {

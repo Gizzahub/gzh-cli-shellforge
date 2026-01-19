@@ -7,9 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	version = "0.5.1"
-)
+var version = "0.5.1"
 
 // NewRootCmd creates the root command
 func NewRootCmd() *cobra.Command {
@@ -28,6 +26,7 @@ single shell configuration file.`,
 
 	// Add subcommands
 	cmd.AddCommand(newBuildCmd())
+	cmd.AddCommand(newDeployCmd())
 	cmd.AddCommand(newValidateCmd())
 	cmd.AddCommand(newListCmd())
 	cmd.AddCommand(newBackupCmd())

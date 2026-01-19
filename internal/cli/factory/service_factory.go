@@ -35,6 +35,11 @@ func (s *Services) NewBuilder() *app.BuilderService {
 	return app.NewBuilderService(s.Parser, s.Reader, s.Writer)
 }
 
+// NewDeployer creates a DeployService from the services
+func (s *Services) NewDeployer() *app.DeployService {
+	return app.NewDeployService(s.Reader, s.Writer)
+}
+
 // BackupServices holds services specifically for backup operations
 type BackupServices struct {
 	Fs            afero.Fs

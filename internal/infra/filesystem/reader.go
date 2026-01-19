@@ -28,3 +28,19 @@ func (r *Reader) FileExists(path string) bool {
 	exists, err := afero.Exists(r.fs, path)
 	return err == nil && exists
 }
+
+// ListDir returns the list of files in a directory (non-recursive).
+func (r *Reader) ListDir(path string) ([]string, error) {
+	entries, err := afero.ReadDir(r.fs, path)
+	if err != nil {
+		return nil, err
+	}
+
+	var files []string
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			files = append(files, entry.Name())
+		}
+	}
+	return files, nil
+}

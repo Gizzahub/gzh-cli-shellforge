@@ -66,14 +66,14 @@ func TestRunBuild_ValidationErrors(t *testing.T) {
 		wantErr string
 	}{
 		{
-			name: "missing output and not dry-run",
+			name: "conflicting output options",
 			flags: &buildFlags{
 				targetOS:     "Mac",
-				singleOutput: "",
-				outputDir:    "",
+				singleOutput: "/tmp/output.sh",
+				outputDir:    "/tmp/dir",
 				dryRun:       false,
 			},
-			wantErr: "output not specified",
+			wantErr: "cannot use both --single-output and --output-dir",
 		},
 	}
 
@@ -239,14 +239,14 @@ func TestBuildFlags_Validation(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "invalid - no output and no dry-run",
+			name: "valid - uses default output dir when not specified",
 			setup: func(f *buildFlags) {
 				f.targetOS = "Mac"
 				f.singleOutput = ""
 				f.outputDir = ""
 				f.dryRun = false
 			},
-			wantErr: true,
+			wantErr: false, // Now uses ./build as default
 		},
 	}
 

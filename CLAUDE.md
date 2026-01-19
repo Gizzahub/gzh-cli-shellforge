@@ -129,8 +129,15 @@ gz-shellforge build && gz-shellforge deploy --backup
 
 - `--os` - Target OS (auto-detected if omitted)
 - `--output-dir` - Output directory (default: `./build/`)
+- `--shell` - Shell type (zsh, bash, fish)
+- `--target` - Specific targets to build (zshrc, zprofile, etc.)
 - `--dry-run` - Preview without writing files
+
+### Deploy Options
+
+- `--build-dir` - Build directory (default: `./build/`)
 - `--backup` - Backup existing files before overwriting
+- `--dry-run` - Preview without deploying
 
 ---
 
@@ -184,4 +191,4 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ---
 
-**Last Updated**: 2026-01-19
+**Last Updated**: 2026-01-19 (Breaking change: removed legacy --single-output mode)

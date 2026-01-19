@@ -13,7 +13,7 @@ import (
 func TestBuildCmd_Flags(t *testing.T) {
 	cmd := newBuildCmd()
 
-	// Check required flags
+	// Check OS flag (auto-detected if empty)
 	osFlag := cmd.Flags().Lookup("os")
 	require.NotNil(t, osFlag)
 	assert.Equal(t, "", osFlag.DefValue)
@@ -27,7 +27,7 @@ func TestBuildCmd_Flags(t *testing.T) {
 	require.NotNil(t, configDirFlag)
 	assert.Equal(t, "modules", configDirFlag.DefValue)
 
-	// Check v2 flags
+	// Check output-dir flag
 	outputDirFlag := cmd.Flags().Lookup("output-dir")
 	require.NotNil(t, outputDirFlag)
 	assert.Equal(t, "", outputDirFlag.DefValue)
@@ -35,11 +35,6 @@ func TestBuildCmd_Flags(t *testing.T) {
 	shellFlag := cmd.Flags().Lookup("shell")
 	require.NotNil(t, shellFlag)
 	assert.Equal(t, "", shellFlag.DefValue)
-
-	// Check legacy single-output flag
-	singleOutputFlag := cmd.Flags().Lookup("single-output")
-	require.NotNil(t, singleOutputFlag)
-	assert.Equal(t, "", singleOutputFlag.DefValue)
 
 	dryRunFlag := cmd.Flags().Lookup("dry-run")
 	require.NotNil(t, dryRunFlag)
@@ -57,33 +52,6 @@ func TestBuildCmd_Help(t *testing.T) {
 	assert.Contains(t, cmd.Short, "Build shell configuration")
 	assert.Contains(t, cmd.Long, "topological")
 	assert.NotEmpty(t, cmd.Example)
-}
-
-func TestRunBuild_ValidationErrors(t *testing.T) {
-	tests := []struct {
-		name    string
-		flags   *buildFlags
-		wantErr string
-	}{
-		{
-			name: "conflicting output options",
-			flags: &buildFlags{
-				targetOS:     "Mac",
-				singleOutput: "/tmp/output.sh",
-				outputDir:    "/tmp/dir",
-				dryRun:       false,
-			},
-			wantErr: "cannot use both --single-output and --output-dir",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := runBuild(tt.flags)
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), tt.wantErr)
-		})
-	}
 }
 
 func TestRunBuild_Success(t *testing.T) {
@@ -104,12 +72,11 @@ func TestRunBuild_Success(t *testing.T) {
 		{
 			name: "Mac build with dry-run",
 			flags: &buildFlags{
-				configDir:    "../../examples/modules",
-				manifest:     "../../examples/manifest.yaml",
-				singleOutput: "",
-				targetOS:     "Mac",
-				dryRun:       true,
-				verbose:      false,
+				configDir: "../../examples/modules",
+				manifest:  "../../examples/manifest.yaml",
+				targetOS:  "Mac",
+				dryRun:    true,
+				verbose:   false,
 			},
 			wantModules: 9,
 			wantInOutput: []string{
@@ -122,12 +89,11 @@ func TestRunBuild_Success(t *testing.T) {
 		{
 			name: "Linux build with dry-run",
 			flags: &buildFlags{
-				configDir:    "../../examples/modules",
-				manifest:     "../../examples/manifest.yaml",
-				singleOutput: "",
-				targetOS:     "Linux",
-				dryRun:       true,
-				verbose:      false,
+				configDir: "../../examples/modules",
+				manifest:  "../../examples/manifest.yaml",
+				targetOS:  "Linux",
+				dryRun:    true,
+				verbose:   false,
 			},
 			wantModules: 7,
 			wantInOutput: []string{
@@ -170,7 +136,6 @@ func TestBuildCmd_FlagShortcuts(t *testing.T) {
 	}{
 		{"config-dir", "c"},
 		{"manifest", "m"},
-		{"single-output", "o"},
 		{"output-dir", "d"},
 		{"shell", "s"},
 		{"target", "t"},
@@ -193,13 +158,11 @@ func TestBuildCmd_Examples(t *testing.T) {
 	examples := cmd.Example
 
 	assert.Contains(t, examples, "--os Mac", "should show Mac OS example")
-	assert.Contains(t, examples, "--os Linux", "should show Linux example")
 	assert.Contains(t, examples, "--dry-run", "should show dry-run example")
 	assert.Contains(t, examples, "--output-dir", "should show output-dir example")
-	assert.Contains(t, examples, "--single-output", "should show single-output example")
-	assert.Contains(t, examples, "~/.zshrc", "should show output to home directory example")
 	assert.Contains(t, examples, "--shell bash", "should show shell type example")
 	assert.Contains(t, examples, "--target", "should show target filter example")
+	assert.Contains(t, examples, "deploy", "should show deploy workflow example")
 }
 
 func TestBuildFlags_Validation(t *testing.T) {
@@ -210,15 +173,6 @@ func TestBuildFlags_Validation(t *testing.T) {
 		setup   func(*buildFlags)
 		wantErr bool
 	}{
-		{
-			name: "valid with single-output",
-			setup: func(f *buildFlags) {
-				f.targetOS = "Mac"
-				f.singleOutput = "/tmp/test.sh"
-				f.dryRun = false
-			},
-			wantErr: false,
-		},
 		{
 			name: "valid with output-dir",
 			setup: func(f *buildFlags) {
@@ -232,7 +186,6 @@ func TestBuildFlags_Validation(t *testing.T) {
 			name: "valid with dry-run",
 			setup: func(f *buildFlags) {
 				f.targetOS = "Mac"
-				f.singleOutput = ""
 				f.outputDir = ""
 				f.dryRun = true
 			},
@@ -242,11 +195,19 @@ func TestBuildFlags_Validation(t *testing.T) {
 			name: "valid - uses default output dir when not specified",
 			setup: func(f *buildFlags) {
 				f.targetOS = "Mac"
-				f.singleOutput = ""
 				f.outputDir = ""
 				f.dryRun = false
 			},
-			wantErr: false, // Now uses ./build as default
+			wantErr: false, // Uses ./build as default
+		},
+		{
+			name: "valid - OS auto-detected when not specified",
+			setup: func(f *buildFlags) {
+				f.targetOS = ""
+				f.outputDir = "/tmp"
+				f.dryRun = false
+			},
+			wantErr: false, // OS is auto-detected
 		},
 	}
 
@@ -299,9 +260,8 @@ func TestBuildCmd_LongDescription(t *testing.T) {
 		"topological",
 		"OS",
 		"target",
-		"multi-target",
-		"legacy",
 		"priority",
+		"deploy",
 	}
 
 	for _, term := range expectedTerms {

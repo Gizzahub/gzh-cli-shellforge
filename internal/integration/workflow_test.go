@@ -87,27 +87,33 @@ function mkcd() {
 
 		manifestPath := "/test/manifest.yaml"
 		configDir := "/test/modules"
-		outputPath := "/test/.zshrc.new"
+		outputDir := "/test/build"
 		targetOS := "Mac"
 
 		result, err := builderService.Build(app.BuildOptions{
 			ConfigDir: configDir,
 			Manifest:  manifestPath,
-			Output:    outputPath,
+			OutputDir: outputDir,
 			OS:        targetOS,
 			DryRun:    false,
 			Verbose:   false,
 		})
 		require.NoError(t, err)
 		assert.NotNil(t, result)
-		assert.Greater(t, len(result.Output), 0, "generated content should not be empty")
+		require.NotEmpty(t, result.Targets, "should have at least one target")
+		assert.Greater(t, len(result.Targets[0].Content), 0, "generated content should not be empty")
 
 		// Verify output file was created
-		exists := reader.FileExists(outputPath)
-		assert.True(t, exists, ".zshrc.new should exist")
+		exists := reader.FileExists(result.Targets[0].FilePath)
+		assert.True(t, exists, "output file should exist: %s", result.Targets[0].FilePath)
+
+		// Copy to .zshrc.new for Step3 diff test
+		outputPath := "/test/.zshrc.new"
+		err = afero.WriteFile(fs, outputPath, []byte(result.Targets[0].Content), 0o644)
+		require.NoError(t, err)
 
 		// Verify content contains expected sections
-		assert.Contains(t, result.Output, "PATH", "should contain PATH setup")
+		assert.Contains(t, result.Targets[0].Content, "PATH", "should contain PATH setup")
 	})
 
 	// Step 3: Compare original with generated

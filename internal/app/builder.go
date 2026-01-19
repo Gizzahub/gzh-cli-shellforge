@@ -57,21 +57,15 @@ func (s *BuilderService) SetBackupCreator(bc BackupCreator) {
 
 // BuildOptions contains options for building shell configuration.
 type BuildOptions struct {
-	ConfigDir string // Directory containing module files
-	Manifest  string // Path to manifest.yaml
-	OS        string // Target OS (Mac, Linux, etc.)
-	DryRun    bool   // If true, don't write output file
-	Verbose   bool   // Show detailed output
-
-	// Multi-target options (v2)
-	OutputDir    string   // Output directory for multi-target builds
-	Shell        string   // Shell type override (zsh, bash, fish)
-	Targets      []string // Specific targets to build (empty = all)
-	CreateBackup bool     // Create backup of existing files
-	HomeDir      string   // Home directory for path resolution
-
-	// Legacy single-output mode
-	Output string // Single output file path (legacy mode)
+	ConfigDir string   // Directory containing module files
+	Manifest  string   // Path to manifest.yaml
+	OS        string   // Target OS (Mac, Linux, etc.)
+	DryRun    bool     // If true, don't write output file
+	Verbose   bool     // Show detailed output
+	OutputDir string   // Output directory for builds (default: ./build)
+	Shell     string   // Shell type override (zsh, bash, fish)
+	Targets   []string // Specific targets to build (empty = all)
+	HomeDir   string   // Home directory for path resolution
 }
 
 // TargetResult contains the result for a single target file.
@@ -86,23 +80,14 @@ type TargetResult struct {
 
 // BuildResult contains the result of a build operation.
 type BuildResult struct {
-	// Multi-target results
-	Targets []TargetResult
-
-	// Summary
+	Targets          []TargetResult
 	TotalModuleCount int
 	GeneratedAt      time.Time
 	ShellType        string
 	TargetOS         string
-
-	// Legacy compatibility
-	Output      string   // Combined output (for legacy mode or dry-run)
-	ModuleCount int      // Total module count (legacy alias)
-	ModuleNames []string // All module names (legacy alias)
 }
 
 // Build generates shell configuration from modules.
-// Supports both legacy single-output mode and multi-target mode.
 func (s *BuilderService) Build(opts BuildOptions) (*BuildResult, error) {
 	// 1. Parse manifest
 	manifest, err := s.manifestParser.Parse(opts.Manifest)
@@ -110,9 +95,8 @@ func (s *BuilderService) Build(opts BuildOptions) (*BuildResult, error) {
 		return nil, fmt.Errorf("failed to parse manifest: %w", err)
 	}
 
-	// 2. Determine shell type and build mode
+	// 2. Determine shell type
 	shellType := s.determineShellType(opts, manifest)
-	isLegacyMode := s.isLegacyMode(opts, manifest)
 
 	// 3. Build dependency graph and resolve
 	graph, err := s.resolver.BuildGraph(manifest)
@@ -127,10 +111,7 @@ func (s *BuilderService) Build(opts BuildOptions) (*BuildResult, error) {
 
 	now := time.Now()
 
-	// 4. Route to appropriate build mode
-	if isLegacyMode {
-		return s.buildLegacy(opts, modules, shellType, now)
-	}
+	// 4. Build multi-target output
 	return s.buildMultiTarget(opts, manifest, modules, shellType, now)
 }
 
@@ -146,55 +127,15 @@ func (s *BuilderService) determineShellType(opts BuildOptions, manifest *domain.
 	return "zsh"
 }
 
-// isLegacyMode determines if we should use legacy single-output mode.
-func (s *BuilderService) isLegacyMode(opts BuildOptions, manifest *domain.Manifest) bool {
-	// Explicit single output = legacy mode
-	if opts.Output != "" {
-		return true
-	}
-	// No output dir and legacy manifest = legacy mode
-	if opts.OutputDir == "" && manifest.IsLegacy() {
-		return true
-	}
-	return false
-}
-
-// buildLegacy generates a single output file (legacy mode).
-func (s *BuilderService) buildLegacy(opts BuildOptions, modules []domain.Module, shellType string, now time.Time) (*BuildResult, error) {
-	content, moduleNames := s.generateContent(modules, opts, shellType, "", now)
-
-	// Write output (unless dry-run)
-	if !opts.DryRun && opts.Output != "" {
-		if err := s.fileWriter.WriteFile(opts.Output, content); err != nil {
-			return nil, fmt.Errorf("failed to write output: %w", err)
-		}
-	}
-
-	return &BuildResult{
-		Targets: []TargetResult{{
-			Target:      s.getDefaultTarget(shellType),
-			FilePath:    opts.Output,
-			Content:     content,
-			ModuleCount: len(modules),
-			ModuleNames: moduleNames,
-		}},
-		TotalModuleCount: len(modules),
-		GeneratedAt:      now,
-		ShellType:        shellType,
-		TargetOS:         opts.OS,
-		// Legacy fields
-		Output:      content,
-		ModuleCount: len(modules),
-		ModuleNames: moduleNames,
-	}, nil
-}
-
 // buildMultiTarget generates multiple RC files based on module targets.
 func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Manifest, modules []domain.Module, shellType string, now time.Time) (*BuildResult, error) {
 	// Determine output directory
 	outputDir := opts.OutputDir
 	if outputDir == "" {
 		outputDir = manifest.GetOutputDirectory()
+	}
+	if outputDir == "" {
+		outputDir = "./build"
 	}
 
 	// Expand home directory
@@ -229,8 +170,6 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 
 	// Generate content for each target
 	var results []TargetResult
-	var allModuleNames []string
-	var combinedContent []string
 	totalModuleCount := 0
 
 	// Process targets in deterministic order
@@ -252,7 +191,6 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 		}
 
 		content, moduleNames := s.generateContent(mods, opts, shellType, target, now)
-		allModuleNames = append(allModuleNames, moduleNames...)
 		totalModuleCount += len(mods)
 
 		result := TargetResult{
@@ -265,24 +203,12 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 
 		// Write file (unless dry-run)
 		if !opts.DryRun {
-			// Create backup if requested
-			if (opts.CreateBackup || manifest.Output.Backup) && s.backupCreator != nil {
-				if s.fileReader.FileExists(filePath) {
-					backupPath, err := s.backupCreator.CreateBackup(filePath)
-					if err != nil {
-						return nil, fmt.Errorf("failed to backup %s: %w", filePath, err)
-					}
-					result.BackupPath = backupPath
-				}
-			}
-
 			if err := s.fileWriter.WriteFile(filePath, content); err != nil {
 				return nil, fmt.Errorf("failed to write %s: %w", filePath, err)
 			}
 		}
 
 		results = append(results, result)
-		combinedContent = append(combinedContent, fmt.Sprintf("# === %s ===\n%s", target, content))
 	}
 
 	return &BuildResult{
@@ -291,10 +217,6 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 		GeneratedAt:      now,
 		ShellType:        shellType,
 		TargetOS:         opts.OS,
-		// Legacy fields for compatibility
-		Output:      strings.Join(combinedContent, "\n\n"),
-		ModuleCount: totalModuleCount,
-		ModuleNames: allModuleNames,
 	}, nil
 }
 

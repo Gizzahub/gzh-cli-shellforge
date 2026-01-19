@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -129,7 +131,7 @@ func TestTargetResolver_GetValidTargets(t *testing.T) {
 		{
 			name:      "fish targets",
 			shellType: "fish",
-			want:      []string{"config"},
+			want:      []string{"config", "conf.d"},
 		},
 		{
 			name:      "unknown shell",
@@ -291,6 +293,10 @@ func TestGetTargetDescription(t *testing.T) {
 			want:   "Login shell configuration",
 		},
 		{
+			target: "conf.d",
+			want:   "Fish modular configs",
+		},
+		{
 			target: "unknown",
 			want:   "Target file: unknown",
 		},
@@ -300,6 +306,117 @@ func TestGetTargetDescription(t *testing.T) {
 		t.Run(tt.target, func(t *testing.T) {
 			got := GetTargetDescription(tt.target)
 			assert.Contains(t, got, tt.want)
+		})
+	}
+}
+
+func TestTargetResolver_FishConfD(t *testing.T) {
+	resolver := NewTargetResolver("fish", "/home/user")
+
+	// Test conf.d target resolution
+	got, err := resolver.Resolve("conf.d")
+	require.NoError(t, err)
+	expected := filepath.Join("/home/user", ".config", "fish", "conf.d")
+	assert.Equal(t, expected, got)
+
+	// Test conf.d relative path
+	relPath, err := resolver.GetRelativePath("conf.d")
+	require.NoError(t, err)
+	assert.Equal(t, filepath.Join(".config", "fish", "conf.d"), relPath)
+
+	// Test conf.d is valid target
+	assert.True(t, resolver.IsValidTarget("conf.d"))
+}
+
+func TestTargetResolver_IsDirectoryTarget(t *testing.T) {
+	resolver := NewTargetResolver("fish", "/home/user")
+
+	tests := []struct {
+		target string
+		isDir  bool
+	}{
+		{"conf.d", true},
+		{"config", false},
+		{"zshrc", false},
+		{"bashrc", false},
+		{"CONF.D", true}, // case insensitive
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.target, func(t *testing.T) {
+			assert.Equal(t, tt.isDir, resolver.IsDirectoryTarget(tt.target))
+		})
+	}
+}
+
+func TestTargetResolver_XDGConfigHome(t *testing.T) {
+	tests := []struct {
+		name           string
+		xdgConfigHome  string
+		homeDir        string
+		wantConfigPath string
+		wantConfDPath  string
+	}{
+		{
+			name:           "default (no XDG_CONFIG_HOME)",
+			xdgConfigHome:  "",
+			homeDir:        "/home/user",
+			wantConfigPath: "/home/user/.config/fish/config.fish",
+			wantConfDPath:  "/home/user/.config/fish/conf.d",
+		},
+		{
+			name:           "relative XDG_CONFIG_HOME",
+			xdgConfigHome:  ".myconfig",
+			homeDir:        "/home/user",
+			wantConfigPath: "/home/user/.myconfig/fish/config.fish",
+			wantConfDPath:  "/home/user/.myconfig/fish/conf.d",
+		},
+		{
+			name:           "absolute XDG_CONFIG_HOME inside homeDir",
+			xdgConfigHome:  "/home/user/.customconfig",
+			homeDir:        "/home/user",
+			wantConfigPath: "/home/user/.customconfig/fish/config.fish",
+			wantConfDPath:  "/home/user/.customconfig/fish/conf.d",
+		},
+		{
+			name:           "absolute XDG_CONFIG_HOME outside homeDir (falls back to default)",
+			xdgConfigHome:  "/opt/config",
+			homeDir:        "/home/user",
+			wantConfigPath: "/home/user/.config/fish/config.fish",
+			wantConfDPath:  "/home/user/.config/fish/conf.d",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Save and restore original env
+			origXDG := os.Getenv("XDG_CONFIG_HOME")
+			defer func() {
+				if origXDG == "" {
+					os.Unsetenv("XDG_CONFIG_HOME")
+				} else {
+					os.Setenv("XDG_CONFIG_HOME", origXDG)
+				}
+			}()
+
+			// Set test env
+			if tt.xdgConfigHome == "" {
+				os.Unsetenv("XDG_CONFIG_HOME")
+			} else {
+				os.Setenv("XDG_CONFIG_HOME", tt.xdgConfigHome)
+			}
+
+			resolver := NewTargetResolver("fish", tt.homeDir)
+
+			// Test config path
+			configPath, err := resolver.Resolve("config")
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantConfigPath, configPath)
+
+			// Test conf.d path
+			confDPath, err := resolver.Resolve("conf.d")
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantConfDPath, confDPath)
 		})
 	}
 }

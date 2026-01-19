@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -25,6 +26,10 @@ func NewTargetResolver(shellType, homeDir string) *TargetResolver {
 
 // initPathMaps initializes the target to path mappings for each shell type.
 func (r *TargetResolver) initPathMaps() {
+	// XDG_CONFIG_HOME support for Fish shell (XDG Base Directory Specification)
+	// Default: ~/.config, can be overridden by $XDG_CONFIG_HOME
+	fishConfigBase := r.resolveFishConfigBase()
+
 	r.pathMaps = map[string]map[string]string{
 		"zsh": {
 			"zshrc":    ".zshrc",
@@ -42,9 +47,35 @@ func (r *TargetResolver) initPathMaps() {
 			"bash_logout":  ".bash_logout",
 		},
 		"fish": {
-			"config": filepath.Join(".config", "fish", "config.fish"),
+			"config": filepath.Join(fishConfigBase, "fish", "config.fish"),
+			"conf.d": filepath.Join(fishConfigBase, "fish", "conf.d"),
 		},
 	}
+}
+
+// resolveFishConfigBase returns the base config directory for Fish shell.
+// Respects XDG_CONFIG_HOME environment variable (XDG Base Directory Specification).
+func (r *TargetResolver) resolveFishConfigBase() string {
+	xdgConfigHome := os.Getenv("XDG_CONFIG_HOME")
+	if xdgConfigHome == "" {
+		return ".config"
+	}
+
+	// Handle absolute paths: convert to relative path from homeDir if possible
+	if filepath.IsAbs(xdgConfigHome) {
+		if r.homeDir != "" && strings.HasPrefix(xdgConfigHome, r.homeDir) {
+			relPath, err := filepath.Rel(r.homeDir, xdgConfigHome)
+			if err == nil {
+				return relPath
+			}
+		}
+		// If absolute path is outside homeDir, use default
+		// (current architecture uses homeDir-relative paths)
+		return ".config"
+	}
+
+	// Relative path: use as-is
+	return xdgConfigHome
 }
 
 // Resolve returns the full file path for a target name.
@@ -108,6 +139,16 @@ func (r *TargetResolver) GetShellType() string {
 	return r.shellType
 }
 
+// IsDirectoryTarget returns true if the target is a directory (e.g., conf.d).
+func (r *TargetResolver) IsDirectoryTarget(target string) bool {
+	target = strings.ToLower(target)
+	// Directory targets that generate multiple files
+	directoryTargets := map[string]bool{
+		"conf.d": true,
+	}
+	return directoryTargets[target]
+}
+
 // GetDefaultTarget returns the default target for the current shell type.
 func (r *TargetResolver) GetDefaultTarget() string {
 	switch r.shellType {
@@ -154,6 +195,7 @@ func GetTargetDescription(target string) string {
 		"bash_login":   "Login shell startup (fallback if bash_profile missing)",
 		"bash_logout":  "Login shell exit",
 		"config":       "Fish shell configuration",
+		"conf.d":       "Fish modular configs (auto-sourced .fish files in conf.d/)",
 	}
 	if desc, ok := descriptions[strings.ToLower(target)]; ok {
 		return desc

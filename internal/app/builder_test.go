@@ -117,7 +117,7 @@ func TestBuilderService_Build(t *testing.T) {
 			},
 		},
 		{
-			name: "missing module file",
+			name: "missing module file shows placeholder",
 			setup: func(fs afero.Fs) {
 				manifest := `modules:
   - name: missing
@@ -133,8 +133,12 @@ func TestBuilderService_Build(t *testing.T) {
 				Output:    "output.sh",
 				OS:        "Mac",
 			},
-			wantErr: true,
-			errMsg:  "file not found: missing.sh",
+			wantErr: false,
+			validate: func(t *testing.T, result *BuildResult) {
+				assert.Equal(t, 1, result.ModuleCount)
+				assert.Contains(t, result.Output, "FILE NOT FOUND")
+				assert.Contains(t, result.Output, "missing")
+			},
 		},
 		{
 			name: "circular dependency",

@@ -1,67 +1,114 @@
-# Shellforge Manifest Example
-# This file defines the modules and their dependencies for building shell configuration
+# Shellforge Manifest v2 Example
+# This file defines modules with multi-target support for building shell configuration
+#
+# Key features:
+#   - version: Manifest format version (optional, defaults to "1")
+#   - shell.type: Target shell (zsh, bash, fish)
+#   - output.directory: Where to write RC files
+#   - output.backup: Create backups before overwriting
+#   - Module target: Which RC file (zshenv, zprofile, zshrc, etc.)
+#   - Module priority: Order within target (0-100, lower = earlier)
+
+version: "2"
+
+shell:
+  type: zsh
+
+output:
+  directory: ~
+  backup: true
 
 modules:
-  # System initialization
+  # =============================================================================
+  # zshenv - Environment variables (loaded for ALL shells, even scripts)
+  # Use for: PATH, EDITOR, LANG, and other environment variables
+  # =============================================================================
   - name: os-detection
     file: init.d/00-os-detection.sh
-    requires: []
+    target: zshenv
+    priority: 10
     os: [Mac, Linux]
     description: Detect operating system and set MACHINE variable
 
+  # =============================================================================
+  # zprofile - Login shell configuration (loaded once at login)
+  # Use for: PATH setup, homebrew, package managers
+  # =============================================================================
   - name: brew-path
     file: init.d/05-brew-path.sh
+    target: zprofile
+    priority: 10
     requires: [os-detection]
     os: [Mac]
     description: Initialize Homebrew PATH
 
   - name: pacman-setup
     file: init.d/05-pacman-setup.sh
+    target: zprofile
+    priority: 10
     requires: [os-detection]
     os: [Linux]
     description: Initialize pacman for Arch-based systems
 
-  # Package managers
+  # =============================================================================
+  # zshrc - Interactive shell configuration
+  # Use for: aliases, completions, prompts, version managers
+  # =============================================================================
+
+  # Version managers (early priority - they often modify PATH)
   - name: conda
     file: rc_pre.d/conda.sh
+    target: zshrc
+    priority: 20
     requires: [os-detection]
     os: [Mac, Linux]
     description: Conda/Mamba initialization
 
   - name: nvm
     file: rc_pre.d/nvm.sh
+    target: zshrc
+    priority: 20
     requires: [os-detection]
     os: [Mac, Linux]
     description: Node Version Manager
 
   - name: rbenv
     file: rc_pre.d/rbenv.sh
+    target: zshrc
+    priority: 20
     requires: [os-detection]
     os: [Mac, Linux]
     description: Ruby version manager
 
-  # Development tools
+  # Development tools (medium priority)
   - name: gcloud
     file: rc_pre.d/gcloud.sh
+    target: zshrc
+    priority: 40
     requires: [brew-path]
     os: [Mac]
     description: Google Cloud SDK autocompletion
 
   - name: docker-completion
     file: rc_pre.d/docker.sh
+    target: zshrc
+    priority: 40
     requires: [os-detection]
     os: [Mac, Linux]
     description: Docker autocompletion
 
-  # Post-configuration
+  # Aliases and customizations (late priority - load after tools)
   - name: aliases
     file: rc_post.d/aliases.sh
-    requires: []
+    target: zshrc
+    priority: 80
     os: [Mac, Linux]
     description: Common aliases and functions
 
   - name: mac-specific
     file: rc_post.d/mac.sh
+    target: zshrc
+    priority: 90
     requires: [brew-path]
     os: [Mac]
     description: macOS-specific configurations

@@ -98,3 +98,65 @@ func TestModule_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestModule_GetTarget(t *testing.T) {
+	tests := []struct {
+		name     string
+		module   Module
+		expected string
+	}{
+		{
+			name:     "returns explicit target",
+			module:   Module{Target: "zprofile"},
+			expected: "zprofile",
+		},
+		{
+			name:     "defaults to zshrc when empty",
+			module:   Module{Target: ""},
+			expected: "zshrc",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.module.GetTarget()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestModule_GetPriority(t *testing.T) {
+	tests := []struct {
+		name     string
+		module   Module
+		expected int
+	}{
+		{
+			name:     "returns explicit priority",
+			module:   Module{Priority: 10},
+			expected: 10,
+		},
+		{
+			name:     "defaults to 50 when zero",
+			module:   Module{Priority: 0},
+			expected: 50,
+		},
+		{
+			name:     "returns negative priority",
+			module:   Module{Priority: -5},
+			expected: -5,
+		},
+		{
+			name:     "returns high priority",
+			module:   Module{Priority: 100},
+			expected: 100,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.module.GetPriority()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

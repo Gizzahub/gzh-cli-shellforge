@@ -9,6 +9,30 @@ type Module struct {
 	Requires    []string `yaml:"requires,omitempty"`
 	OS          []string `yaml:"os,omitempty"`
 	Description string   `yaml:"description,omitempty"`
+
+	// Target specifies the destination RC file (e.g., zshrc, zprofile, bashrc).
+	// Defaults to "zshrc" if not specified.
+	Target string `yaml:"target,omitempty"`
+
+	// Priority determines the order within a target file (0-100, lower = earlier).
+	// Defaults to 50 if not specified.
+	Priority int `yaml:"priority,omitempty"`
+}
+
+// GetTarget returns the target RC file, defaulting to "zshrc".
+func (m *Module) GetTarget() string {
+	if m.Target == "" {
+		return "zshrc"
+	}
+	return m.Target
+}
+
+// GetPriority returns the priority, defaulting to 50.
+func (m *Module) GetPriority() int {
+	if m.Priority == 0 {
+		return 50
+	}
+	return m.Priority
 }
 
 // AppliesTo checks if this module applies to the target OS.

@@ -1,8 +1,52 @@
 package domain
 
+// ShellConfig configures shell type for manifest v2.
+type ShellConfig struct {
+	Type string `yaml:"type"` // zsh, bash, fish
+}
+
+// OutputConfig configures output settings for manifest v2.
+type OutputConfig struct {
+	Directory string `yaml:"directory,omitempty"` // Output directory (defaults to ~)
+	Backup    bool   `yaml:"backup,omitempty"`    // Create backup of existing files
+}
+
 // Manifest represents a collection of shell modules.
 type Manifest struct {
-	Modules []Module `yaml:"modules"`
+	Version string       `yaml:"version,omitempty"` // Manifest version ("1" or "2")
+	Shell   ShellConfig  `yaml:"shell,omitempty"`   // Shell configuration (v2)
+	Output  OutputConfig `yaml:"output,omitempty"`  // Output configuration (v2)
+	Modules []Module     `yaml:"modules"`
+}
+
+// IsLegacy returns true if this is a v1 (legacy) manifest without version or target fields.
+func (m *Manifest) IsLegacy() bool {
+	if m.Version != "" && m.Version != "1" {
+		return false
+	}
+	// Also check if any module has target set
+	for _, mod := range m.Modules {
+		if mod.Target != "" {
+			return false
+		}
+	}
+	return true
+}
+
+// GetShellType returns the shell type, defaulting to "zsh".
+func (m *Manifest) GetShellType() string {
+	if m.Shell.Type == "" {
+		return "zsh"
+	}
+	return m.Shell.Type
+}
+
+// GetOutputDirectory returns the output directory, defaulting to "~".
+func (m *Manifest) GetOutputDirectory() string {
+	if m.Output.Directory == "" {
+		return "~"
+	}
+	return m.Output.Directory
 }
 
 // FindModule finds a module by name.

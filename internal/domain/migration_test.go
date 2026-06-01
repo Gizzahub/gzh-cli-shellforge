@@ -153,6 +153,57 @@ esac`,
 esac`,
 			want: []string{"Linux"},
 		},
+		{
+			name: "FreeBSD only",
+			content: `case $MACHINE in
+  FreeBSD)
+    # FreeBSD-specific
+    ;;
+esac`,
+			want: []string{"FreeBSD"},
+		},
+		{
+			name: "Mac and FreeBSD",
+			content: `case $MACHINE in
+  Mac)
+    # Mac stuff
+    ;;
+  FreeBSD)
+    # BSD stuff
+    ;;
+esac`,
+			want: []string{"Mac", "FreeBSD"},
+		},
+		{
+			name: "all three BSDs",
+			content: `case $MACHINE in
+  FreeBSD)
+    pkg install something
+    ;;
+  OpenBSD)
+    pkg_add something
+    ;;
+  NetBSD)
+    pkgin install something
+    ;;
+esac`,
+			want: []string{"FreeBSD", "OpenBSD", "NetBSD"},
+		},
+		{
+			name: "BSD variants alongside Mac and Linux",
+			content: `case $MACHINE in
+  Mac)
+    brew install tool
+    ;;
+  Linux)
+    apt-get install tool
+    ;;
+  FreeBSD)
+    pkg install tool
+    ;;
+esac`,
+			want: []string{"Mac", "Linux", "FreeBSD"},
+		},
 	}
 
 	for _, tt := range tests {

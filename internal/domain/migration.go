@@ -103,26 +103,24 @@ func InferDependencies(content string) []string {
 	return deps
 }
 
-// InferOSSupport analyzes content for OS-specific patterns
+// InferOSSupport analyzes content for OS-specific patterns.
+// Returns the OS names that a module explicitly targets via case $MACHINE branches.
+// BSD variants (FreeBSD, OpenBSD, NetBSD) must be declared explicitly; they are
+// not included in the default ["Mac", "Linux"] set.
 func InferOSSupport(content string) []string {
-	// Check for case $MACHINE pattern
-	if strings.Contains(content, "case $MACHINE") || strings.Contains(content, "case \"$MACHINE\"") {
-		// Look for Mac and Linux branches
-		hasMac := strings.Contains(content, "Mac)")
-		hasLinux := strings.Contains(content, "Linux)")
-
-		if hasMac && hasLinux {
-			return []string{"Mac", "Linux"}
-		}
-		if hasMac {
-			return []string{"Mac"}
-		}
-		if hasLinux {
-			return []string{"Linux"}
-		}
+	if !strings.Contains(content, "case $MACHINE") && !strings.Contains(content, "case \"$MACHINE\"") {
+		return []string{"Mac", "Linux"}
 	}
 
-	// Default: works on all platforms
+	var oses []string
+	for _, candidate := range []string{"Mac", "Linux", "FreeBSD", "OpenBSD", "NetBSD"} {
+		if strings.Contains(content, candidate+")") {
+			oses = append(oses, candidate)
+		}
+	}
+	if len(oses) > 0 {
+		return oses
+	}
 	return []string{"Mac", "Linux"}
 }
 

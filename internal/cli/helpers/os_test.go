@@ -6,19 +6,17 @@ import (
 )
 
 func TestDetectOS(t *testing.T) {
-	// Test that DetectOS returns a non-empty string
 	result := DetectOS()
 	if result == "" {
 		t.Error("DetectOS() returned empty string")
 	}
 
-	// Verify against runtime.GOOS mapping
 	expected := map[string]string{
 		"darwin":  "Mac",
 		"linux":   "Linux",
-		"freebsd": "BSD",
-		"openbsd": "BSD",
-		"netbsd":  "BSD",
+		"freebsd": "FreeBSD",
+		"openbsd": "OpenBSD",
+		"netbsd":  "NetBSD",
 		"windows": "Windows",
 	}
 
@@ -27,7 +25,6 @@ func TestDetectOS(t *testing.T) {
 			t.Errorf("DetectOS() = %q, want %q for GOOS=%q", result, expectedOS, runtime.GOOS)
 		}
 	} else {
-		// For unknown OS, should return runtime.GOOS as-is
 		if result != runtime.GOOS {
 			t.Errorf("DetectOS() = %q, want %q for unknown GOOS", result, runtime.GOOS)
 		}
@@ -36,16 +33,14 @@ func TestDetectOS(t *testing.T) {
 
 func TestDetectOS_ReturnsKnownValue(t *testing.T) {
 	result := DetectOS()
-	knownValues := []string{"Mac", "Linux", "BSD", "Windows"}
+	knownValues := []string{"Mac", "Linux", "FreeBSD", "OpenBSD", "NetBSD", "Windows"}
 
-	// Either it's a known value or it's the raw GOOS
 	for _, known := range knownValues {
 		if result == known {
-			return // Test passes
+			return
 		}
 	}
 
-	// If not a known value, should be the raw GOOS
 	if result != runtime.GOOS {
 		t.Errorf("DetectOS() = %q, expected known value or %q", result, runtime.GOOS)
 	}

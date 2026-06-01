@@ -258,6 +258,7 @@ modules:
 - macOS 10.15+
 - Linux (Ubuntu, Debian, Fedora, Arch)
 - WSL2
+- FreeBSD 13+ / OpenBSD / NetBSD (기본 감지 지원)
 
 ### 쉘
 
@@ -289,11 +290,10 @@ modules:
 - ✅ 4가지 형식 diff 비교
 - ✅ Fish 쉘 지원 (config, conf.d)
 - ✅ XDG_CONFIG_HOME 환경변수 지원
+- ✅ BSD 감지 지원 (FreeBSD, OpenBSD, NetBSD) — per-OS 이름으로 manifest os: 필터링
+- ✅ 커스텀 검증기 플러그인 시스템 Phase 1 (Validator 인터페이스 + 프리퀀 검증)
 
 ### 개발 예정
-
-- ⏳ 커스텀 검증기 플러그인 시스템
-- ⏳ BSD 지원 (FreeBSD 13+)
 - ⏳ 시스템 전역 설정 (/etc/profile, /etc/zshrc)
 
 ---

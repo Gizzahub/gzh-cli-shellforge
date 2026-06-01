@@ -9,6 +9,15 @@ case "$(uname -s)" in
     Linux)
         export MACHINE="Linux"
         ;;
+    FreeBSD)
+        export MACHINE="FreeBSD"
+        ;;
+    OpenBSD)
+        export MACHINE="OpenBSD"
+        ;;
+    NetBSD)
+        export MACHINE="NetBSD"
+        ;;
     *)
         export MACHINE="Unknown"
         ;;

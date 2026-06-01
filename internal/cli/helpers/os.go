@@ -11,8 +11,12 @@ func DetectOS() string {
 		return "Mac"
 	case "linux":
 		return "Linux"
-	case "freebsd", "openbsd", "netbsd":
-		return "BSD"
+	case "freebsd":
+		return "FreeBSD"
+	case "openbsd":
+		return "OpenBSD"
+	case "netbsd":
+		return "NetBSD"
 	case "windows":
 		return "Windows"
 	default:

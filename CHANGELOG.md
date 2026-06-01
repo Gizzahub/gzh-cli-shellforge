@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **BSD OS Detection** (per-OS granularity): `DetectOS()` now returns `"FreeBSD"`, `"OpenBSD"`, `"NetBSD"` instead of a single `"BSD"` umbrella
+  - `os-detection.sh` example module updated with per-OS BSD branches (`uname -s` → `FreeBSD`, `OpenBSD`, `NetBSD`)
+  - `InferOSSupport()` in migration now detects `FreeBSD)`, `OpenBSD)`, `NetBSD)` case branches when inferring manifest `os:` values
+  - Manifest modules can now target specific BSDs: `os: [FreeBSD]` or `os: [FreeBSD, OpenBSD]`
+  - PRODUCT.md "지원 환경" updated to list FreeBSD/OpenBSD/NetBSD
+
 - **Pluggable Validation Pipeline** (Phase 1): Introduced a `Validator` interface and `ValidationPipeline` in `internal/app`
   - `Finding` struct with `error`/`warn` severity levels; `validate` exit code reflects errors only
   - Built-in validators: `ManifestStructureValidator`, `CircularDependencyValidator`, `FileExistenceValidator`

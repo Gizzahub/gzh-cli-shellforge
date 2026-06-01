@@ -163,7 +163,8 @@ export TEST_VAR="test"
 
 	// Test successful build
 	t.Run("successful build", func(t *testing.T) {
-		cmd := exec.Command(binary, "build",
+		cmd := exec.Command(
+			binary, "build",
 			"--manifest", manifestPath,
 			"--config-dir", tempDir,
 			"--os", "Mac",
@@ -187,7 +188,8 @@ export TEST_VAR="test"
 
 	// Test dry-run
 	t.Run("dry-run build", func(t *testing.T) {
-		cmd := exec.Command(binary, "build",
+		cmd := exec.Command(
+			binary, "build",
 			"--manifest", manifestPath,
 			"--config-dir", tempDir,
 			"--os", "Mac",
@@ -202,7 +204,8 @@ export TEST_VAR="test"
 
 	// Test missing manifest error
 	t.Run("missing manifest", func(t *testing.T) {
-		cmd := exec.Command(binary, "build",
+		cmd := exec.Command(
+			binary, "build",
 			"--manifest", "/nonexistent/manifest.yaml",
 			"--config-dir", tempDir,
 			"--os", "Mac",
@@ -236,7 +239,8 @@ func TestCLI_Validate(t *testing.T) {
 	require.NoError(t, os.WriteFile(modulePath, []byte(moduleContent), 0o644))
 
 	t.Run("valid manifest", func(t *testing.T) {
-		cmd := exec.Command(binary, "validate",
+		cmd := exec.Command(
+			binary, "validate",
 			"--manifest", manifestPath,
 			"--config-dir", tempDir,
 		)
@@ -256,7 +260,8 @@ func TestCLI_Validate(t *testing.T) {
 `
 		require.NoError(t, os.WriteFile(badManifest, []byte(badContent), 0o644))
 
-		cmd := exec.Command(binary, "validate",
+		cmd := exec.Command(
+			binary, "validate",
 			"--manifest", badManifest,
 			"--config-dir", tempDir,
 		)
@@ -296,7 +301,8 @@ alias gs='git status'
 	manifestPath := filepath.Join(tempDir, "manifest.yaml")
 
 	t.Run("successful migration", func(t *testing.T) {
-		cmd := exec.Command(binary, "migrate", rcPath,
+		cmd := exec.Command(
+			binary, "migrate", rcPath,
 			"--output-dir", outputDir,
 			"--manifest", manifestPath,
 		)
@@ -332,7 +338,8 @@ alias gs='git status'
 	})
 
 	t.Run("missing RC file", func(t *testing.T) {
-		cmd := exec.Command(binary, "migrate", "/nonexistent/.zshrc",
+		cmd := exec.Command(
+			binary, "migrate", "/nonexistent/.zshrc",
 			"--output-dir", filepath.Join(tempDir, "modules2"),
 			"--manifest", filepath.Join(tempDir, "manifest2.yaml"),
 		)
@@ -405,7 +412,8 @@ line4
 
 	for _, tt := range tests {
 		t.Run(tt.format, func(t *testing.T) {
-			cmd := exec.Command(binary, "diff", file1, file2,
+			cmd := exec.Command(
+				binary, "diff", file1, file2,
 				"--format", tt.format,
 			)
 			output, err := cmd.CombinedOutput()

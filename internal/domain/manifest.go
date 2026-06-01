@@ -84,7 +84,8 @@ func (m *Manifest) Validate() []error {
 		for _, dep := range mod.Requires {
 			if _, found := m.FindModule(dep); !found {
 				errors = append(errors, NewValidationError(
-					"module '%s' requires non-existent module '%s'", mod.Name, dep))
+					"module '%s' requires non-existent module '%s'", mod.Name, dep,
+				))
 			}
 		}
 	}

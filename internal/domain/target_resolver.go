@@ -128,7 +128,8 @@ func (r *TargetResolver) ValidateTargets(modules []Module) error {
 		if !r.IsValidTarget(target) {
 			return NewValidationError(
 				"module '%s' has invalid target '%s' for shell type '%s'",
-				mod.Name, target, r.shellType)
+				mod.Name, target, r.shellType,
+			)
 		}
 	}
 	return nil

@@ -2,20 +2,21 @@ package cli
 
 import (
 	"fmt"
-	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 
+	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
 	clierrors "github.com/gizzahub/gzh-cli-shellforge/internal/cli/errors"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/factory"
+	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
 type validateFlags struct {
-	configDir string
-	manifest  string
-	verbose   bool
+	configDir     string
+	manifest      string
+	verbose       bool
+	checkPrereqs  bool
 }
 
 func newValidateCmd() *cobra.Command {
@@ -38,16 +39,19 @@ development.`,
   shellforge validate --manifest custom.yaml --config-dir modules
 
   # Verbose validation with detailed output
-  shellforge validate --verbose`,
+  shellforge validate --verbose
+
+  # Also check external tool prerequisites (requires_bin / requires_path)
+  shellforge validate --check-prereqs`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runValidate(flags)
 		},
 	}
 
-	// Define flags
 	cmd.Flags().StringVarP(&flags.configDir, "config-dir", "c", "modules", "Directory containing module files")
 	cmd.Flags().StringVarP(&flags.manifest, "manifest", "m", "manifest.yaml", "Path to manifest file")
 	cmd.Flags().BoolVarP(&flags.verbose, "verbose", "v", false, "Show detailed validation output")
+	cmd.Flags().BoolVar(&flags.checkPrereqs, "check-prereqs", false, "Also check requires_bin / requires_path (warn only)")
 
 	return cmd
 }
@@ -59,133 +63,83 @@ func runValidate(flags *validateFlags) error {
 		fmt.Println()
 	}
 
-	// Create services
 	services := factory.NewServices()
-	parser := services.Parser
-	reader := services.Reader
 
-	// 1. Parse manifest
-	if flags.verbose {
-		fmt.Println("1. Parsing manifest file...")
-	}
-
-	manifest, err := parser.Parse(flags.manifest)
+	manifest, err := services.Parser.Parse(flags.manifest)
 	if err != nil {
 		return clierrors.WrapError("manifest parsing", err)
 	}
 
 	if flags.verbose {
-		fmt.Printf("   ✓ Manifest parsed successfully (%d modules)\n", len(manifest.Modules))
+		fmt.Printf("✓ Manifest parsed (%d modules)\n\n", len(manifest.Modules))
 	}
 
-	// 2. Validate manifest structure
-	if flags.verbose {
-		fmt.Println("\n2. Validating manifest structure...")
+	// Build the validation pipeline.
+	validators := []app.Validator{
+		app.ManifestStructureValidator{},
+		app.CircularDependencyValidator{},
+		app.NewFileExistenceValidator(services.Reader),
+	}
+	if flags.checkPrereqs {
+		targetOS := helpers.DetectOS()
+		validators = append(validators, app.NewPrereqValidator(targetOS, domain.OsPrereqLookup{}))
 	}
 
-	validationErrors := manifest.Validate()
-	if len(validationErrors) > 0 {
-		fmt.Println("✗ Validation errors found:")
-		for i, err := range validationErrors {
-			fmt.Printf("   %d. %s\n", i+1, err.Error())
-		}
-		return fmt.Errorf("manifest validation failed with %d error(s)", len(validationErrors))
+	pipeline := app.NewValidationPipeline(validators...)
+	findings := pipeline.Run(manifest, flags.configDir)
+
+	if len(findings) == 0 {
+		fmt.Printf("✓ Validation successful!\n")
+		fmt.Printf("  Modules: %d\n", len(manifest.Modules))
+		fmt.Printf("  Manifest: %s\n", flags.manifest)
+		return nil
 	}
 
-	if flags.verbose {
-		fmt.Println("   ✓ Manifest structure is valid")
+	printFindings(findings, flags.verbose)
+
+	if app.HasErrors(findings) {
+		errCount := countBySeverity(findings, app.SeverityError)
+		return fmt.Errorf("validation failed with %d error(s)", errCount)
 	}
 
-	// 3. Check for circular dependencies (try both Mac and Linux)
-	if flags.verbose {
-		fmt.Println("\n3. Checking for circular dependencies...")
-	}
-
-	// We'll use a simple resolver to check both common OSes
-	resolver := &dependencyValidator{}
-	if err := resolver.checkCircularDependencies(manifest); err != nil {
-		return clierrors.WrapError("circular dependency check", err)
-	}
-
-	if flags.verbose {
-		fmt.Println("   ✓ No circular dependencies found")
-	}
-
-	// 4. Verify module files exist
-	if flags.verbose {
-		fmt.Println("\n4. Verifying module files...")
-	}
-
-	missingFiles := []string{}
-	for _, module := range manifest.Modules {
-		filePath := filepath.Join(flags.configDir, module.File)
-		if !reader.FileExists(filePath) {
-			missingFiles = append(missingFiles, fmt.Sprintf("%s (referenced by module '%s')", filePath, module.Name))
-		}
-	}
-
-	if len(missingFiles) > 0 {
-		fmt.Println("✗ Missing module files:")
-		for i, file := range missingFiles {
-			fmt.Printf("   %d. %s\n", i+1, file)
-		}
-		return fmt.Errorf("validation failed: %d module file(s) not found", len(missingFiles))
-	}
-
-	if flags.verbose {
-		fmt.Printf("   ✓ All %d module files exist\n", len(manifest.Modules))
-	}
-
-	// 5. Summary
-	if flags.verbose {
-		fmt.Println("\n" + strings.Repeat("=", 50))
-	}
-
+	// Warnings only — still success.
 	fmt.Printf("✓ Validation successful!\n")
 	fmt.Printf("  Modules: %d\n", len(manifest.Modules))
 	fmt.Printf("  Manifest: %s\n", flags.manifest)
-
 	return nil
 }
 
-// dependencyValidator is a simple helper to check for circular dependencies
-type dependencyValidator struct{}
+func printFindings(findings []app.Finding, verbose bool) {
+	errCount := countBySeverity(findings, app.SeverityError)
+	warnCount := countBySeverity(findings, app.SeverityWarn)
 
-func (v *dependencyValidator) checkCircularDependencies(manifest *domain.Manifest) error {
-	// Build a simple dependency map
-	depMap := make(map[string][]string)
-	moduleSet := make(map[string]bool)
-
-	for _, module := range manifest.Modules {
-		depMap[module.Name] = module.Requires
-		moduleSet[module.Name] = true
+	if errCount > 0 {
+		fmt.Printf("✗ Validation errors found (%d error(s), %d warning(s)):\n", errCount, warnCount)
+	} else {
+		fmt.Printf("⚠ Validation warnings (%d):\n", warnCount)
 	}
 
-	// Check each module for circular dependencies using DFS
-	for moduleName := range moduleSet {
-		visited := make(map[string]bool)
-		if v.hasCycle(moduleName, depMap, visited, make(map[string]bool)) {
-			return fmt.Errorf("circular dependency involving module '%s'", moduleName)
+	for i, f := range findings {
+		icon := "✗"
+		if !f.IsError() {
+			icon = "⚠"
+		}
+		if f.Module != "" {
+			fmt.Printf("   %d. %s [%s] %s\n", i+1, icon, f.Module, f.Message)
+		} else {
+			fmt.Printf("   %d. %s %s\n", i+1, icon, f.Message)
 		}
 	}
-
-	return nil
+	fmt.Println()
 }
 
-func (v *dependencyValidator) hasCycle(node string, graph map[string][]string, visited, recStack map[string]bool) bool {
-	visited[node] = true
-	recStack[node] = true
-
-	for _, neighbor := range graph[node] {
-		if !visited[neighbor] {
-			if v.hasCycle(neighbor, graph, visited, recStack) {
-				return true
-			}
-		} else if recStack[neighbor] {
-			return true
+func countBySeverity(findings []app.Finding, severity string) int {
+	n := 0
+	for _, f := range findings {
+		if f.Severity == severity {
+			n++
 		}
 	}
-
-	recStack[node] = false
-	return false
+	return n
 }
+

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Pluggable Validation Pipeline** (Phase 1): Introduced a `Validator` interface and `ValidationPipeline` in `internal/app`
+  - `Finding` struct with `error`/`warn` severity levels; `validate` exit code reflects errors only
+  - Built-in validators: `ManifestStructureValidator`, `CircularDependencyValidator`, `FileExistenceValidator`
+  - `PrereqValidator` wraps `DoctorService` so prereq checking logic is shared between `validate` and `doctor`
+  - `validate` command uses the pipeline; `--check-prereqs` flag enables opt-in prereq warnings
+  - 100% coverage on all new validator logic
+
 ### Refactored
 
 - **CLI Architecture Improvements**: Complete refactoring for code reusability and maintainability

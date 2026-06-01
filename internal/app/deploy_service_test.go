@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
@@ -84,6 +85,15 @@ func (m *MockBackupWriter) MkdirAll(path string) error {
 func (m *MockBackupWriter) GetFile(path string) (string, bool) {
 	content, ok := m.files[path]
 	return content, ok
+}
+
+// MockPermissionChecker implements PermissionChecker for testing.
+type MockPermissionChecker struct {
+	err error // nil = writable, non-nil = denied
+}
+
+func (m *MockPermissionChecker) CheckWritable(_ string) error {
+	return m.err
 }
 
 // createTestMetadata creates a JSON metadata file content for testing.
@@ -292,5 +302,150 @@ func TestDeployService_Deploy_EmptyMetadata(t *testing.T) {
 	_, err := service.Deploy(opts)
 	if err == nil {
 		t.Error("Deploy() expected error for empty metadata")
+	}
+}
+
+// --- System target tests ---
+
+func TestDeployService_Deploy_SystemTarget_UsesAbsolutePath(t *testing.T) {
+	reader := NewMockDirectoryReader()
+	writer := NewMockBackupWriter()
+	checker := &MockPermissionChecker{err: nil} // writable
+	service := NewDeployServiceWithChecker(reader, writer, checker)
+
+	reader.AddDirectory("./build", []string{"etc-profile"})
+	reader.AddFile("build/etc-profile", "# system profile content")
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{
+		{Source: "etc-profile", Target: "etc-profile", DestPath: "/etc/profile"},
+	}))
+
+	opts := DeployOptions{
+		BuildDir: "./build",
+		HomeDir:  "/home/test",
+	}
+
+	result, err := service.Deploy(opts)
+	if err != nil {
+		t.Fatalf("Deploy() error = %v", err)
+	}
+
+	if result.DeployedCount != 1 {
+		t.Errorf("DeployedCount = %d, want 1", result.DeployedCount)
+	}
+
+	// Must be written to the absolute path, NOT /home/test/etc/profile
+	if _, ok := writer.GetFile("/etc/profile"); !ok {
+		t.Error("system target must deploy to /etc/profile, not a home-relative path")
+	}
+	if _, ok := writer.GetFile("/home/test/etc/profile"); ok {
+		t.Error("system target must NOT be joined with HomeDir")
+	}
+}
+
+func TestDeployService_Deploy_SystemTarget_PermissionDenied(t *testing.T) {
+	reader := NewMockDirectoryReader()
+	writer := NewMockBackupWriter()
+	permErr := fmt.Errorf("requires elevated privileges to write to /etc/profile — re-run with sudo")
+	checker := &MockPermissionChecker{err: permErr}
+	service := NewDeployServiceWithChecker(reader, writer, checker)
+
+	reader.AddDirectory("./build", []string{"etc-profile"})
+	reader.AddFile("build/etc-profile", "# content")
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{
+		{Source: "etc-profile", Target: "etc-profile", DestPath: "/etc/profile"},
+	}))
+
+	opts := DeployOptions{
+		BuildDir: "./build",
+		HomeDir:  "/home/test",
+	}
+
+	result, err := service.Deploy(opts)
+	if err != nil {
+		t.Fatalf("Deploy() unexpected fatal error = %v", err)
+	}
+
+	if result.ErrorCount != 1 {
+		t.Errorf("ErrorCount = %d, want 1", result.ErrorCount)
+	}
+	if result.DeployedFiles[0].Error == nil {
+		t.Error("expected permission error on system target")
+	}
+	// Verify no file was written
+	if _, ok := writer.GetFile("/etc/profile"); ok {
+		t.Error("must not write to system file when permission check fails")
+	}
+}
+
+func TestDeployService_Deploy_SystemTarget_BackupForcedWithoutFlag(t *testing.T) {
+	reader := NewMockDirectoryReader()
+	writer := NewMockBackupWriter()
+	checker := &MockPermissionChecker{err: nil}
+	service := NewDeployServiceWithChecker(reader, writer, checker)
+
+	reader.AddDirectory("./build", []string{"etc-profile"})
+	reader.AddFile("build/etc-profile", "# new content")
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{
+		{Source: "etc-profile", Target: "etc-profile", DestPath: "/etc/profile"},
+	}))
+	// Existing system file
+	reader.AddFile("/etc/profile", "# original system content")
+
+	opts := DeployOptions{
+		BuildDir:     "./build",
+		HomeDir:      "/home/test",
+		CreateBackup: false, // not requested by user, but must still happen for system files
+	}
+
+	result, err := service.Deploy(opts)
+	if err != nil {
+		t.Fatalf("Deploy() error = %v", err)
+	}
+
+	if result.DeployedCount != 1 {
+		t.Errorf("DeployedCount = %d, want 1", result.DeployedCount)
+	}
+
+	// Backup must be created even though CreateBackup was false
+	if result.DeployedFiles[0].BackupPath == "" {
+		t.Error("backup must be forced for system targets even when CreateBackup=false")
+	}
+}
+
+func TestDeployService_Deploy_SystemTarget_DryRun(t *testing.T) {
+	reader := NewMockDirectoryReader()
+	writer := NewMockBackupWriter()
+	checker := &MockPermissionChecker{err: nil}
+	service := NewDeployServiceWithChecker(reader, writer, checker)
+
+	reader.AddDirectory("./build", []string{"etc-profile"})
+	reader.AddFile("build/etc-profile", "# content")
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{
+		{Source: "etc-profile", Target: "etc-profile", DestPath: "/etc/profile"},
+	}))
+
+	opts := DeployOptions{
+		BuildDir: "./build",
+		HomeDir:  "/home/test",
+		DryRun:   true,
+	}
+
+	result, err := service.Deploy(opts)
+	if err != nil {
+		t.Fatalf("Deploy() error = %v", err)
+	}
+
+	if result.SkippedCount != 1 {
+		t.Errorf("SkippedCount = %d, want 1 in dry-run", result.SkippedCount)
+	}
+
+	// Dry-run for system target must carry a sudo hint in the error field
+	df := result.DeployedFiles[0]
+	if df.Error == nil {
+		t.Error("dry-run system target must carry sudo hint in Error field")
+	}
+	// No actual file written
+	if _, ok := writer.GetFile("/etc/profile"); ok {
+		t.Error("dry-run must not write files")
 	}
 }

@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **System-Wide Config Targets** (`etc-profile`, `etc-zshrc`, `etc-zshenv`): modules can now target `/etc/profile`, `/etc/zshrc`, and `/etc/zsh/zshenv`
+  - `IsSystemTarget(name)` in `internal/domain` identifies system targets across all shell types
+  - System targets resolve directly to absolute paths; `TargetResolver.GetRelativePath` returns the absolute path for these targets — callers must use `filepath.IsAbs` and must not join with HomeDir
+  - `GetValidTargets` and `IsValidTarget` now include system targets for every shell type
+  - Deploy service: absolute `DestPath` is used directly (not joined with HomeDir); `filepath.IsAbs` is the detection mechanism
+  - Permission check before any system-file write; clear `requires elevated privileges — re-run with sudo` message on denial (no silent failure, no auto-escalation)
+  - Backup **forced** for system files before overwrite, regardless of `--backup` flag; prevents a bad `/etc/profile` from breaking all-user logins
+  - Dry-run mode carries a sudo hint in the `Error` field for system targets
+  - `PermissionChecker` interface added to `DeployService` for test injection; `NewDeployServiceWithChecker` constructor
+
+
+
 - **BSD OS Detection** (per-OS granularity): `DetectOS()` now returns `"FreeBSD"`, `"OpenBSD"`, `"NetBSD"` instead of a single `"BSD"` umbrella
   - `os-detection.sh` example module updated with per-OS BSD branches (`uname -s` → `FreeBSD`, `OpenBSD`, `NetBSD`)
   - `InferOSSupport()` in migration now detects `FreeBSD)`, `OpenBSD)`, `NetBSD)` case branches when inferring manifest `os:` values

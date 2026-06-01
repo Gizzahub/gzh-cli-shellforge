@@ -113,6 +113,9 @@ func TestTargetResolver_Resolve(t *testing.T) {
 }
 
 func TestTargetResolver_GetValidTargets(t *testing.T) {
+	// System targets are included for every shell type.
+	systemTargets := []string{"etc-profile", "etc-zshrc", "etc-zshenv"}
+
 	tests := []struct {
 		name      string
 		shellType string
@@ -121,17 +124,17 @@ func TestTargetResolver_GetValidTargets(t *testing.T) {
 		{
 			name:      "zsh targets",
 			shellType: "zsh",
-			want:      []string{"zshrc", "zprofile", "zshenv", "zlogin", "zlogout", "profile"},
+			want:      append([]string{"zshrc", "zprofile", "zshenv", "zlogin", "zlogout", "profile"}, systemTargets...),
 		},
 		{
 			name:      "bash targets",
 			shellType: "bash",
-			want:      []string{"bashrc", "bash_profile", "profile", "bash_login", "bash_logout"},
+			want:      append([]string{"bashrc", "bash_profile", "profile", "bash_login", "bash_logout"}, systemTargets...),
 		},
 		{
 			name:      "fish targets",
 			shellType: "fish",
-			want:      []string{"config", "conf.d"},
+			want:      append([]string{"config", "conf.d"}, systemTargets...),
 		},
 		{
 			name:      "unknown shell",
@@ -347,6 +350,88 @@ func TestTargetResolver_IsDirectoryTarget(t *testing.T) {
 			assert.Equal(t, tt.isDir, resolver.IsDirectoryTarget(tt.target))
 		})
 	}
+}
+
+func TestIsSystemTarget(t *testing.T) {
+	tests := []struct {
+		name string
+		want bool
+	}{
+		{"etc-profile", true},
+		{"etc-zshrc", true},
+		{"etc-zshenv", true},
+		{"ETC-PROFILE", true}, // case-insensitive
+		{"zshrc", false},
+		{"bashrc", false},
+		{"profile", false},
+		{"", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, IsSystemTarget(tt.name))
+		})
+	}
+}
+
+func TestTargetResolver_SystemTargets(t *testing.T) {
+	resolver := NewTargetResolver("zsh", "/home/user")
+
+	t.Run("resolve etc-profile returns absolute path", func(t *testing.T) {
+		got, err := resolver.Resolve("etc-profile")
+		require.NoError(t, err)
+		assert.Equal(t, "/etc/profile", got)
+		assert.True(t, filepath.IsAbs(got))
+	})
+
+	t.Run("resolve etc-zshrc returns absolute path", func(t *testing.T) {
+		got, err := resolver.Resolve("etc-zshrc")
+		require.NoError(t, err)
+		assert.Equal(t, "/etc/zshrc", got)
+	})
+
+	t.Run("resolve etc-zshenv returns absolute path", func(t *testing.T) {
+		got, err := resolver.Resolve("etc-zshenv")
+		require.NoError(t, err)
+		assert.Equal(t, "/etc/zsh/zshenv", got)
+	})
+
+	t.Run("GetRelativePath for system target returns absolute path", func(t *testing.T) {
+		got, err := resolver.GetRelativePath("etc-profile")
+		require.NoError(t, err)
+		assert.Equal(t, "/etc/profile", got)
+		assert.True(t, filepath.IsAbs(got))
+	})
+
+	t.Run("IsValidTarget accepts system targets", func(t *testing.T) {
+		assert.True(t, resolver.IsValidTarget("etc-profile"))
+		assert.True(t, resolver.IsValidTarget("etc-zshrc"))
+		assert.True(t, resolver.IsValidTarget("etc-zshenv"))
+	})
+
+	t.Run("GetValidTargets includes system targets", func(t *testing.T) {
+		targets := resolver.GetValidTargets()
+		assert.Contains(t, targets, "etc-profile")
+		assert.Contains(t, targets, "etc-zshrc")
+		assert.Contains(t, targets, "etc-zshenv")
+	})
+
+	t.Run("system target valid for bash resolver too", func(t *testing.T) {
+		bashResolver := NewTargetResolver("bash", "/home/user")
+		assert.True(t, bashResolver.IsValidTarget("etc-profile"))
+		got, err := bashResolver.Resolve("etc-profile")
+		require.NoError(t, err)
+		assert.Equal(t, "/etc/profile", got)
+	})
+}
+
+func TestTargetResolver_ValidateTargets_SystemTarget(t *testing.T) {
+	resolver := NewTargetResolver("zsh", "/home/user")
+	err := resolver.ValidateTargets([]Module{
+		{Name: "sysconfig", File: "sysconfig.sh", Target: "etc-profile"},
+		{Name: "myzshrc", File: "zshrc.sh", Target: "zshrc"},
+	})
+	assert.NoError(t, err)
 }
 
 func TestTargetResolver_XDGConfigHome(t *testing.T) {

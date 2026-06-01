@@ -22,17 +22,52 @@ type BackupWriter interface {
 	MkdirAll(path string) error
 }
 
-// DeployService implements the deploy use case.
-type DeployService struct {
-	reader DirectoryReader
-	writer BackupWriter
+// PermissionChecker verifies that a path is writable before attempting a write.
+type PermissionChecker interface {
+	CheckWritable(path string) error
 }
 
-// NewDeployService creates a new deploy service.
+// osPermissionChecker probes writability by creating and immediately removing a
+// temporary file in the target directory.
+type osPermissionChecker struct{}
+
+func (c *osPermissionChecker) CheckWritable(path string) error {
+	dir := filepath.Dir(path)
+	f, err := os.CreateTemp(dir, ".shellforge-check-*")
+	if err != nil {
+		if os.IsPermission(err) {
+			return fmt.Errorf("requires elevated privileges to write to %s — re-run with sudo", path)
+		}
+		return fmt.Errorf("cannot write to %s: %w", path, err)
+	}
+	f.Close()
+	os.Remove(f.Name())
+	return nil
+}
+
+// DeployService implements the deploy use case.
+type DeployService struct {
+	reader  DirectoryReader
+	writer  BackupWriter
+	checker PermissionChecker
+}
+
+// NewDeployService creates a new deploy service with the default OS permission checker.
 func NewDeployService(reader DirectoryReader, writer BackupWriter) *DeployService {
 	return &DeployService{
-		reader: reader,
-		writer: writer,
+		reader:  reader,
+		writer:  writer,
+		checker: &osPermissionChecker{},
+	}
+}
+
+// NewDeployServiceWithChecker creates a deploy service with an injectable permission checker.
+// Use this in tests to supply a mock PermissionChecker.
+func NewDeployServiceWithChecker(reader DirectoryReader, writer BackupWriter, checker PermissionChecker) *DeployService {
+	return &DeployService{
+		reader:  reader,
+		writer:  writer,
+		checker: checker,
 	}
 }
 
@@ -114,7 +149,16 @@ func (s *DeployService) Deploy(opts DeployOptions) (*DeployResult, error) {
 	// Process each file from metadata
 	for _, fileInfo := range metadata.Files {
 		sourcePath := filepath.Join(opts.BuildDir, fileInfo.Source)
-		destPath := filepath.Join(opts.HomeDir, fileInfo.DestPath)
+
+		// System targets store an absolute path in DestPath; user targets store a
+		// home-relative path. filepath.Join would corrupt the absolute path, so we branch.
+		isSystem := filepath.IsAbs(fileInfo.DestPath)
+		var destPath string
+		if isSystem {
+			destPath = fileInfo.DestPath
+		} else {
+			destPath = filepath.Join(opts.HomeDir, fileInfo.DestPath)
+		}
 
 		deployed := DeployedFile{
 			SourcePath: sourcePath,
@@ -129,12 +173,25 @@ func (s *DeployService) Deploy(opts DeployOptions) (*DeployResult, error) {
 			continue
 		}
 
-		// Skip if dry-run
+		// Dry-run: skip actual writes; system targets include a sudo hint.
 		if opts.DryRun {
+			if isSystem {
+				deployed.Error = fmt.Errorf("dry-run: %s requires elevated privileges — re-run with sudo", destPath)
+			}
 			deployed.Skipped = true
 			result.SkippedCount++
 			result.DeployedFiles = append(result.DeployedFiles, deployed)
 			continue
+		}
+
+		// For system targets, verify write permission before touching the file.
+		if isSystem {
+			if err := s.checker.CheckWritable(destPath); err != nil {
+				deployed.Error = err
+				result.ErrorCount++
+				result.DeployedFiles = append(result.DeployedFiles, deployed)
+				continue
+			}
 		}
 
 		// Ensure destination directory exists (for nested paths like .config/fish/)
@@ -146,8 +203,9 @@ func (s *DeployService) Deploy(opts DeployOptions) (*DeployResult, error) {
 			continue
 		}
 
-		// Create backup if requested and file exists
-		if opts.CreateBackup && s.reader.FileExists(destPath) {
+		// Backup: mandatory for system files; optional for user files.
+		needsBackup := opts.CreateBackup || isSystem
+		if needsBackup && s.reader.FileExists(destPath) {
 			backupPath, err := s.createBackup(destPath)
 			if err != nil {
 				deployed.Error = fmt.Errorf("backup failed: %w", err)

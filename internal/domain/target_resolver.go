@@ -7,6 +7,22 @@ import (
 	"strings"
 )
 
+// systemTargetPaths maps the documented system-wide target names to their absolute paths.
+// These targets bypass home-relative resolution and require elevated privileges to write.
+// Arbitrary absolute targets are intentionally excluded to limit blast radius.
+var systemTargetPaths = map[string]string{
+	"etc-profile": "/etc/profile",
+	"etc-zshrc":   "/etc/zshrc",
+	"etc-zshenv":  "/etc/zsh/zshenv",
+}
+
+// IsSystemTarget reports whether name refers to a system-wide configuration file.
+// System targets resolve to absolute paths and require privileged writes.
+func IsSystemTarget(name string) bool {
+	_, ok := systemTargetPaths[strings.ToLower(name)]
+	return ok
+}
+
 // TargetResolver resolves target names to actual file paths based on shell type.
 type TargetResolver struct {
 	shellType string
@@ -79,9 +95,14 @@ func (r *TargetResolver) resolveFishConfigBase() string {
 }
 
 // Resolve returns the full file path for a target name.
+// System targets (etc-profile, etc-zshrc, etc-zshenv) return absolute paths directly.
 // Returns an error if the target is not valid for the current shell type.
 func (r *TargetResolver) Resolve(target string) (string, error) {
 	target = strings.ToLower(target)
+
+	if absPath, ok := systemTargetPaths[target]; ok {
+		return absPath, nil
+	}
 
 	shellMap, ok := r.pathMaps[r.shellType]
 	if !ok {
@@ -96,23 +117,30 @@ func (r *TargetResolver) Resolve(target string) (string, error) {
 	return filepath.Join(r.homeDir, relPath), nil
 }
 
-// GetValidTargets returns a list of valid target names for the current shell type.
+// GetValidTargets returns a list of valid target names for the current shell type,
+// including the shared system-wide targets (etc-profile, etc-zshrc, etc-zshenv).
 func (r *TargetResolver) GetValidTargets() []string {
 	shellMap, ok := r.pathMaps[r.shellType]
 	if !ok {
 		return nil
 	}
 
-	targets := make([]string, 0, len(shellMap))
+	targets := make([]string, 0, len(shellMap)+len(systemTargetPaths))
 	for target := range shellMap {
+		targets = append(targets, target)
+	}
+	for target := range systemTargetPaths {
 		targets = append(targets, target)
 	}
 	return targets
 }
 
-// IsValidTarget checks if a target is valid for the current shell type.
+// IsValidTarget checks if a target is valid for the current shell type or is a system target.
 func (r *TargetResolver) IsValidTarget(target string) bool {
 	target = strings.ToLower(target)
+	if _, ok := systemTargetPaths[target]; ok {
+		return true
+	}
 	shellMap, ok := r.pathMaps[r.shellType]
 	if !ok {
 		return false
@@ -164,10 +192,16 @@ func (r *TargetResolver) GetDefaultTarget() string {
 	}
 }
 
-// GetRelativePath returns the home-relative path for a target (e.g., ".zshrc", ".config/fish/config.fish").
-// This is used for deploy metadata.
+// GetRelativePath returns the deployment path for a target.
+// For user targets it is home-relative (e.g. ".zshrc").
+// For system targets it is the absolute path (e.g. "/etc/profile"); callers must
+// use filepath.IsAbs to distinguish and must NOT join the result with HomeDir.
 func (r *TargetResolver) GetRelativePath(target string) (string, error) {
 	target = strings.ToLower(target)
+
+	if absPath, ok := systemTargetPaths[target]; ok {
+		return absPath, nil
+	}
 
 	shellMap, ok := r.pathMaps[r.shellType]
 	if !ok {
@@ -197,6 +231,10 @@ func GetTargetDescription(target string) string {
 		"bash_logout":  "Login shell exit",
 		"config":       "Fish shell configuration",
 		"conf.d":       "Fish modular configs (auto-sourced .fish files in conf.d/)",
+		// System-wide targets (require elevated privileges)
+		"etc-profile": "System-wide login shell config (/etc/profile) — affects all users, requires sudo",
+		"etc-zshrc":   "System-wide zsh interactive config (/etc/zshrc) — affects all users, requires sudo",
+		"etc-zshenv":  "System-wide zsh environment (/etc/zsh/zshenv) — affects all users, requires sudo",
 	}
 	if desc, ok := descriptions[strings.ToLower(target)]; ok {
 		return desc

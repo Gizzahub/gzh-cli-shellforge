@@ -28,6 +28,7 @@ single shell configuration file.`,
 	cmd.AddCommand(newBuildCmd())
 	cmd.AddCommand(newDeployCmd())
 	cmd.AddCommand(newValidateCmd())
+	cmd.AddCommand(newDoctorCmd())
 	cmd.AddCommand(newListCmd())
 	cmd.AddCommand(newBackupCmd())
 	cmd.AddCommand(newRestoreCmd())

@@ -13,10 +13,10 @@ import (
 )
 
 type validateFlags struct {
-	configDir     string
-	manifest      string
-	verbose       bool
-	checkPrereqs  bool
+	configDir    string
+	manifest     string
+	verbose      bool
+	checkPrereqs bool
 }
 
 func newValidateCmd() *cobra.Command {
@@ -95,7 +95,7 @@ func runValidate(flags *validateFlags) error {
 		return nil
 	}
 
-	printFindings(findings, flags.verbose)
+	printFindings(findings)
 
 	if app.HasErrors(findings) {
 		errCount := countBySeverity(findings, app.SeverityError)
@@ -109,7 +109,7 @@ func runValidate(flags *validateFlags) error {
 	return nil
 }
 
-func printFindings(findings []app.Finding, verbose bool) {
+func printFindings(findings []app.Finding) {
 	errCount := countBySeverity(findings, app.SeverityError)
 	warnCount := countBySeverity(findings, app.SeverityWarn)
 
@@ -142,4 +142,3 @@ func countBySeverity(findings []app.Finding, severity string) int {
 	}
 	return n
 }
-

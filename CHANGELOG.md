@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `validate` command uses the pipeline; `--check-prereqs` flag enables opt-in prereq warnings
   - 100% coverage on all new validator logic
 
+### Changed
+
+- **`validate --verbose` output format**: Replaced the numbered step-by-step progress report (1. Parsing… 2. Validating structure…) with a consolidated findings list. Findings now carry severity icons (✗ error, ⚠ warning) and the module name where applicable.
+
 ### Refactored
 
 - **CLI Architecture Improvements**: Complete refactoring for code reusability and maintainability

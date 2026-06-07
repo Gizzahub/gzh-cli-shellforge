@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"strings"
 )
 
 // WrapError wraps an error with operation context
@@ -31,14 +32,15 @@ func ValidationError(message string) error {
 
 // RequiredFlag returns a standardized required flag error with help
 func RequiredFlag(flagName string, examples ...string) error {
-	msg := fmt.Sprintf("--%s flag is required", flagName)
+	var msg strings.Builder
+	msg.WriteString(fmt.Sprintf("--%s flag is required", flagName))
 	if len(examples) > 0 {
-		msg += "\n\nExamples:"
+		msg.WriteString("\n\nExamples:")
 		for _, ex := range examples {
-			msg += "\n  " + ex
+			msg.WriteString("\n  " + ex)
 		}
 	}
-	return fmt.Errorf("%s", msg)
+	return fmt.Errorf("%s", msg.String())
 }
 
 // MutuallyExclusive returns an error for mutually exclusive flags

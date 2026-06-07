@@ -243,16 +243,16 @@ type DesktopWorkaround struct {
 // LanguageVersionMgr defines a language version manager configuration.
 // InitCommand and InitFiles can be strings, []string, or nested maps depending on complexity.
 type LanguageVersionMgr struct {
-	InitCommand           interface{} `yaml:"init_command"` // string or map[string]string
-	InitFiles             interface{} `yaml:"init_files"`   // []string or map[string]interface{}
-	ShimsLocation         string      `yaml:"shims_location,omitempty"`
-	PathModification      bool        `yaml:"path_modification,omitempty"`
-	FunctionDefinitions   bool        `yaml:"function_definitions,omitempty"`
-	LazyLoad              bool        `yaml:"lazy_load,omitempty"`
-	EnvironmentActivation bool        `yaml:"environment_activation,omitempty"`
-	EnvFile               string      `yaml:"env_file,omitempty"`
-	TypicalProblem        string      `yaml:"typical_problem,omitempty"`
-	Note                  string      `yaml:"note,omitempty"`
+	InitCommand           any    `yaml:"init_command"` // string or map[string]string
+	InitFiles             any    `yaml:"init_files"`   // []string or map[string]interface{}
+	ShimsLocation         string `yaml:"shims_location,omitempty"`
+	PathModification      bool   `yaml:"path_modification,omitempty"`
+	FunctionDefinitions   bool   `yaml:"function_definitions,omitempty"`
+	LazyLoad              bool   `yaml:"lazy_load,omitempty"`
+	EnvironmentActivation bool   `yaml:"environment_activation,omitempty"`
+	EnvFile               string `yaml:"env_file,omitempty"`
+	TypicalProblem        string `yaml:"typical_problem,omitempty"`
+	Note                  string `yaml:"note,omitempty"`
 }
 
 // AutomationProfiles contains automation and isolated environment information.
@@ -359,16 +359,16 @@ type LaunchdWorkarounds struct {
 
 // UserSwitch defines user switching behavior.
 type UserSwitch struct {
-	Command            string      `yaml:"command"`
-	Description        string      `yaml:"description"`
-	ShellProfileLoaded interface{} `yaml:"shell_profile_loaded"`    // bool or string
-	EnvPreserved       interface{} `yaml:"env_preserved,omitempty"` // bool or string (e.g., "partial")
-	EnvReset           bool        `yaml:"env_reset,omitempty"`
-	EnvFiltered        bool        `yaml:"env_filtered,omitempty"`
-	EnvWhitelist       []string    `yaml:"env_whitelist,omitempty"`
-	PwdPreserved       bool        `yaml:"pwd_preserved,omitempty"`
-	PwdChanged         bool        `yaml:"pwd_changed,omitempty"`
-	HomeChanged        bool        `yaml:"home_changed,omitempty"`
+	Command            string   `yaml:"command"`
+	Description        string   `yaml:"description"`
+	ShellProfileLoaded any      `yaml:"shell_profile_loaded"`    // bool or string
+	EnvPreserved       any      `yaml:"env_preserved,omitempty"` // bool or string (e.g., "partial")
+	EnvReset           bool     `yaml:"env_reset,omitempty"`
+	EnvFiltered        bool     `yaml:"env_filtered,omitempty"`
+	EnvWhitelist       []string `yaml:"env_whitelist,omitempty"`
+	PwdPreserved       bool     `yaml:"pwd_preserved,omitempty"`
+	PwdChanged         bool     `yaml:"pwd_changed,omitempty"`
+	HomeChanged        bool     `yaml:"home_changed,omitempty"`
 }
 
 // ContainerContexts defines container and virtualization environments.
@@ -406,10 +406,10 @@ type DockerRunConfig struct {
 
 // ChrootConfig defines chroot environment.
 type ChrootConfig struct {
-	Command            string      `yaml:"command"`
-	Description        string      `yaml:"description"`
-	ShellProfileLoaded interface{} `yaml:"shell_profile_loaded"` // bool or string
-	MinimalEnv         bool        `yaml:"minimal_env"`
+	Command            string `yaml:"command"`
+	Description        string `yaml:"description"`
+	ShellProfileLoaded any    `yaml:"shell_profile_loaded"` // bool or string
+	MinimalEnv         bool   `yaml:"minimal_env"`
 }
 
 // FlatpakConfig defines Flatpak sandbox environment.
@@ -423,10 +423,10 @@ type FlatpakConfig struct {
 
 // SnapConfig defines Snap confinement.
 type SnapConfig struct {
-	Command            string      `yaml:"command"`
-	Description        string      `yaml:"description"`
-	Confinement        []string    `yaml:"confinement"`
-	ShellProfileLoaded interface{} `yaml:"shell_profile_loaded"` // bool or string
+	Command            string   `yaml:"command"`
+	Description        string   `yaml:"description"`
+	Confinement        []string `yaml:"confinement"`
+	ShellProfileLoaded any      `yaml:"shell_profile_loaded"` // bool or string
 }
 
 // WSLConfig defines Windows Subsystem for Linux.
@@ -455,11 +455,11 @@ type RemoteExecution struct {
 
 // SSHNonInteractiveConfig defines SSH non-interactive execution.
 type SSHNonInteractiveConfig struct {
-	Command      string      `yaml:"command"`
-	ShellType    string      `yaml:"shell_type"`
-	BashBehavior interface{} `yaml:"bash_behavior"` // string or map (detailed behavior)
-	ZshBehavior  string      `yaml:"zsh_behavior"`
-	Workaround   string      `yaml:"workaround"`
+	Command      string `yaml:"command"`
+	ShellType    string `yaml:"shell_type"`
+	BashBehavior any    `yaml:"bash_behavior"` // string or map (detailed behavior)
+	ZshBehavior  string `yaml:"zsh_behavior"`
+	Workaround   string `yaml:"workaround"`
 }
 
 // SSHForcedCommandConfig defines SSH forced command.

@@ -84,7 +84,7 @@ type Summary struct {
 
 type summaryField struct {
 	label string
-	value interface{}
+	value any
 }
 
 // NewSummary creates a new summary printer
@@ -93,7 +93,7 @@ func NewSummary() *Summary {
 }
 
 // Add adds a field to the summary
-func (s *Summary) Add(label string, value interface{}) *Summary {
+func (s *Summary) Add(label string, value any) *Summary {
 	s.fields = append(s.fields, summaryField{label: label, value: value})
 	return s
 }

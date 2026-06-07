@@ -518,8 +518,8 @@ func TestMigrationService_generateManifestYAML(t *testing.T) {
 				assert.Contains(t, output, "- name: simple")
 				assert.Contains(t, output, "file: init.d/10-simple.sh")
 				// Description line should not appear
-				lines := strings.Split(output, "\n")
-				for _, line := range lines {
+				lines := strings.SplitSeq(output, "\n")
+				for line := range lines {
 					if strings.Contains(line, "simple") {
 						assert.NotContains(t, line, "description:")
 					}

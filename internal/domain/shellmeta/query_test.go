@@ -1,6 +1,7 @@
 package shellmeta
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/spf13/afero"
@@ -261,13 +262,7 @@ func TestShellProfiles_ListSupportedDistributions(t *testing.T) {
 	}
 
 	// Check ubuntu exists
-	found := false
-	for _, d := range distros {
-		if d == "ubuntu" {
-			found = true
-			break
-		}
-	}
+	found := slices.Contains(distros, "ubuntu")
 	if !found {
 		t.Error("ListSupportedDistributions() should include ubuntu")
 	}
@@ -282,13 +277,7 @@ func TestShellProfiles_ListLanguageVersionManagers(t *testing.T) {
 	}
 
 	// Check rbenv exists
-	found := false
-	for _, m := range managers {
-		if m == "rbenv" {
-			found = true
-			break
-		}
-	}
+	found := slices.Contains(managers, "rbenv")
 	if !found {
 		t.Error("ListLanguageVersionManagers() should include rbenv")
 	}
@@ -303,13 +292,7 @@ func TestShellProfiles_ListDesktopEnvironments(t *testing.T) {
 	}
 
 	// Check gnome exists
-	found := false
-	for _, de := range des {
-		if de == "gnome" {
-			found = true
-			break
-		}
-	}
+	found := slices.Contains(des, "gnome")
 	if !found {
 		t.Error("ListDesktopEnvironments() should include gnome")
 	}

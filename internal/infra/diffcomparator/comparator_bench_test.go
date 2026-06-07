@@ -242,7 +242,7 @@ func BenchmarkComparator_splitLines(b *testing.B) {
 // generateFileContent generates file content with specified number of lines
 func generateFileContent(lines int) string {
 	var sb strings.Builder
-	for i := 0; i < lines; i++ {
+	for i := range lines {
 		sb.WriteString(fmt.Sprintf("# Line %d: This is a sample line for testing purposes\n", i+1))
 	}
 	return sb.String()
@@ -251,7 +251,7 @@ func generateFileContent(lines int) string {
 // generateLines generates a slice of lines
 func generateLines(count int) []string {
 	lines := make([]string, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		lines[i] = fmt.Sprintf("# Line %d: This is a sample line for testing purposes", i+1)
 	}
 	return lines

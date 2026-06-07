@@ -363,7 +363,7 @@ func showLanguageManager(profiles *shellmeta.ShellProfiles, name string) error {
 	switch cmd := mgr.InitCommand.(type) {
 	case string:
 		fmt.Printf("Init command: %s\n", cmd)
-	case map[string]interface{}:
+	case map[string]any:
 		fmt.Println("Init commands:")
 		for shell, c := range cmd {
 			fmt.Printf("  %-8s %v\n", shell+":", c)
@@ -373,12 +373,12 @@ func showLanguageManager(profiles *shellmeta.ShellProfiles, name string) error {
 
 	// InitFiles can be []string or map
 	switch files := mgr.InitFiles.(type) {
-	case []interface{}:
+	case []any:
 		fmt.Println("Init files:")
 		for _, f := range files {
 			fmt.Printf("  %v\n", f)
 		}
-	case map[string]interface{}:
+	case map[string]any:
 		fmt.Println("Init files:")
 		for shell, f := range files {
 			fmt.Printf("  %-8s %v\n", shell+":", f)

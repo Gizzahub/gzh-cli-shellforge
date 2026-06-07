@@ -13,7 +13,7 @@ type ConfigPrinter struct {
 
 type configField struct {
 	label string
-	value interface{}
+	value any
 }
 
 // NewConfigPrinter creates a new configuration printer
@@ -25,13 +25,13 @@ func NewConfigPrinter(title string) *ConfigPrinter {
 }
 
 // Add adds a field to the configuration output
-func (p *ConfigPrinter) Add(label string, value interface{}) *ConfigPrinter {
+func (p *ConfigPrinter) Add(label string, value any) *ConfigPrinter {
 	p.fields = append(p.fields, configField{label: label, value: value})
 	return p
 }
 
 // AddIf adds a field only if condition is true
-func (p *ConfigPrinter) AddIf(condition bool, label string, value interface{}) *ConfigPrinter {
+func (p *ConfigPrinter) AddIf(condition bool, label string, value any) *ConfigPrinter {
 	if condition {
 		p.fields = append(p.fields, configField{label: label, value: value})
 	}
@@ -52,19 +52,19 @@ func (p *ConfigPrinter) Print(verbose bool) {
 }
 
 // PrintVerboseHeader prints a header line if verbose mode is enabled
-func PrintVerboseHeader(verbose bool, format string, args ...interface{}) {
+func PrintVerboseHeader(verbose bool, format string, args ...any) {
 	if verbose {
 		fmt.Printf(format+"\n", args...)
 	}
 }
 
 // PrintKeyValue prints a key-value pair with consistent formatting
-func PrintKeyValue(key string, value interface{}) {
+func PrintKeyValue(key string, value any) {
 	fmt.Printf("  %s: %v\n", key, value)
 }
 
 // PrintKeyValues prints multiple key-value pairs
-func PrintKeyValues(pairs map[string]interface{}) {
+func PrintKeyValues(pairs map[string]any) {
 	// Find the longest key for alignment
 	maxLen := 0
 	for k := range pairs {

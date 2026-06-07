@@ -174,7 +174,7 @@ func NewMigrationResult() *MigrationResult {
 }
 
 // AddWarning adds a warning to the migration result
-func (m *MigrationResult) AddWarning(format string, args ...interface{}) {
+func (m *MigrationResult) AddWarning(format string, args ...any) {
 	m.Warnings = append(m.Warnings, fmt.Sprintf(format, args...))
 }
 

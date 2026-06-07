@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"runtime"
+	"slices"
 	"testing"
 )
 
@@ -35,10 +36,8 @@ func TestDetectOS_ReturnsKnownValue(t *testing.T) {
 	result := DetectOS()
 	knownValues := []string{"Mac", "Linux", "FreeBSD", "OpenBSD", "NetBSD", "Windows"}
 
-	for _, known := range knownValues {
-		if result == known {
-			return
-		}
+	if slices.Contains(knownValues, result) {
+		return
 	}
 
 	if result != runtime.GOOS {

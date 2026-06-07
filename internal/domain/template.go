@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -86,12 +87,7 @@ func GetAllTemplateTypes() []TemplateType {
 // IsValidTemplateType checks if a template type is valid
 func IsValidTemplateType(t string) bool {
 	templateType := TemplateType(t)
-	for _, valid := range GetAllTemplateTypes() {
-		if templateType == valid {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(GetAllTemplateTypes(), templateType)
 }
 
 // GetTemplateCategory returns the category for a template type

@@ -12,7 +12,7 @@ func (e *ValidationError) Error() string {
 }
 
 // NewValidationError creates a new validation error.
-func NewValidationError(format string, args ...interface{}) *ValidationError {
+func NewValidationError(format string, args ...any) *ValidationError {
 	return &ValidationError{Message: fmt.Sprintf(format, args...)}
 }
 
@@ -26,7 +26,7 @@ func (e *CircularDependencyError) Error() string {
 }
 
 // NewCircularDependencyError creates a new circular dependency error.
-func NewCircularDependencyError(format string, args ...interface{}) *CircularDependencyError {
+func NewCircularDependencyError(format string, args ...any) *CircularDependencyError {
 	return &CircularDependencyError{Message: fmt.Sprintf(format, args...)}
 }
 

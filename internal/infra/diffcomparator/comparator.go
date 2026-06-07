@@ -168,17 +168,14 @@ func (c *Comparator) generateSideBySide(result *domain.DiffResult, original, gen
 
 	// Generate side-by-side view
 	var sb strings.Builder
-	maxLen := len(original)
-	if len(generated) > maxLen {
-		maxLen = len(generated)
-	}
+	maxLen := max(len(generated), len(original))
 
 	// Header
 	sb.WriteString(fmt.Sprintf("%-40s | %-40s\n", result.OriginalFile, result.GeneratedFile))
 	sb.WriteString(strings.Repeat("-", 83) + "\n")
 
 	// Line-by-line comparison
-	for i := 0; i < maxLen; i++ {
+	for i := range maxLen {
 		var origLine, genLine string
 
 		if i < len(original) {
@@ -223,12 +220,9 @@ func (c *Comparator) parseStatistics(result *domain.DiffResult, diffText string,
 	modified := 0
 
 	// Compare lines that exist in both files
-	minLen := origLen
-	if genLen < minLen {
-		minLen = genLen
-	}
+	minLen := min(genLen, origLen)
 
-	for i := 0; i < minLen; i++ {
+	for i := range minLen {
 		if original[i] == generated[i] {
 			unchanged++
 		} else {
@@ -247,10 +241,7 @@ func (c *Comparator) parseStatistics(result *domain.DiffResult, diffText string,
 	}
 
 	// Total lines is the max of both
-	totalLines := origLen
-	if genLen > totalLines {
-		totalLines = genLen
-	}
+	totalLines := max(genLen, origLen)
 
 	result.Statistics = domain.DiffStatistics{
 		LinesAdded:     added,

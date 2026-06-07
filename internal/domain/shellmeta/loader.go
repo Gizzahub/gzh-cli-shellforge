@@ -48,7 +48,7 @@ func (l *Loader) Load(dir string) (*ShellProfiles, error) {
 
 // loadYAML is a generic helper that reads and unmarshals a YAML file into the given target.
 // The target must be a pointer to the destination struct.
-func (l *Loader) loadYAML(path string, target interface{}) error {
+func (l *Loader) loadYAML(path string, target any) error {
 	data, err := afero.ReadFile(l.fs, path)
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %w", filepath.Base(path), err)

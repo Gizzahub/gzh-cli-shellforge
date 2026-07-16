@@ -1,6 +1,6 @@
 module github.com/gizzahub/gzh-cli-shellforge
 
-go 1.25.7
+go 1.26
 
 require (
 	github.com/pmezard/go-difflib v1.0.0

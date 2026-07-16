@@ -188,6 +188,25 @@ Go implementation is significantly faster than Python version:
 - Modular structure makes maintenance easy
 - Version control friendly for team collaboration
 
+### Compared to Alternatives
+
+| Feature | Shellforge | dotbot | chezmoi | stow |
+|---------|-----------|--------|---------|------|
+| **Multi-file unified management** | ✅ | ❌ | △ | ❌ |
+| **Build/deploy separation** | ✅ | ❌ | ❌ | ❌ |
+| Automatic dependency resolution | ✅ | ❌ | ❌ | ❌ |
+| OS auto-detection | ✅ | ❌ | ✅ | ❌ |
+| Shell-config specialized | ✅ | ❌ | ❌ | ❌ |
+| Migration tooling | ✅ | ❌ | △ | ❌ |
+| Template system | ✅ | △ | ✅ | ❌ |
+| Single binary | ✅ | ❌ | ✅ | ✅ |
+
+### Who It's For
+
+- **Individual developers** — sync shell config across machines, unify Mac/Linux setups, track config change history
+- **Teams & organizations** — share a standard dev environment, simplify onboarding, collaborate through version control
+- **DevOps** — automate shell config in CI/CD, manage container-image configs, treat configuration as code
+
 ---
 
 ## Status

@@ -17,8 +17,8 @@ zsh / bash / fish from a single manifest. It:
 - and wraps shell-config management rather than replacing the shell (SOUL 신념 1).
 
 This is a feature-library project — a single PRODUCT.md is sufficient. It
-replaces the earlier marketing-style document; that content is preserved in
-[docs/90-marketing-legacy.md](docs/90-marketing-legacy.md).
+replaces the earlier marketing-style document; its product positioning now lives
+in [README.md](README.md).
 
 | 제공하는 것 (Is)                              | 되지 않을 것 (Is Not)                       |
 | --------------------------------------------- | ------------------------------------------- |

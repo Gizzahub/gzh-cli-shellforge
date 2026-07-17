@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
 
 func TestModule_AppliesTo(t *testing.T) {
@@ -97,6 +99,33 @@ func TestModule_Validate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestModule_PackagesYAMLRoundTrip(t *testing.T) {
+	original := Module{
+		Name: "setup-mise",
+		File: "init/56-setup-mise.sh",
+		OS:   []string{"Mac", "Linux"},
+		Packages: map[string][]string{
+			"brew": {"mise"},
+			"apt":  {"mise"},
+		},
+	}
+
+	data, err := yaml.Marshal(original)
+	require.NoError(t, err)
+	assert.Contains(t, string(data), "packages:")
+
+	var roundTripped Module
+	require.NoError(t, yaml.Unmarshal(data, &roundTripped))
+
+	assert.Equal(t, original.Packages, roundTripped.Packages)
+}
+
+func TestModule_PackagesOmittedWhenEmpty(t *testing.T) {
+	data, err := yaml.Marshal(Module{Name: "no-packages", File: "no-packages.sh"})
+	require.NoError(t, err)
+	assert.NotContains(t, string(data), "packages:")
 }
 
 func TestModule_GetTarget(t *testing.T) {

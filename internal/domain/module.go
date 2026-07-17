@@ -23,6 +23,11 @@ type Module struct {
 
 	// RequiresPath lists filesystem paths that must exist; ~ and $VAR are expanded.
 	RequiresPath []string `yaml:"requires_path,omitempty"`
+
+	// Packages declares external packages this module needs, keyed by package
+	// manager name (e.g. "brew", "cask", "apt"). Consumed by `prepare` to
+	// check/install prerequisites; ignored by build/deploy.
+	Packages map[string][]string `yaml:"packages,omitempty"`
 }
 
 // GetTarget returns the target RC file, defaulting to "zshrc".

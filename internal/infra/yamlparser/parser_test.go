@@ -73,6 +73,25 @@ func TestParser_Parse(t *testing.T) {
 			},
 		},
 		{
+			name: "module with packages declaration",
+			content: `modules:
+  - name: setup-mise
+    file: init/56-setup-mise.sh
+    os: [Mac, Linux]
+    packages:
+      brew: [mise]
+      apt: [mise]
+`,
+			wantErr: false,
+			validate: func(t *testing.T, m *domain.Manifest) {
+				require.Len(t, m.Modules, 1)
+				assert.Equal(t, map[string][]string{
+					"brew": {"mise"},
+					"apt":  {"mise"},
+				}, m.Modules[0].Packages)
+			},
+		},
+		{
 			name:    "invalid YAML syntax",
 			content: "modules:\n  - name: test\n    invalid yaml: [",
 			wantErr: true,

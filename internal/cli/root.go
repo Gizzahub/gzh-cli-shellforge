@@ -25,6 +25,7 @@ single shell configuration file.`,
 	}
 
 	// Add subcommands
+	cmd.AddCommand(newPrepareCmd())
 	cmd.AddCommand(newBuildCmd())
 	cmd.AddCommand(newDeployCmd())
 	cmd.AddCommand(newValidateCmd())

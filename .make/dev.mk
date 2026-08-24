@@ -3,7 +3,7 @@
 
 .PHONY: dev dev-fast verify pr-check ci-local
 .PHONY: watch pre-commit release-dry
-.PHONY: comments todo deps-graph changelog
+.PHONY: comments todo deps-graph
 
 # ==============================================================================
 # Development Workflows
@@ -71,13 +71,12 @@ deps-graph: ## Show module dependency graph
 # Documentation
 # ==============================================================================
 
-changelog: ## Generate changelog (requires git-chglog)
-	@if command -v git-chglog >/dev/null 2>&1; then \
-		git-chglog -o CHANGELOG.md; \
-		echo "✅ Changelog generated"; \
-	else \
-		echo "⚠️  git-chglog not installed. See: https://github.com/git-chglog/git-chglog"; \
-	fi
+# No changelog target on purpose. CHANGELOG.md is written by hand — each entry
+# explains why a change was made, which a generator cannot produce — and
+# `git-chglog -o CHANGELOG.md` overwrites rather than appends, so the target
+# would have erased the file, including the docs/changelog/ index that points at
+# the archived release lines. It had never run: no .chglog/ config exists,
+# git-chglog is not installed, and no doc or workflow referenced it.
 
 docs-serve: ## Serve documentation locally (requires mdbook or similar)
 	@if command -v mdbook >/dev/null 2>&1; then \

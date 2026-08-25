@@ -9,14 +9,23 @@
 # Standard Quality Checks
 # ==============================================================================
 
-lint: ## Run golangci-lint
+lint: ## Run golangci-lint (refuses to run a version the config cannot target)
 	@echo "Running golangci-lint..."
-	@if command -v golangci-lint >/dev/null 2>&1; then \
-		golangci-lint run ./...; \
-	else \
-		echo "⚠️  golangci-lint not installed. Run: make install-tools" >&2; \
+	@[ -x "$(GOLANGCI_LINT_BIN)" ] || { \
+		echo "⚠️  golangci-lint is not installed at $(GOLANGCI_LINT_BIN)." >&2; \
+		echo "    Run: make install-lint" >&2; \
 		exit 1; \
-	fi
+	}
+	@"$(GOLANGCI_LINT_BIN)" version 2>/dev/null | grep -qF "has version $(GOLANGCI_LINT_BARE) " || { \
+		found=$$("$(GOLANGCI_LINT_BIN)" version 2>&1 | head -1); \
+		echo "⚠️  golangci-lint version mismatch." >&2; \
+		echo "    pinned:    $(GOLANGCI_LINT_VERSION)" >&2; \
+		echo "    at:        $(GOLANGCI_LINT_BIN)" >&2; \
+		echo "    found:     $$found" >&2; \
+		echo "    Run: make install-lint" >&2; \
+		exit 1; \
+	}
+	@"$(GOLANGCI_LINT_BIN)" run ./...
 
 fmt: ## Format code with gofmt and gofumpt
 	@echo "Formatting code..."

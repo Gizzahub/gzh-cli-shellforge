@@ -72,10 +72,17 @@ jobs:
       - name: Run go vet
         run: go vet ./...
 
+      # Read the version from the Makefile so CI and `make lint` cannot drift.
+      # `latest` would let a golangci-lint release change this repository's
+      # lint result with no commit to it.
+      - name: Resolve pinned golangci-lint version
+        id: golangci
+        run: echo "version=$(make -s print-golangci-version)" >> "$GITHUB_OUTPUT"
+
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: latest
+          version: ${{ steps.golangci.outputs.version }}
 
   build:
     name: Build

@@ -105,15 +105,15 @@ jobs:
 
       - name: Test binary
         run: |
-          ./build/shellforge --version
-          ./build/shellforge --help
+          ./build/gz-shellforge --version
+          ./build/gz-shellforge --help
 
       - name: Run example validation
         run: |
           cd examples
-          ../build/shellforge validate --verbose
-          ../build/shellforge build --os Mac --dry-run | head -20
-          ../build/shellforge build --os Linux --dry-run | head -20
+          ../build/gz-shellforge validate --verbose
+          ../build/gz-shellforge build --os Mac --dry-run | head -20
+          ../build/gz-shellforge build --os Linux --dry-run | head -20
 
   build-all-platforms:
     name: Build All Platforms
@@ -136,7 +136,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: binaries
-          path: build/shellforge-*
+          path: build/gz-shellforge-*
           retention-days: 7
 
   vulncheck:

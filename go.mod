@@ -2,7 +2,7 @@ module github.com/gizzahub/gzh-cli-shellforge
 
 go 1.26
 
-toolchain go1.26.6
+toolchain go1.26.7
 
 require (
 	github.com/pmezard/go-difflib v1.0.0

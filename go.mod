@@ -2,6 +2,8 @@ module github.com/gizzahub/gzh-cli-shellforge
 
 go 1.26
 
+toolchain go1.26.6
+
 require (
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/spf13/afero v1.15.0

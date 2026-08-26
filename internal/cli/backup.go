@@ -49,7 +49,7 @@ changes and restore previous versions if needed.`,
 
 	// Required flags
 	cmd.Flags().StringVarP(&flags.file, "file", "f", "", "File to backup (required)")
-	cmd.MarkFlagRequired("file")
+	mustMarkFlagRequired(cmd, "file")
 
 	// Optional flags
 	cmd.Flags().StringVarP(&flags.message, "message", "m", "", "Backup description message")

@@ -19,6 +19,14 @@ func TestNewRootCmd(t *testing.T) {
 	assert.Equal(t, version, cmd.Version)
 }
 
+func TestMustMarkFlagRequiredPanicsForMissingFlag(t *testing.T) {
+	cmd := &cobra.Command{Use: "test"}
+
+	assert.PanicsWithValue(t, `mark flag "missing" required: no such flag -missing`, func() {
+		mustMarkFlagRequired(cmd, "missing")
+	})
+}
+
 func TestRootCmd_Version(t *testing.T) {
 	cmd := NewRootCmd()
 

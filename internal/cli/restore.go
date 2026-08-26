@@ -55,8 +55,7 @@ Use --dry-run to preview the restore operation without making any changes.`,
 	// Required flags
 	cmd.Flags().StringVarP(&flags.file, "file", "f", "", "File to restore to (required)")
 	cmd.Flags().StringVarP(&flags.snapshot, "snapshot", "s", "", "Snapshot timestamp to restore (required)")
-	cmd.MarkFlagRequired("file")
-	cmd.MarkFlagRequired("snapshot")
+	mustMarkFlagRequired(cmd, "file", "snapshot")
 
 	// Optional flags
 	cmd.Flags().StringVar(&flags.backupDir, "backup-dir", "", "Backup directory (default: ~/.backup/shellforge)")

@@ -10,6 +10,14 @@ import (
 
 var version = "0.5.1"
 
+func mustMarkFlagRequired(cmd *cobra.Command, names ...string) {
+	for _, name := range names {
+		if err := cmd.MarkFlagRequired(name); err != nil {
+			panic(fmt.Sprintf("mark flag %q required: %v", name, err))
+		}
+	}
+}
+
 // NewRootCmd creates the root command.
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{

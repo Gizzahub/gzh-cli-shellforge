@@ -68,7 +68,7 @@ Use --dry-run to preview what would be deleted without making any changes.`,
 
 	// Required flags
 	cmd.Flags().StringVarP(&flags.file, "file", "f", "", "File pattern to cleanup (required)")
-	cmd.MarkFlagRequired("file")
+	mustMarkFlagRequired(cmd, "file")
 
 	// Retention policy flags
 	cmd.Flags().IntVar(&flags.keepCount, "keep-count", 10, "Number of snapshots to keep (default: 10)")

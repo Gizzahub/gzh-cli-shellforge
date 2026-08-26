@@ -4,6 +4,8 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
+const missingDependencyKindPath = "path"
+
 // MissingDep describes one external prerequisite that is absent.
 type MissingDep struct {
 	Name    string   // binary name or path
@@ -68,7 +70,7 @@ func (s *DoctorService) Check(manifest *domain.Manifest, targetOS string, lookup
 		missing = append(missing, MissingDep{Name: name, Modules: mods, Kind: "binary"})
 	}
 	for p, mods := range pathMissing {
-		missing = append(missing, MissingDep{Name: p, Modules: mods, Kind: "path"})
+		missing = append(missing, MissingDep{Name: p, Modules: mods, Kind: missingDependencyKindPath})
 	}
 
 	return &DoctorResult{

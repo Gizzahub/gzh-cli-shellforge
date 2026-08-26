@@ -15,6 +15,12 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
+const (
+	macOSName            = "Mac"
+	linuxOSName          = "Linux"
+	brewPackageManagerID = "brew"
+)
+
 type prepareFlags struct {
 	manifest string
 	targetOS string
@@ -74,12 +80,12 @@ installs.`,
 // as unsupported rather than erroring.
 func defaultPackageManagers(targetOS string) map[string]domain.PackageManager {
 	switch targetOS {
-	case "Mac":
+	case macOSName:
 		return map[string]domain.PackageManager{
-			"brew": domain.NewBrewFormulaManager(),
-			"cask": domain.NewBrewCaskManager(),
+			brewPackageManagerID: domain.NewBrewFormulaManager(),
+			"cask":               domain.NewBrewCaskManager(),
 		}
-	case "Linux":
+	case linuxOSName:
 		return map[string]domain.PackageManager{
 			"apt": domain.NewAptManager(),
 		}

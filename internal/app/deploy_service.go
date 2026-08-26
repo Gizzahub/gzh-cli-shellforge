@@ -129,7 +129,7 @@ func (s *DeployService) Deploy(opts DeployOptions) (*DeployResult, error) {
 
 func defaultDeployOptions(opts DeployOptions) (DeployOptions, error) {
 	if opts.BuildDir == "" {
-		opts.BuildDir = "./build"
+		opts.BuildDir = defaultBuildDir
 	}
 	if opts.HomeDir != "" {
 		return opts, nil

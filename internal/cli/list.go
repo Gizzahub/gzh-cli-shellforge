@@ -12,6 +12,8 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
+const listCommandName = "list"
+
 type listFlags struct {
 	manifest  string
 	configDir string
@@ -23,7 +25,7 @@ func newListCmd() *cobra.Command {
 	flags := &listFlags{}
 
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:   listCommandName,
 		Short: "List all modules from manifest",
 		Long: `List all modules defined in the manifest file with their metadata.
 

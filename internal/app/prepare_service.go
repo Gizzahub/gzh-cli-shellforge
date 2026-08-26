@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
@@ -65,6 +66,9 @@ func NewPrepareService(managers map[string]domain.PackageManager) *PrepareServic
 // The manifest is validated before any package is inspected — a structurally
 // invalid manifest fails here, before prepare would ever touch the system.
 func (s *PrepareService) Plan(ctx context.Context, manifest *domain.Manifest, targetOS string) (*PrepareResult, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if errs := manifest.Validate(); len(errs) > 0 {
 		return nil, errs[0]
 	}
@@ -99,7 +103,13 @@ func (s *PrepareService) Plan(ctx context.Context, manifest *domain.Manifest, ta
 		}
 		status.Supported = true
 
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		installed, err := mgr.IsInstalled(ctx, k.name)
+		if err := cancellationError(ctx, err); err != nil {
+			return nil, err
+		}
 		if err != nil {
 			result.Failed = append(result.Failed, PrepareFailure{Manager: k.manager, Package: k.name, Err: err})
 			continue
@@ -130,8 +140,15 @@ func (s *PrepareService) Apply(ctx context.Context, manifest *domain.Manifest, t
 			continue
 		}
 		mgr := s.managers[status.Manager]
-		if err := mgr.Install(ctx, status.Package); err != nil {
-			installFailures = append(installFailures, PrepareFailure{Manager: status.Manager, Package: status.Package, Err: err})
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		installErr := mgr.Install(ctx, status.Package)
+		if err := cancellationError(ctx, installErr); err != nil {
+			return nil, err
+		}
+		if installErr != nil {
+			installFailures = append(installFailures, PrepareFailure{Manager: status.Manager, Package: status.Package, Err: installErr})
 			continue
 		}
 		installed = append(installed, status)
@@ -157,4 +174,14 @@ func (s *PrepareService) Apply(ctx context.Context, manifest *domain.Manifest, t
 	}
 	final.Failed = append(final.Failed, installFailures...)
 	return final, nil
+}
+
+func cancellationError(ctx context.Context, err error) error {
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return ctxErr
+	}
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return err
+	}
+	return nil
 }

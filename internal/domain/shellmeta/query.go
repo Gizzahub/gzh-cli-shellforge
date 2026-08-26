@@ -2,6 +2,38 @@ package shellmeta
 
 import "strings"
 
+const (
+	osMac    = "mac"
+	osMacOS  = "macos"
+	osDarwin = "darwin"
+
+	shellModeLogin              = "login"
+	shellModeLoginCanonical     = "login_shell"
+	shellModeNonLogin           = "nonlogin"
+	shellModeNonLoginHyphen     = "non-login"
+	shellModeNonLoginUnderscore = "non_login"
+	shellModeNonLoginCanonical  = "non_login_shell"
+	shellModeInteractive        = "interactive"
+	shellModeInteractiveCanon   = "interactive_shell"
+	shellModeNonInteractive     = "noninteractive"
+	shellModeNonInteractiveHyp  = "non-interactive"
+	shellModeNonInteractiveUnd  = "non_interactive"
+	shellModeNonInteractiveCan  = "non_interactive_shell"
+	shellModeRestricted         = "restricted"
+	shellModeRestrictedCanon    = "restricted_shell"
+	shellModePOSIX              = "posix"
+	shellModePOSIXCanonical     = "posix_mode"
+
+	contextCron             = "cron"
+	contextDockerExec       = "docker_exec"
+	contextFlatpak          = "flatpak"
+	contextGitHooks         = "git_hooks"
+	contextGitHubActions    = "github_actions"
+	contextGitLabCI         = "gitlab_ci"
+	contextJenkins          = "jenkins"
+	contextSSHForcedCommand = "ssh_forced_command"
+)
+
 // normalizeName converts a name to lowercase for case-insensitive lookups.
 func normalizeName(name string) string {
 	return strings.ToLower(name)
@@ -16,7 +48,7 @@ func normalizeContextName(name string) string {
 
 // isMacOS checks if the given OS name refers to macOS (handles common aliases).
 func isMacOS(os string) bool {
-	return os == "mac" || os == "macos" || os == "darwin"
+	return os == osMac || os == osMacOS || os == osDarwin
 }
 
 // GetInitFilesForOS returns the initialization files for a specific OS and shell.
@@ -151,18 +183,18 @@ func (p *ShellProfiles) GetDisplayManager(name string) *DisplayManager {
 func normalizeShellMode(mode string) string {
 	mode = normalizeName(mode)
 	switch mode {
-	case "login":
-		return "login_shell"
-	case "nonlogin", "non-login", "non_login":
-		return "non_login_shell"
-	case "interactive":
-		return "interactive_shell"
-	case "noninteractive", "non-interactive", "non_interactive":
-		return "non_interactive_shell"
-	case "restricted":
-		return "restricted_shell"
-	case "posix":
-		return "posix_mode"
+	case shellModeLogin:
+		return shellModeLoginCanonical
+	case shellModeNonLogin, shellModeNonLoginHyphen, shellModeNonLoginUnderscore:
+		return shellModeNonLoginCanonical
+	case shellModeInteractive:
+		return shellModeInteractiveCanon
+	case shellModeNonInteractive, shellModeNonInteractiveHyp, shellModeNonInteractiveUnd:
+		return shellModeNonInteractiveCan
+	case shellModeRestricted:
+		return shellModeRestrictedCanon
+	case shellModePOSIX:
+		return shellModePOSIXCanonical
 	default:
 		return mode
 	}
@@ -258,23 +290,23 @@ func (p *ShellProfiles) IsProfileLoadedInContext(context string) bool {
 	context = normalizeContextName(context)
 
 	switch context {
-	case "cron":
+	case contextCron:
 		return p.Automation.ScheduledExecution.Cron.ShellProfileLoaded
 	case "at":
 		return p.Automation.ScheduledExecution.At.ShellProfileLoaded
-	case "docker_exec":
+	case contextDockerExec:
 		return p.Automation.ContainerContexts.Docker.DockerExec.ShellProfileLoaded
-	case "flatpak":
+	case contextFlatpak:
 		return p.Automation.ContainerContexts.Flatpak.ShellProfileLoaded
-	case "git_hooks":
+	case contextGitHooks:
 		return p.Automation.RemoteExecution.GitHooks.ShellProfileLoaded
-	case "github_actions":
+	case contextGitHubActions:
 		return p.Automation.RemoteExecution.CICD.GithubActions.ShellProfileLoaded
-	case "gitlab_ci":
+	case contextGitLabCI:
 		return p.Automation.RemoteExecution.CICD.GitlabCI.ShellProfileLoaded
-	case "jenkins":
+	case contextJenkins:
 		return p.Automation.RemoteExecution.CICD.Jenkins.ShellProfileLoaded
-	case "ssh_forced_command":
+	case contextSSHForcedCommand:
 		return p.Automation.RemoteExecution.SSHForcedCommand.ShellProfileLoaded
 	}
 

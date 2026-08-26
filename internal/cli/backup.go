@@ -12,6 +12,8 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/output"
 )
 
+const backupCommandName = "backup"
+
 type backupFlags struct {
 	file      string
 	message   string
@@ -24,7 +26,7 @@ func newBackupCmd() *cobra.Command {
 	flags := &backupFlags{}
 
 	cmd := &cobra.Command{
-		Use:   "backup",
+		Use:   backupCommandName,
 		Short: "Create a backup of a shell configuration file",
 		Long: `Backup creates a timestamped snapshot of your shell configuration file.
 
@@ -95,7 +97,7 @@ func runBackup(flags *backupFlags) error {
 	// Perform backup
 	result, err := backupService.Backup(filePath, flags.message)
 	if err != nil {
-		return clierrors.WrapError("backup", err)
+		return clierrors.WrapError(backupCommandName, err)
 	}
 
 	// Display results

@@ -16,6 +16,8 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
+const dependencyKindPath = "path"
+
 type doctorFlags struct {
 	manifest string
 	targetOS string
@@ -98,7 +100,7 @@ func printDoctorResult(result *app.DoctorResult) {
 	fmt.Printf("✗ Missing prerequisites (%d):\n\n", len(missing))
 	for _, dep := range missing {
 		kindLabel := "binary"
-		if dep.Kind == "path" {
+		if dep.Kind == dependencyKindPath {
 			kindLabel = "path  "
 		}
 		sort.Strings(dep.Modules)

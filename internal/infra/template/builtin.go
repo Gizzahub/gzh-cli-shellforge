@@ -2,6 +2,8 @@ package template
 
 import "github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 
+const pathDirFieldName = "path_dir"
+
 // GetBuiltinTemplates returns all built-in templates.
 func GetBuiltinTemplates() map[domain.TemplateType]*domain.Template {
 	return map[domain.TemplateType]*domain.Template{
@@ -29,7 +31,7 @@ func getPathTemplate() *domain.Template {
 		Category:    domain.CategoryInitD,
 		Fields: []domain.TemplateField{
 			{
-				Name:        "path_dir",
+				Name:        pathDirFieldName,
 				Description: "Directory path to add to PATH",
 				Required:    true,
 			},

@@ -7,8 +7,13 @@ import (
 )
 
 const (
-	osMac   = "Mac"
-	osLinux = "Linux"
+	osMac     = "Mac"
+	osLinux   = "Linux"
+	osFreeBSD = "FreeBSD"
+	osOpenBSD = "OpenBSD"
+	osNetBSD  = "NetBSD"
+
+	toolNVM = "nvm"
 )
 
 // Section represents a parsed section from an RC file.
@@ -60,14 +65,14 @@ func CategorizeSection(name, content string) TemplateCategory {
 	}
 
 	// Tool initialization in content → rc_pre.d
-	if containsAny(contentLower, []string{"nvm", "rbenv", "pyenv", "conda", "asdf", "sdk", "nvm_dir"}) {
+	if containsAny(contentLower, []string{toolNVM, "rbenv", "pyenv", "conda", "asdf", "sdk", "nvm_dir"}) {
 		return CategoryRcPreD
 	}
 
 	// Priority 2: Check name patterns (less reliable, more generic)
 
 	// Specific tool names in section name → rc_pre.d
-	if containsAny(nameLower, []string{"nvm", "rbenv", "pyenv", "conda", "asdf", "tool"}) {
+	if containsAny(nameLower, []string{toolNVM, "rbenv", "pyenv", "conda", "asdf", "tool"}) {
 		return CategoryRcPreD
 	}
 
@@ -118,7 +123,7 @@ func InferOSSupport(content string) []string {
 	}
 
 	var oses []string
-	for _, candidate := range []string{osMac, osLinux, "FreeBSD", "OpenBSD", "NetBSD"} {
+	for _, candidate := range []string{osMac, osLinux, osFreeBSD, osOpenBSD, osNetBSD} {
 		if strings.Contains(content, candidate+")") {
 			oses = append(oses, candidate)
 		}

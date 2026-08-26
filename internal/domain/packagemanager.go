@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+const (
+	aptPackageManagerID  = "apt"
+	brewCommand          = "brew"
+	caskPackageManagerID = "cask"
+)
+
 // PackageManager checks and installs packages for one manifest "packages:"
 // key (e.g. "brew", "cask", "apt"). Implementations must be safe to call
 // IsInstalled repeatedly and should treat "not found" as (false, nil) rather
@@ -35,7 +41,11 @@ type OsCommandRunner struct{}
 
 // Run executes name with args through the operating system.
 func (OsCommandRunner) Run(ctx context.Context, name string, args ...string) ([]byte, error) {
-	return exec.CommandContext(ctx, name, args...).CombinedOutput() //nolint:gosec // args come from the manifest, not user input at runtime
+	out, err := exec.CommandContext(ctx, name, args...).CombinedOutput() //nolint:gosec // args come from the manifest, not user input at runtime
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return out, ctxErr
+	}
+	return out, err
 }
 
 // BrewFormulaManager manages Homebrew formulae (manifest key "brew").
@@ -47,11 +57,14 @@ func NewBrewFormulaManager() *BrewFormulaManager {
 }
 
 // Name returns the manifest package key handled by this manager.
-func (m *BrewFormulaManager) Name() string { return "brew" }
+func (m *BrewFormulaManager) Name() string { return brewCommand }
 
 // IsInstalled reports whether the Homebrew formula is installed.
 func (m *BrewFormulaManager) IsInstalled(ctx context.Context, pkg string) (bool, error) {
-	_, err := m.Runner.Run(ctx, "brew", "list", "--formula", "--versions", pkg)
+	_, err := m.Runner.Run(ctx, brewCommand, "list", "--formula", "--versions", pkg)
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return false, ctxErr
+	}
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		return false, err
 	}
@@ -60,7 +73,7 @@ func (m *BrewFormulaManager) IsInstalled(ctx context.Context, pkg string) (bool,
 
 // Install installs the Homebrew formula.
 func (m *BrewFormulaManager) Install(ctx context.Context, pkg string) error {
-	out, err := m.Runner.Run(ctx, "brew", "install", pkg)
+	out, err := m.Runner.Run(ctx, brewCommand, "install", pkg)
 	if err != nil {
 		return fmt.Errorf("brew install %s: %w: %s", pkg, err, strings.TrimSpace(string(out)))
 	}
@@ -76,11 +89,14 @@ func NewBrewCaskManager() *BrewCaskManager {
 }
 
 // Name returns the manifest package key handled by this manager.
-func (m *BrewCaskManager) Name() string { return "cask" }
+func (m *BrewCaskManager) Name() string { return caskPackageManagerID }
 
 // IsInstalled reports whether the Homebrew cask is installed.
 func (m *BrewCaskManager) IsInstalled(ctx context.Context, pkg string) (bool, error) {
-	_, err := m.Runner.Run(ctx, "brew", "list", "--cask", "--versions", pkg)
+	_, err := m.Runner.Run(ctx, brewCommand, "list", "--cask", "--versions", pkg)
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return false, ctxErr
+	}
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		return false, err
 	}
@@ -89,7 +105,7 @@ func (m *BrewCaskManager) IsInstalled(ctx context.Context, pkg string) (bool, er
 
 // Install installs the Homebrew cask.
 func (m *BrewCaskManager) Install(ctx context.Context, pkg string) error {
-	out, err := m.Runner.Run(ctx, "brew", "install", "--cask", pkg)
+	out, err := m.Runner.Run(ctx, brewCommand, "install", "--cask", pkg)
 	if err != nil {
 		return fmt.Errorf("brew install --cask %s: %w: %s", pkg, err, strings.TrimSpace(string(out)))
 	}
@@ -105,11 +121,14 @@ func NewAptManager() *AptManager {
 }
 
 // Name returns the manifest package key handled by this manager.
-func (m *AptManager) Name() string { return "apt" }
+func (m *AptManager) Name() string { return aptPackageManagerID }
 
 // IsInstalled reports whether the Debian or Ubuntu package is installed.
 func (m *AptManager) IsInstalled(ctx context.Context, pkg string) (bool, error) {
 	out, err := m.Runner.Run(ctx, "dpkg-query", "-W", "-f=${Status}", pkg)
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return false, ctxErr
+	}
 	if err != nil {
 		var exitErr interface{ ExitCode() int }
 		if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {

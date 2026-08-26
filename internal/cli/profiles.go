@@ -13,6 +13,11 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain/shellmeta"
 )
 
+const (
+	profilesCommandName   = "profiles"
+	distributionsCategory = "distributions"
+)
+
 type profilesFlags struct {
 	dataDir string
 	verbose bool
@@ -20,7 +25,7 @@ type profilesFlags struct {
 
 func newProfilesCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "profiles",
+		Use:   profilesCommandName,
 		Short: "Query shell profile initialization metadata",
 		Long: `Profiles provides information about shell initialization files and contexts.
 
@@ -200,7 +205,7 @@ func runProfilesList(category string, flags *profilesFlags) error {
 	category = strings.ToLower(category)
 
 	switch category {
-	case "distributions", "distros", "os":
+	case distributionsCategory, "distros", "os":
 		printDistributions(profiles)
 
 	case "managers", "version-managers", "lang":

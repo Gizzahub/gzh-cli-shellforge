@@ -190,3 +190,26 @@ func TestBrewManagers_PropagateContextCancellation(t *testing.T) {
 		})
 	}
 }
+
+func TestPackageManagers_PreferCanceledContextToCommandExitError(t *testing.T) {
+	tests := []struct {
+		name    string
+		manager PackageManager
+	}{
+		{name: "formula", manager: &BrewFormulaManager{Runner: &commandResultRunner{err: commandExitError{code: 1}}}},
+		{name: "cask", manager: &BrewCaskManager{Runner: &commandResultRunner{err: commandExitError{code: 1}}}},
+		{name: "apt", manager: &AptManager{Runner: &commandResultRunner{err: commandExitError{code: 1}}}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+
+			installed, err := tt.manager.IsInstalled(ctx, "pkg")
+
+			assert.False(t, installed)
+			assert.ErrorIs(t, err, context.Canceled)
+		})
+	}
+}

@@ -84,7 +84,7 @@ Fields are specified with -f key=value flags.`,
 
 func newTemplateListCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:   listCommandName,
 		Short: "List available templates",
 		Long:  `List displays all available module templates with descriptions.`,
 		RunE: func(cmd *cobra.Command, args []string) error {

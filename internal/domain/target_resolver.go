@@ -26,15 +26,19 @@ const (
 
 	targetConfig = "config"
 	targetConfD  = "conf.d"
+
+	targetEtcProfile = "etc-profile"
+	targetEtcZshrc   = "etc-zshrc"
+	targetEtcZshenv  = "etc-zshenv"
 )
 
 // systemTargetPaths maps the documented system-wide target names to their absolute paths.
 // These targets bypass home-relative resolution and require elevated privileges to write.
 // Arbitrary absolute targets are intentionally excluded to limit blast radius.
 var systemTargetPaths = map[string]string{
-	"etc-profile": "/etc/profile",
-	"etc-zshrc":   "/etc/zshrc",
-	"etc-zshenv":  "/etc/zsh/zshenv",
+	targetEtcProfile: "/etc/profile",
+	targetEtcZshrc:   "/etc/zshrc",
+	targetEtcZshenv:  "/etc/zsh/zshenv",
 }
 
 // IsSystemTarget reports whether name refers to a system-wide configuration file.
@@ -240,22 +244,22 @@ func (r *TargetResolver) GetRelativePath(target string) (string, error) {
 // GetTargetDescription returns a human-readable description of what a target file does.
 func GetTargetDescription(target string) string {
 	descriptions := map[string]string{
-		"zshrc":        "Interactive shell configuration (aliases, functions, completions)",
-		"zprofile":     "Login shell configuration (PATH, environment setup)",
-		"zshenv":       "All shells (environment variables read by every zsh instance)",
-		"zlogin":       "Login shell startup (after zshrc)",
-		"zlogout":      "Login shell exit",
-		"bashrc":       "Interactive non-login shell configuration",
-		"bash_profile": "Login shell configuration (PATH, environment setup)",
-		"profile":      "Login shell (sh-compatible, read by many shells)",
-		"bash_login":   "Login shell startup (fallback if bash_profile missing)",
-		"bash_logout":  "Login shell exit",
-		"config":       "Fish shell configuration",
-		"conf.d":       "Fish modular configs (auto-sourced .fish files in conf.d/)",
+		targetZshrc:       "Interactive shell configuration (aliases, functions, completions)",
+		targetZprofile:    "Login shell configuration (PATH, environment setup)",
+		targetZshenv:      "All shells (environment variables read by every zsh instance)",
+		targetZlogin:      "Login shell startup (after zshrc)",
+		targetZlogout:     "Login shell exit",
+		targetBashrc:      "Interactive non-login shell configuration",
+		targetBashProfile: "Login shell configuration (PATH, environment setup)",
+		targetProfile:     "Login shell (sh-compatible, read by many shells)",
+		targetBashLogin:   "Login shell startup (fallback if bash_profile missing)",
+		targetBashLogout:  "Login shell exit",
+		targetConfig:      "Fish shell configuration",
+		targetConfD:       "Fish modular configs (auto-sourced .fish files in conf.d/)",
 		// System-wide targets (require elevated privileges)
-		"etc-profile": "System-wide login shell config (/etc/profile) — affects all users, requires sudo",
-		"etc-zshrc":   "System-wide zsh interactive config (/etc/zshrc) — affects all users, requires sudo",
-		"etc-zshenv":  "System-wide zsh environment (/etc/zsh/zshenv) — affects all users, requires sudo",
+		targetEtcProfile: "System-wide login shell config (/etc/profile) — affects all users, requires sudo",
+		targetEtcZshrc:   "System-wide zsh interactive config (/etc/zshrc) — affects all users, requires sudo",
+		targetEtcZshenv:  "System-wide zsh environment (/etc/zsh/zshenv) — affects all users, requires sudo",
 	}
 	if desc, ok := descriptions[strings.ToLower(target)]; ok {
 		return desc

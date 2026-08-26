@@ -12,6 +12,8 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 )
 
+const deployCommandName = "deploy"
+
 type deployFlags struct {
 	buildDir string
 	dryRun   bool
@@ -23,7 +25,7 @@ func newDeployCmd() *cobra.Command {
 	flags := &deployFlags{}
 
 	cmd := &cobra.Command{
-		Use:   "deploy",
+		Use:   deployCommandName,
 		Short: "Deploy built configuration files to their actual paths",
 		Long: `Deploy copies the built configuration files from the build directory
 to their actual destination paths (e.g., ~/.zshrc).
@@ -57,7 +59,7 @@ Typical workflow:
 		},
 	}
 
-	cmd.Flags().StringVarP(&flags.buildDir, "build-dir", "d", "./build", "Build directory containing files to deploy")
+	cmd.Flags().StringVarP(&flags.buildDir, "build-dir", "d", defaultBuildDir, "Build directory containing files to deploy")
 	cmd.Flags().BoolVar(&flags.dryRun, "dry-run", false, "Preview deployment without making changes")
 	cmd.Flags().BoolVar(&flags.backup, "backup", false, "Backup existing files before overwriting")
 	cmd.Flags().BoolVarP(&flags.verbose, "verbose", "v", false, "Show detailed output")
@@ -103,7 +105,7 @@ func runDeploy(flags *deployFlags) error {
 	// Execute deploy
 	result, err := deployer.Deploy(opts)
 	if err != nil {
-		return clierrors.WrapError("deploy", err)
+		return clierrors.WrapError(deployCommandName, err)
 	}
 
 	// Display results

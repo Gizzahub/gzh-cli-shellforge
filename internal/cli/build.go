@@ -13,6 +13,11 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/cli/helpers"
 )
 
+const (
+	buildCommandName = "build"
+	defaultBuildDir  = "./build"
+)
+
 type buildFlags struct {
 	configDir string
 	manifest  string
@@ -28,7 +33,7 @@ func newBuildCmd() *cobra.Command {
 	flags := &buildFlags{}
 
 	cmd := &cobra.Command{
-		Use:   "build",
+		Use:   buildCommandName,
 		Short: "Build shell configuration from modules",
 		Long: `Build generates shell configuration files from modular components.
 
@@ -97,7 +102,7 @@ func runBuild(flags *buildFlags) error {
 
 	// Set default output directory
 	if flags.outputDir == "" && !flags.dryRun {
-		flags.outputDir = "./build"
+		flags.outputDir = defaultBuildDir
 		if flags.verbose {
 			fmt.Printf("Using default output directory: %s\n", flags.outputDir)
 		}
@@ -143,7 +148,7 @@ func runBuild(flags *buildFlags) error {
 	// Execute build
 	result, err := builder.Build(opts)
 	if err != nil {
-		return clierrors.WrapError("build", err)
+		return clierrors.WrapError(buildCommandName, err)
 	}
 
 	// Display results

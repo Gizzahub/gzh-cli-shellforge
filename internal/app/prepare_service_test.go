@@ -236,9 +236,29 @@ func TestPrepareService_ForwardsCanceledContext(t *testing.T) {
 
 	result, err := app.NewPrepareService(managers(brew)).Plan(ctx, manifest, "Mac")
 
-	require.NoError(t, err)
-	require.Len(t, result.Packages, 1)
-	require.Len(t, brew.contexts, 1)
-	assert.Same(t, ctx, brew.contexts[0])
-	assert.ErrorIs(t, brew.contexts[0].Err(), context.Canceled)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Empty(t, brew.contexts, "an already-canceled plan must not invoke a manager")
 }
+
+func TestPrepareService_Plan_StopsAfterManagerCancellation(t *testing.T) {
+	manifest := &domain.Manifest{Modules: []domain.Module{
+		{Name: "setup-tools", File: "tools.sh", Packages: map[string][]string{"brew": {"first", "second"}}},
+	}}
+	ctx, cancel := context.WithCancel(context.Background())
+	brew := &mockManager{name: "brew", installed: map[string]bool{}}
+	brew.isInstalled = func(context.Context, string) (bool, error) {
+		cancel()
+		return false, canceledCommandError{}
+	}
+
+	result, err := app.NewPrepareService(managers(brew)).Plan(ctx, manifest, "Mac")
+
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Len(t, brew.contexts, 1, "later packages must not be inspected after cancellation")
+}
+
+type canceledCommandError struct{}
+
+func (canceledCommandError) Error() string { return "signal: killed" }

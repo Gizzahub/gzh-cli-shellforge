@@ -178,16 +178,27 @@ func TestDefaultPackageManagers(t *testing.T) {
 	assert.Empty(t, other)
 }
 
-func TestRunPrepare_ForwardsCanceledContext(t *testing.T) {
-	fake := &fakePackageManager{name: "brew", installed: map[string]bool{"mise": true}}
-	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac", check: true}
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
+func TestRunPrepare_PropagatesCanceledContextInEveryMode(t *testing.T) {
+	tests := []struct {
+		name  string
+		flags func(string) *prepareFlags
+	}{
+		{name: "check", flags: func(path string) *prepareFlags { return &prepareFlags{manifest: path, targetOS: "Mac", check: true} }},
+		{name: "dry-run", flags: func(path string) *prepareFlags { return &prepareFlags{manifest: path, targetOS: "Mac", dryRun: true} }},
+		{name: "apply", flags: func(path string) *prepareFlags { return &prepareFlags{manifest: path, targetOS: "Mac"} }},
+	}
 
-	err := runPrepare(ctx, flags, map[string]domain.PackageManager{"brew": fake})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fake := &fakePackageManager{name: "brew", installed: map[string]bool{"mise": true}}
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
 
-	require.NoError(t, err)
-	require.Len(t, fake.contexts, 1)
-	assert.Same(t, ctx, fake.contexts[0])
-	assert.ErrorIs(t, fake.contexts[0].Err(), context.Canceled)
+			err := runPrepare(ctx, tt.flags(writeTempManifest(t)), map[string]domain.PackageManager{"brew": fake})
+
+			assert.ErrorIs(t, err, context.Canceled)
+			assert.Empty(t, fake.contexts)
+			assert.Empty(t, fake.installCalls)
+		})
+	}
 }

@@ -2,13 +2,18 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/spf13/cobra"
 )
 
 var version = "0.5.1"
+
+const shellforgeCommandName = "shellforge"
 
 func mustMarkFlagRequired(cmd *cobra.Command, names ...string) {
 	for _, name := range names {
@@ -21,7 +26,7 @@ func mustMarkFlagRequired(cmd *cobra.Command, names ...string) {
 // NewRootCmd creates the root command.
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "shellforge",
+		Use:   shellforgeCommandName,
 		Short: "Build tool for modular shell configurations",
 		Long: `Shellforge is a build tool that assembles modular shell configurations
 with dependency resolution and OS-specific filtering.
@@ -53,7 +58,10 @@ single shell configuration file.`,
 
 // Execute runs the root command.
 func Execute() {
-	if err := NewRootCmd().Execute(); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	err := NewRootCmd().ExecuteContext(ctx)
+	stop()
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}

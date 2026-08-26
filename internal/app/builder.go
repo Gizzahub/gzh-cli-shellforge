@@ -11,6 +11,8 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
+const defaultBuildDir = "./build"
+
 // ManifestParser defines the interface for parsing YAML manifests.
 type ManifestParser interface {
 	Parse(path string) (*domain.Manifest, error)
@@ -136,7 +138,7 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 		outputDir = manifest.GetOutputDirectory()
 	}
 	if outputDir == "" {
-		outputDir = "./build"
+		outputDir = defaultBuildDir
 	}
 
 	// Expand home directory

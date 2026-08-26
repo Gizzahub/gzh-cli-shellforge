@@ -147,7 +147,10 @@ func (c *Comparator) generateContext(result *domain.DiffResult, original, genera
 		ToFile:   result.GeneratedFile,
 		Context:  0,
 	}
-	unifiedText, _ := difflib.GetUnifiedDiffString(unifiedDiff)
+	unifiedText, err := difflib.GetUnifiedDiffString(unifiedDiff)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate unified diff statistics for context diff: %w", err)
+	}
 	c.parseStatistics(result, unifiedText, original, generated)
 
 	result.Content = diffText
@@ -164,7 +167,10 @@ func (c *Comparator) generateSideBySide(result *domain.DiffResult, original, gen
 		ToFile:   result.GeneratedFile,
 		Context:  0,
 	}
-	unifiedText, _ := difflib.GetUnifiedDiffString(unifiedDiff)
+	unifiedText, err := difflib.GetUnifiedDiffString(unifiedDiff)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate unified diff statistics for side-by-side diff: %w", err)
+	}
 	c.parseStatistics(result, unifiedText, original, generated)
 
 	// Generate side-by-side view

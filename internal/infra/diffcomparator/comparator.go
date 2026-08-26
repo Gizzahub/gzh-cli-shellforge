@@ -71,22 +71,8 @@ func (c *Comparator) Compare(originalPath, generatedPath string, format domain.D
 
 // generateSummary generates summary format (statistics only).
 func (c *Comparator) generateSummary(result *domain.DiffResult, original, generated []string) (*domain.DiffResult, error) {
-	// Calculate statistics using unified diff
-	diff := difflib.UnifiedDiff{
-		A:        original,
-		B:        generated,
-		FromFile: result.OriginalFile,
-		ToFile:   result.GeneratedFile,
-		Context:  0,
-	}
-
-	diffText, err := difflib.GetUnifiedDiffString(diff)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate diff: %w", err)
-	}
-
-	// Parse diff to extract statistics
-	c.parseStatistics(result, diffText, original, generated)
+	// Calculate statistics directly from the source lines.
+	c.parseStatistics(result, original, generated)
 
 	// Generate summary content
 	var sb strings.Builder
@@ -119,7 +105,7 @@ func (c *Comparator) generateUnified(result *domain.DiffResult, original, genera
 		return nil, fmt.Errorf("failed to generate unified diff: %w", err)
 	}
 
-	c.parseStatistics(result, diffText, original, generated)
+	c.parseStatistics(result, original, generated)
 	result.Content = diffText
 	return result, nil
 }
@@ -139,19 +125,7 @@ func (c *Comparator) generateContext(result *domain.DiffResult, original, genera
 		return nil, fmt.Errorf("failed to generate context diff: %w", err)
 	}
 
-	// Parse unified diff for statistics
-	unifiedDiff := difflib.UnifiedDiff{
-		A:        original,
-		B:        generated,
-		FromFile: result.OriginalFile,
-		ToFile:   result.GeneratedFile,
-		Context:  0,
-	}
-	unifiedText, err := difflib.GetUnifiedDiffString(unifiedDiff)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate unified diff statistics for context diff: %w", err)
-	}
-	c.parseStatistics(result, unifiedText, original, generated)
+	c.parseStatistics(result, original, generated)
 
 	result.Content = diffText
 	return result, nil
@@ -159,19 +133,7 @@ func (c *Comparator) generateContext(result *domain.DiffResult, original, genera
 
 // generateSideBySide generates side-by-side comparison format.
 func (c *Comparator) generateSideBySide(result *domain.DiffResult, original, generated []string) (*domain.DiffResult, error) {
-	// Generate unified diff for statistics
-	unifiedDiff := difflib.UnifiedDiff{
-		A:        original,
-		B:        generated,
-		FromFile: result.OriginalFile,
-		ToFile:   result.GeneratedFile,
-		Context:  0,
-	}
-	unifiedText, err := difflib.GetUnifiedDiffString(unifiedDiff)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate unified diff statistics for side-by-side diff: %w", err)
-	}
-	c.parseStatistics(result, unifiedText, original, generated)
+	c.parseStatistics(result, original, generated)
 
 	// Generate side-by-side view
 	var sb strings.Builder
@@ -218,7 +180,7 @@ func (c *Comparator) generateSideBySide(result *domain.DiffResult, original, gen
 }
 
 // parseStatistics calculates statistics by directly comparing line arrays.
-func (c *Comparator) parseStatistics(result *domain.DiffResult, diffText string, original, generated []string) {
+func (c *Comparator) parseStatistics(result *domain.DiffResult, original, generated []string) {
 	// Direct comparison for accurate statistics
 	origLen := len(original)
 	genLen := len(generated)

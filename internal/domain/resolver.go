@@ -76,14 +76,14 @@ func (r *Resolver) TopologicalSort(graph *Graph, targetOS string) ([]Module, err
 
 	// Check for cycles
 	if len(result) != len(inDegree) {
-		return nil, r.detectCycle(graph, inDegree)
+		return nil, r.detectCycle(inDegree)
 	}
 
 	return result, nil
 }
 
 // detectCycle finds and reports a circular dependency.
-func (r *Resolver) detectCycle(graph *Graph, inDegree map[string]int) error {
+func (r *Resolver) detectCycle(inDegree map[string]int) error {
 	// Find nodes still in graph (part of cycle)
 	var cycleNodes []string
 	for name, degree := range inDegree {

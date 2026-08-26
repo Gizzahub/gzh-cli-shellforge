@@ -70,7 +70,7 @@ func runDoctor(flags *doctorFlags) error {
 	svc := app.NewDoctorService()
 	result := svc.Check(manifest, targetOS, domain.OsPrereqLookup{})
 
-	printDoctorResult(result, flags.verbose)
+	printDoctorResult(result)
 
 	if !result.AllOK() {
 		os.Exit(1)
@@ -78,7 +78,7 @@ func runDoctor(flags *doctorFlags) error {
 	return nil
 }
 
-func printDoctorResult(result *app.DoctorResult, verbose bool) {
+func printDoctorResult(result *app.DoctorResult) {
 	fmt.Printf("Doctor — OS: %s, modules checked: %d\n\n", result.CheckedOS, result.ModuleCount)
 
 	if result.AllOK() {

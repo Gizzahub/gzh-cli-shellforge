@@ -43,16 +43,16 @@ func (f *fakePackageManager) Install(pkg string) error {
 	return nil
 }
 
-// writeTempManifest writes a single-module manifest declaring pkg under
-// manager, and returns its path. The module has no os: restriction so it
+// writeTempManifest writes a single-module manifest declaring mise under
+// brew, and returns its path. The module has no os: restriction so it
 // applies regardless of the test's targetOS.
-func writeTempManifest(t *testing.T, manager, pkg string) string {
+func writeTempManifest(t *testing.T) string {
 	t.Helper()
 	content := "modules:\n" +
 		"  - name: setup-mise\n" +
 		"    file: init/56-setup-mise.sh\n" +
 		"    packages:\n" +
-		"      " + manager + ": [" + pkg + "]\n"
+		"      brew: [mise]\n"
 
 	path := filepath.Join(t.TempDir(), "manifest.yaml")
 	require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
@@ -85,7 +85,7 @@ func TestPrepareCmd_Help(t *testing.T) {
 
 func TestPrepareCheck_DoesNotInstall(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{"mise": true}}
-	flags := &prepareFlags{manifest: writeTempManifest(t, "brew", "mise"), targetOS: "Mac", check: true}
+	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac", check: true}
 
 	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
 
@@ -95,7 +95,7 @@ func TestPrepareCheck_DoesNotInstall(t *testing.T) {
 
 func TestPrepareCheck_ReportsMissingAsError(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}}
-	flags := &prepareFlags{manifest: writeTempManifest(t, "brew", "mise"), targetOS: "Mac", check: true}
+	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac", check: true}
 
 	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
 
@@ -105,7 +105,7 @@ func TestPrepareCheck_ReportsMissingAsError(t *testing.T) {
 
 func TestPrepareDryRun_DoesNotInstall(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}} // missing
-	flags := &prepareFlags{manifest: writeTempManifest(t, "brew", "mise"), targetOS: "Mac", dryRun: true}
+	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac", dryRun: true}
 
 	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
 
@@ -115,7 +115,7 @@ func TestPrepareDryRun_DoesNotInstall(t *testing.T) {
 
 func TestPrepareApply_SkipsAlreadyInstalled_Idempotent(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{"mise": true}}
-	flags := &prepareFlags{manifest: writeTempManifest(t, "brew", "mise"), targetOS: "Mac"}
+	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
 
 	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
 
@@ -125,7 +125,7 @@ func TestPrepareApply_SkipsAlreadyInstalled_Idempotent(t *testing.T) {
 
 func TestPrepareApply_InstallsMissingPackage(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}}
-	flags := &prepareFlags{manifest: writeTempManifest(t, "brew", "mise"), targetOS: "Mac"}
+	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
 
 	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
 
@@ -135,7 +135,7 @@ func TestPrepareApply_InstallsMissingPackage(t *testing.T) {
 
 func TestPrepareApply_InstallFailurePropagatesNonZero(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}, installErr: errors.New("boom")}
-	flags := &prepareFlags{manifest: writeTempManifest(t, "brew", "mise"), targetOS: "Mac"}
+	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
 
 	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
 
@@ -153,7 +153,7 @@ func TestPrepareApply_TransientDetectionFailurePropagatesNonZero(t *testing.T) {
 		}
 		return false, nil
 	}
-	flags := &prepareFlags{manifest: writeTempManifest(t, "brew", "mise"), targetOS: "Mac"}
+	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
 
 	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
 

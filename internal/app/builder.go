@@ -354,20 +354,6 @@ func (s *BuilderService) generateContent(modules []domain.Module, opts BuildOpti
 	return strings.Join(lines, "\n"), moduleNames
 }
 
-// getDefaultTarget returns the default target for a shell type.
-func (s *BuilderService) getDefaultTarget(shellType string) string {
-	switch shellType {
-	case "zsh":
-		return "zshrc"
-	case "bash":
-		return "bashrc"
-	case "fish":
-		return "config"
-	default:
-		return "shellrc"
-	}
-}
-
 // buildDirectoryTarget handles directory targets like conf.d where each module
 // gets its own file instead of being merged into a single file.
 func (s *BuilderService) buildDirectoryTarget(opts BuildOptions, mods []domain.Module, resolver *domain.TargetResolver, target, shellType string, now time.Time) ([]TargetResult, []domain.BuildFileInfo, error) {

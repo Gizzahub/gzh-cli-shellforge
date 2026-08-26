@@ -203,11 +203,9 @@ func BenchmarkComparator_parseStatistics(b *testing.B) {
 			original := generateLines(size.lines)
 			generated := modifyLines(original, 30) // 30% modified
 
-			diffText := ""
-
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				comp.parseStatistics(result, diffText, original, generated)
+				comp.parseStatistics(result, original, generated)
 			}
 		})
 	}

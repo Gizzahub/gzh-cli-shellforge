@@ -114,7 +114,7 @@ func (m *MockGitRepository) HasChanges() (bool, error) {
 	return args.Bool(0), args.Error(1)
 }
 
-func setupTestService(t *testing.T) (*BackupService, *MockSnapshotManager, *MockGitRepository, *domain.BackupConfig) {
+func setupTestService(t *testing.T) (*BackupService, *MockSnapshotManager, *MockGitRepository) {
 	t.Helper()
 
 	snapshotMgr := new(MockSnapshotManager)
@@ -123,7 +123,7 @@ func setupTestService(t *testing.T) (*BackupService, *MockSnapshotManager, *Mock
 
 	service := NewBackupService(snapshotMgr, gitRepo, config)
 
-	return service, snapshotMgr, gitRepo, config
+	return service, snapshotMgr, gitRepo
 }
 
 func TestNewBackupService(t *testing.T) {
@@ -140,7 +140,7 @@ func TestNewBackupService(t *testing.T) {
 }
 
 func TestBackupService_Backup(t *testing.T) {
-	service, snapshotMgr, gitRepo, _ := setupTestService(t)
+	service, snapshotMgr, gitRepo := setupTestService(t)
 
 	testSnapshot := &domain.Snapshot{
 		Timestamp: time.Now(),
@@ -288,7 +288,7 @@ func TestBackupService_Backup(t *testing.T) {
 }
 
 func TestBackupService_Restore(t *testing.T) {
-	service, snapshotMgr, gitRepo, _ := setupTestService(t)
+	service, snapshotMgr, gitRepo := setupTestService(t)
 	_ = gitRepo // May be used in future git-enabled restore tests
 
 	testSnapshot := &domain.Snapshot{
@@ -345,7 +345,7 @@ func TestBackupService_Restore(t *testing.T) {
 }
 
 func TestBackupService_Cleanup(t *testing.T) {
-	service, snapshotMgr, gitRepo, _ := setupTestService(t)
+	service, snapshotMgr, gitRepo := setupTestService(t)
 	_ = gitRepo // May be used in future git-enabled cleanup tests
 
 	testList := &domain.SnapshotList{
@@ -393,7 +393,7 @@ func TestBackupService_Cleanup(t *testing.T) {
 }
 
 func TestBackupService_ListSnapshots(t *testing.T) {
-	service, snapshotMgr, _, _ := setupTestService(t)
+	service, snapshotMgr, _ := setupTestService(t)
 
 	testList := &domain.SnapshotList{
 		Snapshots: []domain.Snapshot{

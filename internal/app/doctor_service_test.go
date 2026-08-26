@@ -78,9 +78,9 @@ func TestDoctorService_MissingBinary(t *testing.T) {
 func TestDoctorService_MissingPath(t *testing.T) {
 	manifest := makeManifest([]domain.Module{
 		{Name: "oh-my-zsh", File: "zshrc/00-omz.sh", RequiresPath: []string{"$HOME/.oh-my-zsh"}},
+		{Name: "theme", File: "zshrc/theme.sh", RequiresPath: []string{"$HOME/.config/theme"}},
 	})
-	// path does NOT exist
-	lookup := newMock(nil, nil)
+	lookup := newMock(nil, []string{domain.ExpandPath("$HOME/.config/theme")})
 
 	result := app.NewDoctorService().Check(manifest, "Mac", lookup)
 

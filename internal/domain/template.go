@@ -9,6 +9,7 @@ import (
 // TemplateType represents the type of template.
 type TemplateType string
 
+// Template type constants identify how template content is rendered.
 const (
 	TemplateTypePath              TemplateType = "path"
 	TemplateTypeEnv               TemplateType = "env"
@@ -21,6 +22,7 @@ const (
 // TemplateCategory represents the directory category for the module.
 type TemplateCategory string
 
+// Template category constants identify where rendered content is placed.
 const (
 	CategoryInitD   TemplateCategory = "init.d"
 	CategoryRcPreD  TemplateCategory = "rc_pre.d"

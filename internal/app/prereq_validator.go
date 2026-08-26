@@ -20,8 +20,10 @@ func NewPrereqValidator(targetOS string, lookup domain.PrereqLookup) *PrereqVali
 	return &PrereqValidator{targetOS: targetOS, lookup: lookup}
 }
 
+// Name returns this validator's stable pipeline name.
 func (*PrereqValidator) Name() string { return "prereq" }
 
+// Validate reports unavailable module prerequisites as warnings.
 func (v *PrereqValidator) Validate(m *domain.Manifest, _ string) []Finding {
 	result := NewDoctorService().Check(m, v.targetOS, v.lookup)
 

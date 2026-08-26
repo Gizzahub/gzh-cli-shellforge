@@ -32,6 +32,7 @@ type CommandRunner interface {
 // OsCommandRunner is the production CommandRunner backed by os/exec.
 type OsCommandRunner struct{}
 
+// Run executes name with args through the operating system.
 func (OsCommandRunner) Run(name string, args ...string) ([]byte, error) {
 	return exec.Command(name, args...).CombinedOutput() //nolint:gosec // args come from the manifest, not user input at runtime
 }
@@ -44,13 +45,16 @@ func NewBrewFormulaManager() *BrewFormulaManager {
 	return &BrewFormulaManager{Runner: OsCommandRunner{}}
 }
 
+// Name returns the manifest package key handled by this manager.
 func (m *BrewFormulaManager) Name() string { return "brew" }
 
+// IsInstalled reports whether the Homebrew formula is installed.
 func (m *BrewFormulaManager) IsInstalled(pkg string) (bool, error) {
 	_, err := m.Runner.Run("brew", "list", "--formula", "--versions", pkg)
 	return err == nil, nil
 }
 
+// Install installs the Homebrew formula.
 func (m *BrewFormulaManager) Install(pkg string) error {
 	out, err := m.Runner.Run("brew", "install", pkg)
 	if err != nil {
@@ -67,13 +71,16 @@ func NewBrewCaskManager() *BrewCaskManager {
 	return &BrewCaskManager{Runner: OsCommandRunner{}}
 }
 
+// Name returns the manifest package key handled by this manager.
 func (m *BrewCaskManager) Name() string { return "cask" }
 
+// IsInstalled reports whether the Homebrew cask is installed.
 func (m *BrewCaskManager) IsInstalled(pkg string) (bool, error) {
 	_, err := m.Runner.Run("brew", "list", "--cask", "--versions", pkg)
 	return err == nil, nil
 }
 
+// Install installs the Homebrew cask.
 func (m *BrewCaskManager) Install(pkg string) error {
 	out, err := m.Runner.Run("brew", "install", "--cask", pkg)
 	if err != nil {
@@ -90,8 +97,10 @@ func NewAptManager() *AptManager {
 	return &AptManager{Runner: OsCommandRunner{}}
 }
 
+// Name returns the manifest package key handled by this manager.
 func (m *AptManager) Name() string { return "apt" }
 
+// IsInstalled reports whether the Debian or Ubuntu package is installed.
 func (m *AptManager) IsInstalled(pkg string) (bool, error) {
 	out, err := m.Runner.Run("dpkg-query", "-W", "-f=${Status}", pkg)
 	if err != nil {
@@ -109,6 +118,7 @@ func (m *AptManager) IsInstalled(pkg string) (bool, error) {
 	return strings.Contains(string(out), "install ok installed"), nil
 }
 
+// Install installs the Debian or Ubuntu package.
 func (m *AptManager) Install(pkg string) error {
 	out, err := m.Runner.Run("apt-get", "install", "-y", pkg)
 	if err != nil {

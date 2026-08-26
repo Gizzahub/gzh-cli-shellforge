@@ -17,11 +17,13 @@ type PrereqLookup interface {
 // OsPrereqLookup is the production implementation backed by exec.LookPath / os.Stat.
 type OsPrereqLookup struct{}
 
+// HasBinary reports whether name resolves to an executable on PATH.
 func (OsPrereqLookup) HasBinary(name string) bool {
 	_, err := exec.LookPath(name)
 	return err == nil
 }
 
+// PathExists reports whether expanded identifies an existing filesystem path.
 func (OsPrereqLookup) PathExists(expanded string) bool {
 	_, err := os.Stat(expanded)
 	return err == nil

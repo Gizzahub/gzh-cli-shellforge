@@ -10,8 +10,10 @@ import (
 // ManifestStructureValidator checks module names, required fields, and dep refs.
 type ManifestStructureValidator struct{}
 
+// Name returns this validator's stable pipeline name.
 func (ManifestStructureValidator) Name() string { return "manifest-structure" }
 
+// Validate reports manifest structure violations.
 func (ManifestStructureValidator) Validate(m *domain.Manifest, _ string) []Finding {
 	var findings []Finding
 	for _, err := range m.Validate() {
@@ -23,8 +25,10 @@ func (ManifestStructureValidator) Validate(m *domain.Manifest, _ string) []Findi
 // CircularDependencyValidator checks for cycles in module dependency graph.
 type CircularDependencyValidator struct{}
 
+// Name returns this validator's stable pipeline name.
 func (CircularDependencyValidator) Name() string { return "circular-dependencies" }
 
+// Validate reports circular module dependencies.
 func (CircularDependencyValidator) Validate(m *domain.Manifest, _ string) []Finding {
 	depMap := make(map[string][]string, len(m.Modules))
 	for _, mod := range m.Modules {
@@ -69,8 +73,10 @@ func NewFileExistenceValidator(reader FileReader) *FileExistenceValidator {
 	return &FileExistenceValidator{reader: reader}
 }
 
+// Name returns this validator's stable pipeline name.
 func (*FileExistenceValidator) Name() string { return "file-existence" }
 
+// Validate reports manifest module files that do not exist.
 func (v *FileExistenceValidator) Validate(m *domain.Manifest, modulesDir string) []Finding {
 	var findings []Finding
 	for _, mod := range m.Modules {

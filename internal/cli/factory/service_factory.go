@@ -98,26 +98,32 @@ func newGitRepositoryAdapter(repo *git.Repository) *GitRepositoryAdapter {
 	return NewGitRepositoryAdapter(repo)
 }
 
+// IsGitInstalled reports whether the Git executable is available.
 func (a *GitRepositoryAdapter) IsGitInstalled() bool {
 	return git.IsGitInstalled()
 }
 
+// Init initializes the backing Git repository.
 func (a *GitRepositoryAdapter) Init() error {
 	return a.repo.Init()
 }
 
+// IsInitialized reports whether the backing Git repository is initialized.
 func (a *GitRepositoryAdapter) IsInitialized() bool {
 	return a.repo.IsInitialized()
 }
 
+// ConfigUser configures the backing repository's commit author.
 func (a *GitRepositoryAdapter) ConfigUser(name, email string) error {
 	return a.repo.ConfigUser(name, email)
 }
 
+// AddAndCommit stages paths and commits them with message.
 func (a *GitRepositoryAdapter) AddAndCommit(message string, paths ...string) error {
 	return a.repo.AddAndCommit(message, paths...)
 }
 
+// HasChanges reports whether the backing repository has uncommitted changes.
 func (a *GitRepositoryAdapter) HasChanges() (bool, error) {
 	return a.repo.HasChanges()
 }

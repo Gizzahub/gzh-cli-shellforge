@@ -2,6 +2,7 @@ package app
 
 import "github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 
+// SeverityError and SeverityWarn identify the severity of a validation finding.
 const (
 	SeverityError = "error"
 	SeverityWarn  = "warn"

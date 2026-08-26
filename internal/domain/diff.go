@@ -6,16 +6,16 @@ import "fmt"
 type DiffFormat string
 
 const (
-	// DiffFormatSummary shows only statistics (lines added/removed/modified)
+	// DiffFormatSummary shows only statistics (lines added/removed/modified).
 	DiffFormatSummary DiffFormat = "summary"
 
-	// DiffFormatUnified shows unified diff format (git diff style)
+	// DiffFormatUnified shows unified diff format (git diff style).
 	DiffFormatUnified DiffFormat = "unified"
 
-	// DiffFormatContext shows context diff format (with context lines)
+	// DiffFormatContext shows context diff format (with context lines).
 	DiffFormatContext DiffFormat = "context"
 
-	// DiffFormatSideBySide shows side-by-side comparison
+	// DiffFormatSideBySide shows side-by-side comparison.
 	DiffFormatSideBySide DiffFormat = "side-by-side"
 )
 

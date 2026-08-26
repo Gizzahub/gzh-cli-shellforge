@@ -169,7 +169,7 @@ func TestParser_Parse_FileErrors(t *testing.T) {
 	}
 }
 
-// TestParser_Parse_RealExample tests parsing the actual example manifest
+// TestParser_Parse_RealExample tests parsing the actual example manifest.
 func TestParser_Parse_RealExample(t *testing.T) {
 	// This test assumes examples/manifest.yaml exists
 	examplePath := "../../../examples/manifest.yaml"

@@ -8,15 +8,15 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
-// Renderer handles template rendering with field substitution
+// Renderer handles template rendering with field substitution.
 type Renderer struct{}
 
-// NewRenderer creates a new template renderer
+// NewRenderer creates a new template renderer.
 func NewRenderer() *Renderer {
 	return &Renderer{}
 }
 
-// Render renders a template with the given data
+// Render renders a template with the given data.
 func (r *Renderer) Render(template *domain.Template, data *domain.TemplateData) (string, error) {
 	// Validate data first
 	if err := data.Validate(template); err != nil {
@@ -51,7 +51,7 @@ func (r *Renderer) Render(template *domain.Template, data *domain.TemplateData) 
 	return content, nil
 }
 
-// RenderModuleFile renders a complete module file with header
+// RenderModuleFile renders a complete module file with header.
 func (r *Renderer) RenderModuleFile(template *domain.Template, data *domain.TemplateData) (string, error) {
 	content, err := r.Render(template, data)
 	if err != nil {

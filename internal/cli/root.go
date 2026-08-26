@@ -10,7 +10,7 @@ import (
 
 var version = "0.5.1"
 
-// NewRootCmd creates the root command
+// NewRootCmd creates the root command.
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "shellforge",
@@ -43,7 +43,7 @@ single shell configuration file.`,
 	return cmd
 }
 
-// Execute runs the root command
+// Execute runs the root command.
 func Execute() {
 	if err := NewRootCmd().Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)

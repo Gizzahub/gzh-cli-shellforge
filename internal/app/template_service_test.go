@@ -11,7 +11,7 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
-// MockTemplateRenderer is a mock implementation of TemplateRenderer
+// MockTemplateRenderer is a mock implementation of TemplateRenderer.
 type MockTemplateRenderer struct {
 	mock.Mock
 }
@@ -21,7 +21,7 @@ func (m *MockTemplateRenderer) RenderModuleFile(template *domain.Template, data 
 	return args.String(0), args.Error(1)
 }
 
-// MockFileWriter is a mock implementation of FileWriter
+// MockFileWriter is a mock implementation of FileWriter.
 type MockFileWriter struct {
 	mock.Mock
 }

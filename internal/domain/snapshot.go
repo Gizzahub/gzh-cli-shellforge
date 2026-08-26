@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Snapshot represents a timestamped backup of a configuration file
+// Snapshot represents a timestamped backup of a configuration file.
 type Snapshot struct {
 	Timestamp time.Time
 	FilePath  string // Full path to snapshot file
@@ -14,12 +14,12 @@ type Snapshot struct {
 	Size      int64
 }
 
-// FormatTimestamp returns the timestamp in the standard format (YYYY-MM-DD_HH-MM-SS)
+// FormatTimestamp returns the timestamp in the standard format (YYYY-MM-DD_HH-MM-SS).
 func (s *Snapshot) FormatTimestamp() string {
 	return s.Timestamp.Format("2006-01-02_15-04-05")
 }
 
-// FormatSize returns a human-readable file size
+// FormatSize returns a human-readable file size.
 func (s *Snapshot) FormatSize() string {
 	const unit = 1024
 	if s.Size < unit {
@@ -33,13 +33,13 @@ func (s *Snapshot) FormatSize() string {
 	return fmt.Sprintf("%.1f %cB", float64(s.Size)/float64(div), "KMGTPE"[exp])
 }
 
-// SnapshotList represents a collection of snapshots for a file
+// SnapshotList represents a collection of snapshots for a file.
 type SnapshotList struct {
 	Snapshots []Snapshot
 	FileName  string
 }
 
-// SortByNewest sorts snapshots by timestamp (newest first)
+// SortByNewest sorts snapshots by timestamp (newest first).
 func (sl *SnapshotList) SortByNewest() {
 	// Simple bubble sort - adequate for small lists
 	for i := 0; i < len(sl.Snapshots)-1; i++ {
@@ -51,7 +51,7 @@ func (sl *SnapshotList) SortByNewest() {
 	}
 }
 
-// FilterByAge returns snapshots within the specified number of days
+// FilterByAge returns snapshots within the specified number of days.
 func (sl *SnapshotList) FilterByAge(days int) []Snapshot {
 	cutoff := time.Now().AddDate(0, 0, -days)
 	var filtered []Snapshot
@@ -63,7 +63,7 @@ func (sl *SnapshotList) FilterByAge(days int) []Snapshot {
 	return filtered
 }
 
-// KeepNewest returns the N most recent snapshots
+// KeepNewest returns the N most recent snapshots.
 func (sl *SnapshotList) KeepNewest(count int) []Snapshot {
 	sl.SortByNewest()
 	if count >= len(sl.Snapshots) {
@@ -75,7 +75,7 @@ func (sl *SnapshotList) KeepNewest(count int) []Snapshot {
 	return sl.Snapshots[:count]
 }
 
-// GetToDelete returns snapshots that should be deleted based on retention policy
+// GetToDelete returns snapshots that should be deleted based on retention policy.
 func (sl *SnapshotList) GetToDelete(keepCount int, keepDays int) []Snapshot {
 	sl.SortByNewest()
 
@@ -119,7 +119,7 @@ func (sl *SnapshotList) GetToDelete(keepCount int, keepDays int) []Snapshot {
 	return toDelete
 }
 
-// BackupConfig represents the configuration for backup operations
+// BackupConfig represents the configuration for backup operations.
 type BackupConfig struct {
 	BackupDir    string // ~/.backup/shellforge
 	SnapshotsDir string // ~/.backup/shellforge/snapshots
@@ -129,7 +129,7 @@ type BackupConfig struct {
 	KeepDays     int    // Days to keep snapshots (0 = unlimited)
 }
 
-// NewBackupConfig creates a default backup configuration
+// NewBackupConfig creates a default backup configuration.
 func NewBackupConfig(backupDir string) *BackupConfig {
 	return &BackupConfig{
 		BackupDir:    backupDir,
@@ -141,7 +141,7 @@ func NewBackupConfig(backupDir string) *BackupConfig {
 	}
 }
 
-// SnapshotError represents errors during snapshot operations
+// SnapshotError represents errors during snapshot operations.
 type SnapshotError struct {
 	Operation string
 	Path      string
@@ -156,7 +156,7 @@ func (e *SnapshotError) Unwrap() error {
 	return e.Err
 }
 
-// NewSnapshotError creates a new snapshot error
+// NewSnapshotError creates a new snapshot error.
 func NewSnapshotError(operation, path string, err error) *SnapshotError {
 	return &SnapshotError{
 		Operation: operation,

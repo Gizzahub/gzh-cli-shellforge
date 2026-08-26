@@ -7,18 +7,18 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
-// TemplateRenderer defines the interface for template rendering
+// TemplateRenderer defines the interface for template rendering.
 type TemplateRenderer interface {
 	RenderModuleFile(template *domain.Template, data *domain.TemplateData) (string, error)
 }
 
-// TemplateService handles template generation operations
+// TemplateService handles template generation operations.
 type TemplateService struct {
 	renderer TemplateRenderer
 	writer   FileWriter
 }
 
-// NewTemplateService creates a new template service
+// NewTemplateService creates a new template service.
 func NewTemplateService(renderer TemplateRenderer, writer FileWriter) *TemplateService {
 	return &TemplateService{
 		renderer: renderer,
@@ -26,7 +26,7 @@ func NewTemplateService(renderer TemplateRenderer, writer FileWriter) *TemplateS
 	}
 }
 
-// GenerateResult contains the result of template generation
+// GenerateResult contains the result of template generation.
 type GenerateResult struct {
 	ModuleName string
 	FilePath   string
@@ -34,7 +34,7 @@ type GenerateResult struct {
 	Message    string
 }
 
-// Generate generates a module file from a template
+// Generate generates a module file from a template.
 func (s *TemplateService) Generate(
 	template *domain.Template,
 	data *domain.TemplateData,

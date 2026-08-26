@@ -2,7 +2,7 @@ package template
 
 import "github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 
-// GetBuiltinTemplates returns all built-in templates
+// GetBuiltinTemplates returns all built-in templates.
 func GetBuiltinTemplates() map[domain.TemplateType]*domain.Template {
 	return map[domain.TemplateType]*domain.Template{
 		domain.TemplateTypePath:              getPathTemplate(),
@@ -14,7 +14,7 @@ func GetBuiltinTemplates() map[domain.TemplateType]*domain.Template {
 	}
 }
 
-// GetBuiltinTemplate returns a specific built-in template
+// GetBuiltinTemplate returns a specific built-in template.
 func GetBuiltinTemplate(templateType domain.TemplateType) (*domain.Template, bool) {
 	templates := GetBuiltinTemplates()
 	template, ok := templates[templateType]

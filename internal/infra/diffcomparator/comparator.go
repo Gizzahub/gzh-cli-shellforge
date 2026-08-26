@@ -11,17 +11,17 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
-// Comparator compares two files and generates diff results
+// Comparator compares two files and generates diff results.
 type Comparator struct {
 	fs afero.Fs
 }
 
-// NewComparator creates a new file comparator
+// NewComparator creates a new file comparator.
 func NewComparator(fs afero.Fs) *Comparator {
 	return &Comparator{fs: fs}
 }
 
-// Compare compares two files and returns the diff result
+// Compare compares two files and returns the diff result.
 func (c *Comparator) Compare(originalPath, generatedPath string, format domain.DiffFormat) (*domain.DiffResult, error) {
 	// Read both files
 	originalContent, err := afero.ReadFile(c.fs, originalPath)
@@ -69,7 +69,7 @@ func (c *Comparator) Compare(originalPath, generatedPath string, format domain.D
 	}
 }
 
-// generateSummary generates summary format (statistics only)
+// generateSummary generates summary format (statistics only).
 func (c *Comparator) generateSummary(result *domain.DiffResult, original, generated []string) (*domain.DiffResult, error) {
 	// Calculate statistics using unified diff
 	diff := difflib.UnifiedDiff{
@@ -104,7 +104,7 @@ func (c *Comparator) generateSummary(result *domain.DiffResult, original, genera
 	return result, nil
 }
 
-// generateUnified generates unified diff format (git diff style)
+// generateUnified generates unified diff format (git diff style).
 func (c *Comparator) generateUnified(result *domain.DiffResult, original, generated []string) (*domain.DiffResult, error) {
 	diff := difflib.UnifiedDiff{
 		A:        original,
@@ -124,7 +124,7 @@ func (c *Comparator) generateUnified(result *domain.DiffResult, original, genera
 	return result, nil
 }
 
-// generateContext generates context diff format
+// generateContext generates context diff format.
 func (c *Comparator) generateContext(result *domain.DiffResult, original, generated []string) (*domain.DiffResult, error) {
 	diff := difflib.ContextDiff{
 		A:        original,
@@ -154,7 +154,7 @@ func (c *Comparator) generateContext(result *domain.DiffResult, original, genera
 	return result, nil
 }
 
-// generateSideBySide generates side-by-side comparison format
+// generateSideBySide generates side-by-side comparison format.
 func (c *Comparator) generateSideBySide(result *domain.DiffResult, original, generated []string) (*domain.DiffResult, error) {
 	// Generate unified diff for statistics
 	unifiedDiff := difflib.UnifiedDiff{
@@ -210,7 +210,7 @@ func (c *Comparator) generateSideBySide(result *domain.DiffResult, original, gen
 	return result, nil
 }
 
-// parseStatistics calculates statistics by directly comparing line arrays
+// parseStatistics calculates statistics by directly comparing line arrays.
 func (c *Comparator) parseStatistics(result *domain.DiffResult, diffText string, original, generated []string) {
 	// Direct comparison for accurate statistics
 	origLen := len(original)
@@ -253,7 +253,7 @@ func (c *Comparator) parseStatistics(result *domain.DiffResult, diffText string,
 	}
 }
 
-// splitLines splits content into lines, preserving empty lines
+// splitLines splits content into lines, preserving empty lines.
 func splitLines(content string) []string {
 	if content == "" {
 		return []string{}
@@ -269,7 +269,7 @@ func splitLines(content string) []string {
 	return lines
 }
 
-// truncate truncates a string to maxLen characters
+// truncate truncates a string to maxLen characters.
 func truncate(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s

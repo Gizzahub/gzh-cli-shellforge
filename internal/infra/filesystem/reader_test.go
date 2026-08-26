@@ -130,7 +130,7 @@ func TestReader_FileExists(t *testing.T) {
 	}
 }
 
-// TestReader_RealFile tests reading actual module files
+// TestReader_RealFile tests reading actual module files.
 func TestReader_RealFile(t *testing.T) {
 	// Test with real OS filesystem
 	fs := afero.NewOsFs()

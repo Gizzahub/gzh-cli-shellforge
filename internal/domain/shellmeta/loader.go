@@ -19,7 +19,7 @@ func NewLoader(fs afero.Fs) *Loader {
 }
 
 // Load loads all shell profile metadata from the specified directory.
-// The directory should contain: core.yaml, contexts.yaml, dev.yaml, automation.yaml
+// The directory should contain: core.yaml, contexts.yaml, dev.yaml, automation.yaml.
 func (l *Loader) Load(dir string) (*ShellProfiles, error) {
 	profiles := &ShellProfiles{}
 

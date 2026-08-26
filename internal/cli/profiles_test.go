@@ -278,7 +278,7 @@ func TestProfilesCommand_VerboseFlag(t *testing.T) {
 	}
 }
 
-// Helper to check command descriptions are well-formed
+// Helper to check command descriptions are well-formed.
 func TestProfilesCommand_Descriptions(t *testing.T) {
 	tests := []struct {
 		name string

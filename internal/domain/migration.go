@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Section represents a parsed section from an RC file
+// Section represents a parsed section from an RC file.
 type Section struct {
 	Name        string           // Section name (extracted from header comment)
 	Content     string           // Raw section content (without header comment)
@@ -16,7 +16,7 @@ type Section struct {
 	Description string           // Optional description for manifest
 }
 
-// MigrationResult contains the result of migrating an RC file
+// MigrationResult contains the result of migrating an RC file.
 type MigrationResult struct {
 	Sections []Section // Detected sections
 	Modules  []Module  // Generated module definitions
@@ -25,14 +25,14 @@ type MigrationResult struct {
 }
 
 // SectionPattern defines regex patterns for detecting section headers
-// Matches: # --- Name ---, # === Name ===, ## Name
+// Matches: # --- Name ---, # === Name ===, ## Name.
 var SectionPattern = regexp.MustCompile(`(?m)^(?:#\s*(?:---|===)\s*(.+?)\s*(?:---|===)|##\s+(.+?))\s*$`)
 
-// AllCapsPattern detects ALL CAPS section headers
+// AllCapsPattern detects ALL CAPS section headers.
 var AllCapsPattern = regexp.MustCompile(`(?m)^#\s*([A-Z][A-Z\s]{3,})\s*$`)
 
 // CategorizeSection determines the category based on content analysis
-// Content patterns take priority over name patterns
+// Content patterns take priority over name patterns.
 func CategorizeSection(name, content string) TemplateCategory {
 	nameLower := strings.ToLower(name)
 	contentLower := strings.ToLower(content)
@@ -80,7 +80,7 @@ func CategorizeSection(name, content string) TemplateCategory {
 	return CategoryRcPreD
 }
 
-// InferDependencies analyzes content and infers required dependencies
+// InferDependencies analyzes content and infers required dependencies.
 func InferDependencies(content string) []string {
 	deps := make([]string, 0)
 	seen := make(map[string]bool)
@@ -124,7 +124,7 @@ func InferOSSupport(content string) []string {
 	return []string{"Mac", "Linux"}
 }
 
-// GenerateModuleName creates a valid module name from section name
+// GenerateModuleName creates a valid module name from section name.
 func GenerateModuleName(sectionName string, index int) string {
 	// Convert to lowercase and replace spaces/special chars with hyphens
 	name := strings.ToLower(sectionName)
@@ -140,7 +140,7 @@ func GenerateModuleName(sectionName string, index int) string {
 	return name
 }
 
-// GenerateFileName creates a filename for the module
+// GenerateFileName creates a filename for the module.
 func GenerateFileName(category TemplateCategory, moduleName string, index int) string {
 	// Use index prefix for init.d to control load order
 	if category == CategoryInitD {
@@ -154,7 +154,7 @@ func GenerateFileName(category TemplateCategory, moduleName string, index int) s
 	return fmt.Sprintf("%s/%s.sh", category, moduleName)
 }
 
-// containsAny checks if the text contains any of the substrings
+// containsAny checks if the text contains any of the substrings.
 func containsAny(text string, substrings []string) bool {
 	for _, substr := range substrings {
 		if strings.Contains(text, substr) {
@@ -164,7 +164,7 @@ func containsAny(text string, substrings []string) bool {
 	return false
 }
 
-// NewMigrationResult creates a new migration result
+// NewMigrationResult creates a new migration result.
 func NewMigrationResult() *MigrationResult {
 	return &MigrationResult{
 		Sections: make([]Section, 0),
@@ -173,12 +173,12 @@ func NewMigrationResult() *MigrationResult {
 	}
 }
 
-// AddWarning adds a warning to the migration result
+// AddWarning adds a warning to the migration result.
 func (m *MigrationResult) AddWarning(format string, args ...any) {
 	m.Warnings = append(m.Warnings, fmt.Sprintf(format, args...))
 }
 
-// GenerateManifest creates a manifest from the migration result
+// GenerateManifest creates a manifest from the migration result.
 func (m *MigrationResult) GenerateManifest() *Manifest {
 	manifest := &Manifest{
 		Modules: m.Modules,

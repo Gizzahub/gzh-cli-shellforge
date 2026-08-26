@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Mock SnapshotManager
+// Mock SnapshotManager.
 type MockSnapshotManager struct {
 	mock.Mock
 }
@@ -79,7 +79,7 @@ func (m *MockSnapshotManager) CleanupSnapshots(fileName string, keepCount, keepD
 	return snapshots, args.Error(1)
 }
 
-// Mock GitRepository
+// Mock GitRepository.
 type MockGitRepository struct {
 	mock.Mock
 }

@@ -261,7 +261,7 @@ func TestBuilderService_Build(t *testing.T) {
 	}
 }
 
-// TestBuilderService_Build_RealExample tests with actual example files
+// TestBuilderService_Build_RealExample tests with actual example files.
 func TestBuilderService_Build_RealExample(t *testing.T) {
 	// Test with real filesystem
 	fs := afero.NewOsFs()

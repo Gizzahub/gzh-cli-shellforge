@@ -6,7 +6,7 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
-// SnapshotManager defines the interface for snapshot operations
+// SnapshotManager defines the interface for snapshot operations.
 type SnapshotManager interface {
 	Initialize() error
 	CreateSnapshot(sourcePath string) (*domain.Snapshot, error)
@@ -17,7 +17,7 @@ type SnapshotManager interface {
 	CleanupSnapshots(fileName string, keepCount, keepDays int) ([]domain.Snapshot, error)
 }
 
-// GitRepository defines the interface for git operations
+// GitRepository defines the interface for git operations.
 type GitRepository interface {
 	IsGitInstalled() bool
 	Init() error
@@ -27,14 +27,14 @@ type GitRepository interface {
 	HasChanges() (bool, error)
 }
 
-// BackupService orchestrates backup operations
+// BackupService orchestrates backup operations.
 type BackupService struct {
 	snapshotMgr SnapshotManager
 	gitRepo     GitRepository
 	config      *domain.BackupConfig
 }
 
-// NewBackupService creates a new backup service
+// NewBackupService creates a new backup service.
 func NewBackupService(snapshotMgr SnapshotManager, gitRepo GitRepository, config *domain.BackupConfig) *BackupService {
 	return &BackupService{
 		snapshotMgr: snapshotMgr,
@@ -43,14 +43,14 @@ func NewBackupService(snapshotMgr SnapshotManager, gitRepo GitRepository, config
 	}
 }
 
-// BackupResult contains information about a backup operation
+// BackupResult contains information about a backup operation.
 type BackupResult struct {
 	Snapshot     *domain.Snapshot
 	GitCommitted bool
 	Message      string
 }
 
-// Backup creates a backup of the source file
+// Backup creates a backup of the source file.
 func (s *BackupService) Backup(sourcePath, message string) (*BackupResult, error) {
 	// Initialize backup directories if needed
 	if err := s.snapshotMgr.Initialize(); err != nil {
@@ -101,7 +101,7 @@ func (s *BackupService) Backup(sourcePath, message string) (*BackupResult, error
 	return result, nil
 }
 
-// RestoreResult contains information about a restore operation
+// RestoreResult contains information about a restore operation.
 type RestoreResult struct {
 	Snapshot     *domain.Snapshot
 	TargetPath   string
@@ -109,7 +109,7 @@ type RestoreResult struct {
 	Message      string
 }
 
-// Restore restores a snapshot to the target path
+// Restore restores a snapshot to the target path.
 func (s *BackupService) Restore(fileName, timestampStr, targetPath string, dryRun bool) (*RestoreResult, error) {
 	// Find the snapshot
 	snapshot, err := s.snapshotMgr.GetSnapshotByTimestamp(fileName, timestampStr)
@@ -163,7 +163,7 @@ func (s *BackupService) Restore(fileName, timestampStr, targetPath string, dryRu
 	return result, nil
 }
 
-// CleanupResult contains information about a cleanup operation
+// CleanupResult contains information about a cleanup operation.
 type CleanupResult struct {
 	DeletedSnapshots []domain.Snapshot
 	DeletedCount     int
@@ -171,7 +171,7 @@ type CleanupResult struct {
 	Message          string
 }
 
-// Cleanup removes old snapshots according to retention policy
+// Cleanup removes old snapshots according to retention policy.
 func (s *BackupService) Cleanup(fileName string, dryRun bool) (*CleanupResult, error) {
 	// Get all snapshots
 	list, err := s.snapshotMgr.ListSnapshots(fileName)
@@ -220,12 +220,12 @@ func (s *BackupService) Cleanup(fileName string, dryRun bool) (*CleanupResult, e
 	return result, nil
 }
 
-// ListSnapshots returns all snapshots for a file
+// ListSnapshots returns all snapshots for a file.
 func (s *BackupService) ListSnapshots(fileName string) (*domain.SnapshotList, error) {
 	return s.snapshotMgr.ListSnapshots(fileName)
 }
 
-// initializeGit initializes git repository if needed
+// initializeGit initializes git repository if needed.
 func (s *BackupService) initializeGit() error {
 	if !s.gitRepo.IsGitInstalled() {
 		return fmt.Errorf("git is not installed")

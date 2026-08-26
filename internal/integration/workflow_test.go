@@ -19,7 +19,7 @@ import (
 // TestMigrateBuildDiffWorkflow tests the complete end-to-end workflow:
 // 1. Migrate RC file to modular structure
 // 2. Build output from modules
-// 3. Compare original with generated
+// 3. Compare original with generated.
 func TestMigrateBuildDiffWorkflow(t *testing.T) {
 	// Setup
 	fs := afero.NewMemMapFs()
@@ -164,7 +164,7 @@ function mkcd() {
 	})
 }
 
-// TestDiffFormats tests all diff output formats in the workflow
+// TestDiffFormats tests all diff output formats in the workflow.
 func TestDiffFormats(t *testing.T) {
 	fs := afero.NewMemMapFs()
 
@@ -216,7 +216,7 @@ line4`
 	}
 }
 
-// TestRealWorldExample tests with the actual example file
+// TestRealWorldExample tests with the actual example file.
 func TestRealWorldExample(t *testing.T) {
 	// This test uses the real filesystem to test with examples/sample.zshrc
 	if testing.Short() {

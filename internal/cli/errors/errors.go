@@ -31,7 +31,7 @@ func ValidationError(message string) error {
 	return fmt.Errorf("validation error: %s", message)
 }
 
-// RequiredFlag returns a standardized required flag error with help
+// RequiredFlag returns a standardized required flag error with help.
 func RequiredFlag(flagName string, examples ...string) error {
 	var msg strings.Builder
 	fmt.Fprintf(&msg, "--%s flag is required", flagName)
@@ -44,12 +44,12 @@ func RequiredFlag(flagName string, examples ...string) error {
 	return fmt.Errorf("%s", msg.String())
 }
 
-// MutuallyExclusive returns an error for mutually exclusive flags
+// MutuallyExclusive returns an error for mutually exclusive flags.
 func MutuallyExclusive(flag1, flag2 string) error {
 	return fmt.Errorf("--%s and --%s cannot be used together", flag1, flag2)
 }
 
-// MinValue returns an error for values below minimum
+// MinValue returns an error for values below minimum.
 func MinValue(flagName string, minValue int) error {
 	return fmt.Errorf("%s must be at least %d", flagName, minValue)
 }

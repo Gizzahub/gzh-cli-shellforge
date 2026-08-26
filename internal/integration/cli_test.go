@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// getBinaryPath returns the path to the gz-shellforge binary
+// getBinaryPath returns the path to the gz-shellforge binary.
 func getBinaryPath(t *testing.T) string {
 	t.Helper()
 
@@ -47,7 +47,7 @@ func getBinaryPath(t *testing.T) string {
 	return absPath
 }
 
-// TestCLI_Version tests the --version flag
+// TestCLI_Version tests the --version flag.
 func TestCLI_Version(t *testing.T) {
 	binary := getBinaryPath(t)
 
@@ -58,7 +58,7 @@ func TestCLI_Version(t *testing.T) {
 	assert.Contains(t, string(output), "0.5.1", "Should show version number")
 }
 
-// TestCLI_Help tests the --help flag
+// TestCLI_Help tests the --help flag.
 func TestCLI_Help(t *testing.T) {
 	binary := getBinaryPath(t)
 
@@ -134,7 +134,7 @@ func TestCLI_Help(t *testing.T) {
 	}
 }
 
-// TestCLI_Build tests the build command with actual execution
+// TestCLI_Build tests the build command with actual execution.
 func TestCLI_Build(t *testing.T) {
 	binary := getBinaryPath(t)
 	tempDir := t.TempDir()
@@ -222,7 +222,7 @@ export TEST_VAR="test"
 	})
 }
 
-// TestCLI_Validate tests the validate command
+// TestCLI_Validate tests the validate command.
 func TestCLI_Validate(t *testing.T) {
 	binary := getBinaryPath(t)
 	tempDir := t.TempDir()
@@ -280,7 +280,7 @@ func TestCLI_Validate(t *testing.T) {
 	})
 }
 
-// TestCLI_Migrate tests the migrate command
+// TestCLI_Migrate tests the migrate command.
 func TestCLI_Migrate(t *testing.T) {
 	binary := getBinaryPath(t)
 	tempDir := t.TempDir()
@@ -358,7 +358,7 @@ alias gs='git status'
 	})
 }
 
-// TestCLI_Diff tests the diff command
+// TestCLI_Diff tests the diff command.
 func TestCLI_Diff(t *testing.T) {
 	binary := getBinaryPath(t)
 	tempDir := t.TempDir()
@@ -444,7 +444,7 @@ line4
 	})
 }
 
-// TestCLI_ExitCodes tests that commands return appropriate exit codes
+// TestCLI_ExitCodes tests that commands return appropriate exit codes.
 func TestCLI_ExitCodes(t *testing.T) {
 	binary := getBinaryPath(t)
 

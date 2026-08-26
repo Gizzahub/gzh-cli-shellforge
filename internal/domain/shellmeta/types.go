@@ -9,7 +9,7 @@ type ShellProfiles struct {
 }
 
 // CoreProfiles contains OS and shell basic initialization file mappings.
-// Loaded from core.yaml
+// Loaded from core.yaml.
 type CoreProfiles struct {
 	OSProfiles     OSProfiles                `yaml:"os_profiles"`
 	LoadPriority   LoadPriority              `yaml:"load_priority"`
@@ -76,7 +76,7 @@ type DefaultShells struct {
 }
 
 // ContextProfiles contains execution context information.
-// Loaded from contexts.yaml
+// Loaded from contexts.yaml.
 type ContextProfiles struct {
 	SSHProfiles         SSHProfiles                   `yaml:"ssh_profiles"`
 	XWindowProfiles     XWindowProfiles               `yaml:"x_window_profiles"`
@@ -192,7 +192,7 @@ type XDGEnvironment struct {
 }
 
 // DevProfiles contains development environment information.
-// Loaded from dev.yaml
+// Loaded from dev.yaml.
 type DevProfiles struct {
 	GUIAppContexts          GUIAppContexts                `yaml:"gui_app_contexts"`
 	LanguageVersionManagers map[string]LanguageVersionMgr `yaml:"language_version_managers"`
@@ -256,7 +256,7 @@ type LanguageVersionMgr struct {
 }
 
 // AutomationProfiles contains automation and isolated environment information.
-// Loaded from automation.yaml
+// Loaded from automation.yaml.
 type AutomationProfiles struct {
 	ScheduledExecution   ScheduledExecution             `yaml:"scheduled_execution"`
 	UserSwitching        map[string]UserSwitch          `yaml:"user_switching"`

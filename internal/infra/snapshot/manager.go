@@ -12,13 +12,13 @@ import (
 	"github.com/spf13/afero"
 )
 
-// Manager handles snapshot file operations
+// Manager handles snapshot file operations.
 type Manager struct {
 	fs     afero.Fs
 	config *domain.BackupConfig
 }
 
-// NewManager creates a new snapshot manager
+// NewManager creates a new snapshot manager.
 func NewManager(fs afero.Fs, config *domain.BackupConfig) *Manager {
 	return &Manager{
 		fs:     fs,
@@ -26,7 +26,7 @@ func NewManager(fs afero.Fs, config *domain.BackupConfig) *Manager {
 	}
 }
 
-// Initialize creates the backup directory structure
+// Initialize creates the backup directory structure.
 func (m *Manager) Initialize() error {
 	// Create snapshots directory
 	if err := m.fs.MkdirAll(m.config.SnapshotsDir, 0o755); err != nil {
@@ -41,7 +41,7 @@ func (m *Manager) Initialize() error {
 	return nil
 }
 
-// CreateSnapshot creates a timestamped snapshot of a file
+// CreateSnapshot creates a timestamped snapshot of a file.
 func (m *Manager) CreateSnapshot(sourcePath string) (*domain.Snapshot, error) {
 	// Verify source file exists
 	exists, err := afero.Exists(m.fs, sourcePath)
@@ -91,7 +91,7 @@ func (m *Manager) CreateSnapshot(sourcePath string) (*domain.Snapshot, error) {
 	return snapshot, nil
 }
 
-// ListSnapshots returns all snapshots for a given file
+// ListSnapshots returns all snapshots for a given file.
 func (m *Manager) ListSnapshots(fileName string) (*domain.SnapshotList, error) {
 	// Remove leading dot if present
 	fileName = strings.TrimPrefix(fileName, ".")
@@ -150,7 +150,7 @@ func (m *Manager) ListSnapshots(fileName string) (*domain.SnapshotList, error) {
 	return list, nil
 }
 
-// DeleteSnapshot deletes a single snapshot file
+// DeleteSnapshot deletes a single snapshot file.
 func (m *Manager) DeleteSnapshot(snapshot *domain.Snapshot) error {
 	exists, err := afero.Exists(m.fs, snapshot.FilePath)
 	if err != nil {
@@ -168,7 +168,7 @@ func (m *Manager) DeleteSnapshot(snapshot *domain.Snapshot) error {
 	return nil
 }
 
-// DeleteSnapshots deletes multiple snapshots
+// DeleteSnapshots deletes multiple snapshots.
 func (m *Manager) DeleteSnapshots(snapshots []domain.Snapshot) error {
 	for _, snapshot := range snapshots {
 		if err := m.DeleteSnapshot(&snapshot); err != nil {
@@ -178,7 +178,7 @@ func (m *Manager) DeleteSnapshots(snapshots []domain.Snapshot) error {
 	return nil
 }
 
-// RestoreSnapshot restores a snapshot to the target path
+// RestoreSnapshot restores a snapshot to the target path.
 func (m *Manager) RestoreSnapshot(snapshot *domain.Snapshot, targetPath string) error {
 	// Verify snapshot exists
 	exists, err := afero.Exists(m.fs, snapshot.FilePath)
@@ -203,7 +203,7 @@ func (m *Manager) RestoreSnapshot(snapshot *domain.Snapshot, targetPath string) 
 	return nil
 }
 
-// UpdateCurrent updates the "current" copy of a file
+// UpdateCurrent updates the "current" copy of a file.
 func (m *Manager) UpdateCurrent(sourcePath string) error {
 	fileName := filepath.Base(sourcePath)
 	fileName = strings.TrimPrefix(fileName, ".")
@@ -218,7 +218,7 @@ func (m *Manager) UpdateCurrent(sourcePath string) error {
 	return nil
 }
 
-// CleanupSnapshots deletes snapshots according to retention policy
+// CleanupSnapshots deletes snapshots according to retention policy.
 func (m *Manager) CleanupSnapshots(fileName string, keepCount, keepDays int) ([]domain.Snapshot, error) {
 	// Get all snapshots
 	list, err := m.ListSnapshots(fileName)
@@ -237,7 +237,7 @@ func (m *Manager) CleanupSnapshots(fileName string, keepCount, keepDays int) ([]
 	return toDelete, nil
 }
 
-// copyFile copies a file from source to destination
+// copyFile copies a file from source to destination.
 func (m *Manager) copyFile(sourcePath, destPath string) error {
 	// Open source file
 	source, err := m.fs.Open(sourcePath)
@@ -272,7 +272,7 @@ func (m *Manager) copyFile(sourcePath, destPath string) error {
 	return nil
 }
 
-// GetSnapshotByTimestamp finds a snapshot by timestamp string
+// GetSnapshotByTimestamp finds a snapshot by timestamp string.
 func (m *Manager) GetSnapshotByTimestamp(fileName, timestampStr string) (*domain.Snapshot, error) {
 	list, err := m.ListSnapshots(fileName)
 	if err != nil {

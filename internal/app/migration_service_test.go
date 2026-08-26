@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// mockRCParser is a mock implementation of RCParser for testing
+// mockRCParser is a mock implementation of RCParser for testing.
 type mockRCParser struct {
 	result *domain.MigrationResult
 	err    error
@@ -24,7 +24,7 @@ func (m *mockRCParser) ParseFile(path string) (*domain.MigrationResult, error) {
 	return m.result, nil
 }
 
-// mockFileReader is a simple mock for FileReader
+// mockFileReader is a simple mock for FileReader.
 type mockFileReader struct {
 	fs afero.Fs
 }
@@ -42,7 +42,7 @@ func (m *mockFileReader) FileExists(path string) bool {
 	return exists
 }
 
-// mockFileWriter is a simple mock for FileWriter
+// mockFileWriter is a simple mock for FileWriter.
 type mockFileWriter struct {
 	fs afero.Fs
 }

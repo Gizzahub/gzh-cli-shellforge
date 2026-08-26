@@ -10,17 +10,17 @@ import (
 	"github.com/spf13/afero"
 )
 
-// Parser parses RC files and extracts sections
+// Parser parses RC files and extracts sections.
 type Parser struct {
 	fs afero.Fs
 }
 
-// New creates a new RC file parser
+// New creates a new RC file parser.
 func New(fs afero.Fs) *Parser {
 	return &Parser{fs: fs}
 }
 
-// ParseFile reads and parses an RC file into sections
+// ParseFile reads and parses an RC file into sections.
 func (p *Parser) ParseFile(path string) (*domain.MigrationResult, error) {
 	// Read file
 	file, err := p.fs.Open(path)
@@ -72,7 +72,7 @@ func (p *Parser) ParseFile(path string) (*domain.MigrationResult, error) {
 	return result, nil
 }
 
-// parseSections extracts sections from lines
+// parseSections extracts sections from lines.
 func (p *Parser) parseSections(lines []string) []domain.Section {
 	var sections []domain.Section
 	var currentSection *domain.Section
@@ -144,7 +144,7 @@ func (p *Parser) parseSections(lines []string) []domain.Section {
 	return sections
 }
 
-// detectSectionHeader checks if a line is a section header and returns the section name
+// detectSectionHeader checks if a line is a section header and returns the section name.
 func (p *Parser) detectSectionHeader(line string) string {
 	// Try standard patterns (---, ===, ##)
 	matches := domain.SectionPattern.FindStringSubmatch(line)
@@ -167,7 +167,7 @@ func (p *Parser) detectSectionHeader(line string) string {
 	return ""
 }
 
-// extractDescription extracts description from comment lines following a section header
+// extractDescription extracts description from comment lines following a section header.
 func (p *Parser) extractDescription(lines []string, startLine int) string {
 	var desc strings.Builder
 	maxLines := 3 // Only check first 3 lines for description

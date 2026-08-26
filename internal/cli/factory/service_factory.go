@@ -12,7 +12,7 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/infra/yamlparser"
 )
 
-// Services holds all common services used by CLI commands
+// Services holds all common services used by CLI commands.
 type Services struct {
 	Fs     afero.Fs
 	Parser *yamlparser.Parser
@@ -20,7 +20,7 @@ type Services struct {
 	Writer *filesystem.Writer
 }
 
-// NewServices creates a new Services instance with all common dependencies
+// NewServices creates a new Services instance with all common dependencies.
 func NewServices() *Services {
 	fs := afero.NewOsFs()
 	return &Services{
@@ -31,17 +31,17 @@ func NewServices() *Services {
 	}
 }
 
-// NewBuilder creates a BuilderService from the services
+// NewBuilder creates a BuilderService from the services.
 func (s *Services) NewBuilder() *app.BuilderService {
 	return app.NewBuilderService(s.Parser, s.Reader, s.Writer)
 }
 
-// NewDeployer creates a DeployService from the services
+// NewDeployer creates a DeployService from the services.
 func (s *Services) NewDeployer() *app.DeployService {
 	return app.NewDeployService(s.Reader, s.Writer)
 }
 
-// BackupServices holds services specifically for backup operations
+// BackupServices holds services specifically for backup operations.
 type BackupServices struct {
 	Fs            afero.Fs
 	Config        *domain.BackupConfig
@@ -50,7 +50,7 @@ type BackupServices struct {
 	BackupService *app.BackupService
 }
 
-// BackupOptions configures the backup services
+// BackupOptions configures the backup services.
 type BackupOptions struct {
 	BackupDir  string
 	GitEnabled bool
@@ -58,7 +58,7 @@ type BackupOptions struct {
 	KeepDays   int
 }
 
-// NewBackupServices creates all services needed for backup/restore/cleanup operations
+// NewBackupServices creates all services needed for backup/restore/cleanup operations.
 func NewBackupServices(opts BackupOptions) *BackupServices {
 	fs := afero.NewOsFs()
 	config := domain.NewBackupConfig(opts.BackupDir)
@@ -84,12 +84,12 @@ func NewBackupServices(opts BackupOptions) *BackupServices {
 	}
 }
 
-// GitRepositoryAdapter adapts git.Repository to app.GitRepository interface
+// GitRepositoryAdapter adapts git.Repository to app.GitRepository interface.
 type GitRepositoryAdapter struct {
 	repo *git.Repository
 }
 
-// NewGitRepositoryAdapter creates a new GitRepositoryAdapter
+// NewGitRepositoryAdapter creates a new GitRepositoryAdapter.
 func NewGitRepositoryAdapter(repo *git.Repository) *GitRepositoryAdapter {
 	return &GitRepositoryAdapter{repo: repo}
 }

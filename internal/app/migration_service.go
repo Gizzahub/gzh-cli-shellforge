@@ -8,19 +8,19 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
-// RCParser defines the interface for parsing RC files
+// RCParser defines the interface for parsing RC files.
 type RCParser interface {
 	ParseFile(path string) (*domain.MigrationResult, error)
 }
 
-// MigrationService handles migration of monolithic RC files to modular structure
+// MigrationService handles migration of monolithic RC files to modular structure.
 type MigrationService struct {
 	parser RCParser
 	reader FileReader
 	writer FileWriter
 }
 
-// NewMigrationService creates a new migration service
+// NewMigrationService creates a new migration service.
 func NewMigrationService(parser RCParser, reader FileReader, writer FileWriter) *MigrationService {
 	return &MigrationService{
 		parser: parser,
@@ -29,7 +29,7 @@ func NewMigrationService(parser RCParser, reader FileReader, writer FileWriter) 
 	}
 }
 
-// MigrateResult contains the result of an RC file migration
+// MigrateResult contains the result of an RC file migration.
 type MigrateResult struct {
 	SourceFile       string
 	Sections         []domain.Section
@@ -39,7 +39,7 @@ type MigrateResult struct {
 	ModuleFilesPaths []string
 }
 
-// Analyze parses an RC file and returns detected sections without creating files
+// Analyze parses an RC file and returns detected sections without creating files.
 func (s *MigrationService) Analyze(rcFilePath string) (*MigrateResult, error) {
 	// Use the parser to parse the RC file
 	result, err := s.parser.ParseFile(rcFilePath)
@@ -57,7 +57,7 @@ func (s *MigrationService) Analyze(rcFilePath string) (*MigrateResult, error) {
 	return migrateResult, nil
 }
 
-// Migrate performs the full migration: analyze, create module files, and generate manifest
+// Migrate performs the full migration: analyze, create module files, and generate manifest.
 func (s *MigrationService) Migrate(rcFilePath, outputDir, manifestPath string) (*MigrateResult, error) {
 	// Use the parser to parse the RC file
 	result, err := s.parser.ParseFile(rcFilePath)
@@ -107,7 +107,7 @@ func (s *MigrationService) Migrate(rcFilePath, outputDir, manifestPath string) (
 	return migrateResult, nil
 }
 
-// generateModuleContent creates the module file content with header
+// generateModuleContent creates the module file content with header.
 func (s *MigrationService) generateModuleContent(module domain.Module, content string) string {
 	var sb strings.Builder
 
@@ -138,7 +138,7 @@ func (s *MigrationService) generateModuleContent(module domain.Module, content s
 	return sb.String()
 }
 
-// generateManifestYAML creates the YAML manifest content
+// generateManifestYAML creates the YAML manifest content.
 func (s *MigrationService) generateManifestYAML(manifest *domain.Manifest) string {
 	var sb strings.Builder
 

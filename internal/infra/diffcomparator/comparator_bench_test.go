@@ -10,7 +10,7 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
-// Benchmark file comparison with identical files
+// Benchmark file comparison with identical files.
 func BenchmarkComparator_Compare_Identical(b *testing.B) {
 	sizes := []struct {
 		name  string
@@ -43,7 +43,7 @@ func BenchmarkComparator_Compare_Identical(b *testing.B) {
 	}
 }
 
-// Benchmark file comparison with line additions
+// Benchmark file comparison with line additions.
 func BenchmarkComparator_Compare_Additions(b *testing.B) {
 	scenarios := []struct {
 		name          string
@@ -79,7 +79,7 @@ func BenchmarkComparator_Compare_Additions(b *testing.B) {
 	}
 }
 
-// Benchmark file comparison with modifications
+// Benchmark file comparison with modifications.
 func BenchmarkComparator_Compare_Modifications(b *testing.B) {
 	scenarios := []struct {
 		name        string
@@ -115,7 +115,7 @@ func BenchmarkComparator_Compare_Modifications(b *testing.B) {
 	}
 }
 
-// Benchmark different diff formats
+// Benchmark different diff formats.
 func BenchmarkComparator_Compare_Formats(b *testing.B) {
 	formats := []struct {
 		name   string
@@ -150,7 +150,7 @@ func BenchmarkComparator_Compare_Formats(b *testing.B) {
 	}
 }
 
-// Benchmark real-world scenario: shell configuration files
+// Benchmark real-world scenario: shell configuration files.
 func BenchmarkComparator_Compare_RealWorld(b *testing.B) {
 	scenarios := []struct {
 		name         string
@@ -184,7 +184,7 @@ func BenchmarkComparator_Compare_RealWorld(b *testing.B) {
 	}
 }
 
-// Benchmark parseStatistics function specifically
+// Benchmark parseStatistics function specifically.
 func BenchmarkComparator_parseStatistics(b *testing.B) {
 	sizes := []struct {
 		name  string
@@ -213,7 +213,7 @@ func BenchmarkComparator_parseStatistics(b *testing.B) {
 	}
 }
 
-// Benchmark splitLines function
+// Benchmark splitLines function.
 func BenchmarkComparator_splitLines(b *testing.B) {
 	sizes := []struct {
 		name  string
@@ -239,7 +239,7 @@ func BenchmarkComparator_splitLines(b *testing.B) {
 
 // Helper functions for benchmark data generation
 
-// generateFileContent generates file content with specified number of lines
+// generateFileContent generates file content with specified number of lines.
 func generateFileContent(lines int) string {
 	var sb strings.Builder
 	for i := range lines {
@@ -248,7 +248,7 @@ func generateFileContent(lines int) string {
 	return sb.String()
 }
 
-// generateLines generates a slice of lines
+// generateLines generates a slice of lines.
 func generateLines(count int) []string {
 	lines := make([]string, count)
 	for i := range count {
@@ -257,7 +257,7 @@ func generateLines(count int) []string {
 	return lines
 }
 
-// modifyContent modifies a percentage of lines in the content
+// modifyContent modifies a percentage of lines in the content.
 func modifyContent(content string, modifyPct int) string {
 	lines := strings.Split(strings.TrimSuffix(content, "\n"), "\n")
 	modifyCount := len(lines) * modifyPct / 100
@@ -273,7 +273,7 @@ func modifyContent(content string, modifyPct int) string {
 	return strings.Join(lines, "\n") + "\n"
 }
 
-// modifyLines modifies a percentage of lines in a slice
+// modifyLines modifies a percentage of lines in a slice.
 func modifyLines(lines []string, modifyPct int) []string {
 	result := make([]string, len(lines))
 	copy(result, lines)
@@ -289,7 +289,7 @@ func modifyLines(lines []string, modifyPct int) []string {
 	return result
 }
 
-// generateShellConfig generates realistic shell configuration content
+// generateShellConfig generates realistic shell configuration content.
 func generateShellConfig(lines int) string {
 	var sb strings.Builder
 
@@ -341,7 +341,7 @@ func generateShellConfig(lines int) string {
 	return sb.String()
 }
 
-// applyRealWorldChanges simulates real-world migration changes
+// applyRealWorldChanges simulates real-world migration changes.
 func applyRealWorldChanges(content string, changeType string) string {
 	lines := strings.Split(strings.TrimSuffix(content, "\n"), "\n")
 	var result []string

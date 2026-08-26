@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// TemplateType represents the type of template
+// TemplateType represents the type of template.
 type TemplateType string
 
 const (
@@ -18,7 +18,7 @@ const (
 	TemplateTypeOSSpecific        TemplateType = "os-specific"
 )
 
-// TemplateCategory represents the directory category for the module
+// TemplateCategory represents the directory category for the module.
 type TemplateCategory string
 
 const (
@@ -27,7 +27,7 @@ const (
 	CategoryRcPostD TemplateCategory = "rc_post.d"
 )
 
-// Template represents a module template definition
+// Template represents a module template definition.
 type Template struct {
 	Type        TemplateType
 	Name        string
@@ -37,7 +37,7 @@ type Template struct {
 	Content     string // Template content with placeholders
 }
 
-// TemplateField represents a field that needs to be filled in the template
+// TemplateField represents a field that needs to be filled in the template.
 type TemplateField struct {
 	Name        string
 	Description string
@@ -45,7 +45,7 @@ type TemplateField struct {
 	Default     string
 }
 
-// TemplateData holds the data to render a template
+// TemplateData holds the data to render a template.
 type TemplateData struct {
 	ModuleName  string
 	Description string
@@ -53,7 +53,7 @@ type TemplateData struct {
 	Requires    []string // Dependencies
 }
 
-// Validate validates the template data
+// Validate validates the template data.
 func (td *TemplateData) Validate(template *Template) error {
 	if td.ModuleName == "" {
 		return fmt.Errorf("module name is required")
@@ -72,7 +72,7 @@ func (td *TemplateData) Validate(template *Template) error {
 	return nil
 }
 
-// GetAllTemplateTypes returns all available template types
+// GetAllTemplateTypes returns all available template types.
 func GetAllTemplateTypes() []TemplateType {
 	return []TemplateType{
 		TemplateTypePath,
@@ -84,13 +84,13 @@ func GetAllTemplateTypes() []TemplateType {
 	}
 }
 
-// IsValidTemplateType checks if a template type is valid
+// IsValidTemplateType checks if a template type is valid.
 func IsValidTemplateType(t string) bool {
 	templateType := TemplateType(t)
 	return slices.Contains(GetAllTemplateTypes(), templateType)
 }
 
-// GetTemplateCategory returns the category for a template type
+// GetTemplateCategory returns the category for a template type.
 func GetTemplateCategory(t TemplateType) TemplateCategory {
 	switch t {
 	case TemplateTypePath:

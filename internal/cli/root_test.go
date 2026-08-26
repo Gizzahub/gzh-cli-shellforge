@@ -155,7 +155,7 @@ func TestRootCmd_GlobalFlags(t *testing.T) {
 	assert.Contains(t, buf.String(), version)
 }
 
-// Helper function to find a command by name
+// Helper function to find a command by name.
 func findCommand(root *cobra.Command, name string) *cobra.Command {
 	for _, cmd := range root.Commands() {
 		if cmd.Name() == name {

@@ -449,3 +449,33 @@ func TestDeployService_Deploy_SystemTarget_DryRun(t *testing.T) {
 		t.Error("dry-run must not write files")
 	}
 }
+
+func TestDeployDestination_PreservesSystemPathsAndResolvesUserPaths(t *testing.T) {
+	tests := []struct {
+		name     string
+		homeDir  string
+		destPath string
+		want     string
+	}{
+		{
+			name:     "system path is not joined with home directory",
+			homeDir:  "/home/test",
+			destPath: "/etc/profile",
+			want:     "/etc/profile",
+		},
+		{
+			name:     "user path is joined with home directory",
+			homeDir:  "/home/test",
+			destPath: ".config/fish/config.fish",
+			want:     "/home/test/.config/fish/config.fish",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := deployDestination(tt.homeDir, tt.destPath); got != tt.want {
+				t.Errorf("deployDestination() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}

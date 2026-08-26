@@ -70,80 +70,75 @@ func runList(cmd *cobra.Command, flags *listFlags) error {
 		return clierrors.WrapError("manifest parsing", err)
 	}
 
-	// Validate manifest
-	if validationErrors := manifest.Validate(); len(validationErrors) > 0 {
-		cmd.PrintErrln("⚠️  Manifest has validation errors:")
-		for _, verr := range validationErrors {
-			cmd.PrintErrf("  - %s\n", verr.Error())
-		}
-		cmd.PrintErrln()
-	}
+	printManifestValidationErrors(cmd, manifest.Validate())
+	modules := filterModules(manifest.Modules, flags.filterOS)
+	printListHeader(cmd, flags, len(modules))
 
-	// Filter modules by OS if specified
-	modules := manifest.Modules
-	if flags.filterOS != "" {
-		var filtered []domain.Module
-		for _, module := range modules {
-			if module.AppliesTo(flags.filterOS) {
-				filtered = append(filtered, module)
-			}
-		}
-		modules = filtered
-	}
-
-	// Display header
-	if flags.filterOS != "" {
-		cmd.Printf("Modules (%d) - Filtered by OS: %s\n", len(modules), flags.filterOS)
-	} else {
-		cmd.Printf("Modules (%d)\n", len(modules))
-	}
-	cmd.Printf("Manifest: %s\n\n", flags.manifest)
-
-	// Check if module files exist
 	reader := services.Reader
-
-	// Display modules
 	for i, module := range modules {
-		// Module name and OS compatibility
-		osInfo := ""
-		if len(module.OS) > 0 {
-			osInfo = fmt.Sprintf(" [%s]", strings.Join(module.OS, ", "))
-		} else {
-			osInfo = " [all]"
-		}
-
-		cmd.Printf("%d. %s%s\n", i+1, module.Name, osInfo)
-
-		// Description
-		if module.Description != "" {
-			cmd.Printf("   %s\n", module.Description)
-		}
-
-		// File path (verbose mode)
-		if flags.verbose {
-			fullPath := filepath.Join(flags.configDir, module.File)
-			fileExists := reader.FileExists(fullPath)
-			existsMarker := "✓"
-			if !fileExists {
-				existsMarker = "✗"
-			}
-			cmd.Printf("   File: %s %s\n", module.File, existsMarker)
-		}
-
-		// Dependencies
-		if len(module.Requires) > 0 {
-			if flags.verbose {
-				cmd.Printf("   Requires: %s\n", strings.Join(module.Requires, ", "))
-			} else {
-				cmd.Printf("   → %s\n", strings.Join(module.Requires, ", "))
-			}
-		}
-
-		// Spacing between modules
-		if i < len(modules)-1 {
-			cmd.Println()
-		}
+		printModule(cmd, reader, module, i, len(modules), flags)
 	}
 
 	return nil
+}
+
+func printManifestValidationErrors(cmd *cobra.Command, validationErrors []error) {
+	if len(validationErrors) == 0 {
+		return
+	}
+	cmd.PrintErrln("⚠️  Manifest has validation errors:")
+	for _, verr := range validationErrors {
+		cmd.PrintErrf("  - %s\n", verr.Error())
+	}
+	cmd.PrintErrln()
+}
+
+func filterModules(modules []domain.Module, filterOS string) []domain.Module {
+	if filterOS == "" {
+		return modules
+	}
+	filtered := make([]domain.Module, 0, len(modules))
+	for _, module := range modules {
+		if module.AppliesTo(filterOS) {
+			filtered = append(filtered, module)
+		}
+	}
+	return filtered
+}
+
+func printListHeader(cmd *cobra.Command, flags *listFlags, moduleCount int) {
+	if flags.filterOS != "" {
+		cmd.Printf("Modules (%d) - Filtered by OS: %s\n", moduleCount, flags.filterOS)
+	} else {
+		cmd.Printf("Modules (%d)\n", moduleCount)
+	}
+	cmd.Printf("Manifest: %s\n\n", flags.manifest)
+}
+
+func printModule(cmd *cobra.Command, reader interface{ FileExists(string) bool }, module domain.Module, index, total int, flags *listFlags) {
+	osInfo := " [all]"
+	if len(module.OS) > 0 {
+		osInfo = fmt.Sprintf(" [%s]", strings.Join(module.OS, ", "))
+	}
+	cmd.Printf("%d. %s%s\n", index+1, module.Name, osInfo)
+	if module.Description != "" {
+		cmd.Printf("   %s\n", module.Description)
+	}
+	if flags.verbose {
+		existsMarker := "✓"
+		if !reader.FileExists(filepath.Join(flags.configDir, module.File)) {
+			existsMarker = "✗"
+		}
+		cmd.Printf("   File: %s %s\n", module.File, existsMarker)
+	}
+	if len(module.Requires) > 0 {
+		prefix := "   →"
+		if flags.verbose {
+			prefix = "   Requires:"
+		}
+		cmd.Printf("%s %s\n", prefix, strings.Join(module.Requires, ", "))
+	}
+	if index < total-1 {
+		cmd.Println()
+	}
 }

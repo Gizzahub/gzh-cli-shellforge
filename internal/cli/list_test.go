@@ -5,9 +5,18 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+type listTestReader struct {
+	existing map[string]bool
+}
+
+func (r listTestReader) FileExists(path string) bool {
+	return r.existing[path]
+}
 
 func TestListCmd_Flags(t *testing.T) {
 	cmd := newListCmd()
@@ -251,4 +260,22 @@ func TestListCmd_VerboseIntegration(t *testing.T) {
 
 	output := buf.String()
 	assert.Contains(t, output, "File:", "verbose mode should show file paths")
+}
+
+func TestPrintModule_PreservesVerboseFormattingAndModuleSpacing(t *testing.T) {
+	cmd := newListCmd()
+	var output bytes.Buffer
+	cmd.SetOut(&output)
+	flags := &listFlags{configDir: "modules", verbose: true}
+	module := domain.Module{
+		Name:        "shell",
+		Description: "Shell setup",
+		File:        "shell.yaml",
+		OS:          []string{"Mac", "Linux"},
+		Requires:    []string{"core", "git"},
+	}
+
+	printModule(cmd, listTestReader{existing: map[string]bool{"modules/shell.yaml": true}}, module, 0, 2, flags)
+
+	assert.Equal(t, "1. shell [Mac, Linux]\n   Shell setup\n   File: shell.yaml ✓\n   Requires: core, git\n\n", output.String())
 }

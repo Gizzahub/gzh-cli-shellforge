@@ -201,75 +201,101 @@ func runProfilesList(category string, flags *profilesFlags) error {
 
 	switch category {
 	case "distributions", "distros", "os":
-		distros := profiles.ListSupportedDistributions()
-		sort.Strings(distros)
-		fmt.Println("Supported Linux distributions:")
-		fmt.Println()
-		for _, d := range distros {
-			fmt.Printf("  %s\n", d)
-		}
-		fmt.Println()
-		fmt.Println("Also supported: mac (macOS/Darwin)")
+		printDistributions(profiles)
 
 	case "managers", "version-managers", "lang":
-		managers := profiles.ListLanguageVersionManagers()
-		sort.Strings(managers)
-		fmt.Println("Language version managers:")
-		fmt.Println()
-		for _, m := range managers {
-			mgr := profiles.GetLanguageVersionManager(m)
-			if mgr != nil && mgr.TypicalProblem != "" && flags.verbose {
-				fmt.Printf("  %-12s  %s\n", m, mgr.TypicalProblem)
-			} else {
-				fmt.Printf("  %s\n", m)
-			}
-		}
+		printLanguageManagers(profiles, flags.verbose)
 
 	case "desktops", "desktop", "de":
-		des := profiles.ListDesktopEnvironments()
-		sort.Strings(des)
-		fmt.Println("Desktop environments:")
-		fmt.Println()
-		for _, d := range des {
-			de := profiles.GetDesktopEnvironment(d)
-			if de != nil && de.Description != "" && flags.verbose {
-				fmt.Printf("  %-12s  %s\n", d, de.Description)
-			} else {
-				fmt.Printf("  %s\n", d)
-			}
-		}
+		printDesktopEnvironments(profiles, flags.verbose)
 
 	case "modes", "mode", "shell-modes":
-		fmt.Println("Shell execution modes:")
-		fmt.Println()
-		modes := []string{"login", "non-login", "interactive", "non-interactive", "restricted", "posix"}
-		for _, m := range modes {
-			mode := profiles.GetShellMode(m)
-			if mode != nil {
-				if flags.verbose && len(mode.UseCases) > 0 {
-					fmt.Printf("  %-16s  %s\n", m, mode.UseCases[0])
-				} else {
-					fmt.Printf("  %s\n", m)
-				}
-			}
-		}
+		printShellModes(profiles, flags.verbose)
 
 	case "multiplexers", "mux", "terminal":
-		fmt.Println("Terminal multiplexers:")
-		fmt.Println()
-		muxes := []string{"tmux", "screen", "zellij"}
-		for _, m := range muxes {
-			mux := profiles.GetTerminalMultiplexer(m)
-			if mux != nil {
-				fmt.Printf("  %s\n", m)
-			}
-		}
+		printMultiplexers(profiles)
 
 	default:
 		return fmt.Errorf("unknown category: %s\n\nAvailable: distributions, managers, desktops, modes, multiplexers", category)
 	}
 
 	return nil
+}
+
+func printDistributions(profiles *shellmeta.ShellProfiles) {
+	distros := profiles.ListSupportedDistributions()
+	sort.Strings(distros)
+	fmt.Println("Supported Linux distributions:")
+	fmt.Println()
+	for _, distro := range distros {
+		fmt.Printf("  %s\n", distro)
+	}
+	fmt.Println()
+	fmt.Println("Also supported: mac (macOS/Darwin)")
+}
+
+func printLanguageManagers(profiles *shellmeta.ShellProfiles, verbose bool) {
+	managers := profiles.ListLanguageVersionManagers()
+	sort.Strings(managers)
+	fmt.Println("Language version managers:")
+	fmt.Println()
+	for _, manager := range managers {
+		printLanguageManager(profiles, manager, verbose)
+	}
+}
+
+func printLanguageManager(profiles *shellmeta.ShellProfiles, name string, verbose bool) {
+	manager := profiles.GetLanguageVersionManager(name)
+	if verbose && manager != nil && manager.TypicalProblem != "" {
+		fmt.Printf("  %-12s  %s\n", name, manager.TypicalProblem)
+		return
+	}
+	fmt.Printf("  %s\n", name)
+}
+
+func printDesktopEnvironments(profiles *shellmeta.ShellProfiles, verbose bool) {
+	desktops := profiles.ListDesktopEnvironments()
+	sort.Strings(desktops)
+	fmt.Println("Desktop environments:")
+	fmt.Println()
+	for _, desktop := range desktops {
+		printDesktopEnvironment(profiles, desktop, verbose)
+	}
+}
+
+func printDesktopEnvironment(profiles *shellmeta.ShellProfiles, name string, verbose bool) {
+	desktop := profiles.GetDesktopEnvironment(name)
+	if verbose && desktop != nil && desktop.Description != "" {
+		fmt.Printf("  %-12s  %s\n", name, desktop.Description)
+		return
+	}
+	fmt.Printf("  %s\n", name)
+}
+
+func printShellModes(profiles *shellmeta.ShellProfiles, verbose bool) {
+	fmt.Println("Shell execution modes:")
+	fmt.Println()
+	for _, name := range []string{"login", "non-login", "interactive", "non-interactive", "restricted", "posix"} {
+		mode := profiles.GetShellMode(name)
+		if mode == nil {
+			continue
+		}
+		if verbose && len(mode.UseCases) > 0 {
+			fmt.Printf("  %-16s  %s\n", name, mode.UseCases[0])
+			continue
+		}
+		fmt.Printf("  %s\n", name)
+	}
+}
+
+func printMultiplexers(profiles *shellmeta.ShellProfiles) {
+	fmt.Println("Terminal multiplexers:")
+	fmt.Println()
+	for _, name := range []string{"tmux", "screen", "zellij"} {
+		if profiles.GetTerminalMultiplexer(name) != nil {
+			fmt.Printf("  %s\n", name)
+		}
+	}
 }
 
 func runProfilesShow(itemType, name string, flags *profilesFlags) error {

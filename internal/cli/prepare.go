@@ -130,7 +130,7 @@ func runPrepare(flags *prepareFlags, managers map[string]domain.PackageManager) 
 		}
 		printPrepareResult(result, flags.verbose, "apply")
 		if len(result.Failed) > 0 {
-			return fmt.Errorf("prepare: %d package(s) failed", len(result.Failed))
+			return fmt.Errorf("prepare: %d failure(s)", len(result.Failed))
 		}
 		return nil
 	}

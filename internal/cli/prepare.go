@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
@@ -55,7 +56,7 @@ installs.`,
 			if targetOS == "" {
 				targetOS = helpers.DetectOS()
 			}
-			return runPrepare(flags, defaultPackageManagers(targetOS))
+			return runPrepare(cmd.Context(), flags, defaultPackageManagers(targetOS))
 		},
 	}
 
@@ -89,7 +90,7 @@ func defaultPackageManagers(targetOS string) map[string]domain.PackageManager {
 
 // runPrepare runs the check/dry-run/apply flow. managers is injected so tests
 // can exercise it with fakes instead of shelling out to brew/apt.
-func runPrepare(flags *prepareFlags, managers map[string]domain.PackageManager) error {
+func runPrepare(ctx context.Context, flags *prepareFlags, managers map[string]domain.PackageManager) error {
 	targetOS := flags.targetOS
 	if targetOS == "" {
 		targetOS = helpers.DetectOS()
@@ -105,7 +106,7 @@ func runPrepare(flags *prepareFlags, managers map[string]domain.PackageManager) 
 
 	switch {
 	case flags.check:
-		result, err := svc.Plan(manifest, targetOS)
+		result, err := svc.Plan(ctx, manifest, targetOS)
 		if err != nil {
 			return clierrors.WrapError("prepare check", err)
 		}
@@ -116,7 +117,7 @@ func runPrepare(flags *prepareFlags, managers map[string]domain.PackageManager) 
 		return nil
 
 	case flags.dryRun:
-		result, err := svc.Plan(manifest, targetOS)
+		result, err := svc.Plan(ctx, manifest, targetOS)
 		if err != nil {
 			return clierrors.WrapError("prepare dry-run", err)
 		}
@@ -124,7 +125,7 @@ func runPrepare(flags *prepareFlags, managers map[string]domain.PackageManager) 
 		return nil
 
 	default:
-		result, err := svc.Apply(manifest, targetOS)
+		result, err := svc.Apply(ctx, manifest, targetOS)
 		if err != nil {
 			return clierrors.WrapError("prepare", err)
 		}

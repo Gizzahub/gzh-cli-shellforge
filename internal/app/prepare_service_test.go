@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -16,16 +17,18 @@ type mockManager struct {
 	name         string
 	installed    map[string]bool
 	statusErr    map[string]error
-	isInstalled  func(string) (bool, error)
+	isInstalled  func(context.Context, string) (bool, error)
 	installErr   error
 	installCalls []string // packages Install() was actually called with
+	contexts     []context.Context
 }
 
 func (m *mockManager) Name() string { return m.name }
 
-func (m *mockManager) IsInstalled(pkg string) (bool, error) {
+func (m *mockManager) IsInstalled(ctx context.Context, pkg string) (bool, error) {
+	m.contexts = append(m.contexts, ctx)
 	if m.isInstalled != nil {
-		return m.isInstalled(pkg)
+		return m.isInstalled(ctx, pkg)
 	}
 	if err := m.statusErr[pkg]; err != nil {
 		return false, err
@@ -33,7 +36,8 @@ func (m *mockManager) IsInstalled(pkg string) (bool, error) {
 	return m.installed[pkg], nil
 }
 
-func (m *mockManager) Install(pkg string) error {
+func (m *mockManager) Install(ctx context.Context, pkg string) error {
+	m.contexts = append(m.contexts, ctx)
 	m.installCalls = append(m.installCalls, pkg)
 	if m.installErr != nil {
 		return m.installErr
@@ -60,7 +64,7 @@ func TestPrepareService_Plan_MissingPackage(t *testing.T) {
 	brew := &mockManager{name: "brew", installed: map[string]bool{}}
 
 	svc := app.NewPrepareService(managers(brew))
-	result, err := svc.Plan(manifest, "Mac")
+	result, err := svc.Plan(context.Background(), manifest, "Mac")
 
 	require.NoError(t, err)
 	require.Len(t, result.Packages, 1)
@@ -78,7 +82,7 @@ func TestPrepareService_Plan_AlreadyInstalled(t *testing.T) {
 	brew := &mockManager{name: "brew", installed: map[string]bool{"mise": true}}
 
 	svc := app.NewPrepareService(managers(brew))
-	result, err := svc.Plan(manifest, "Mac")
+	result, err := svc.Plan(context.Background(), manifest, "Mac")
 
 	require.NoError(t, err)
 	assert.True(t, result.AllSatisfied())
@@ -91,7 +95,7 @@ func TestPrepareService_Plan_UnsupportedManagerDoesNotBlockOtherOS(t *testing.T)
 
 	// No managers registered at all (e.g. running on an unsupported OS).
 	svc := app.NewPrepareService(managers())
-	result, err := svc.Plan(manifest, "Mac")
+	result, err := svc.Plan(context.Background(), manifest, "Mac")
 
 	require.NoError(t, err)
 	require.Len(t, result.Packages, 1)
@@ -109,7 +113,7 @@ func TestPrepareService_Plan_FiltersByOS(t *testing.T) {
 	apt := &mockManager{name: "apt", installed: map[string]bool{}}
 
 	svc := app.NewPrepareService(managers(apt))
-	result, err := svc.Plan(manifest, "Linux")
+	result, err := svc.Plan(context.Background(), manifest, "Linux")
 
 	require.NoError(t, err)
 	require.Len(t, result.Packages, 1)
@@ -124,7 +128,7 @@ func TestPrepareService_Plan_InvalidManifestFailsBeforeInspectingPackages(t *tes
 	brew := &mockManager{name: "brew"}
 
 	svc := app.NewPrepareService(managers(brew))
-	_, err := svc.Plan(manifest, "Mac")
+	_, err := svc.Plan(context.Background(), manifest, "Mac")
 
 	require.Error(t, err)
 	assert.Empty(t, brew.installCalls)
@@ -137,7 +141,7 @@ func TestPrepareService_Apply_SkipsAlreadyInstalled_Idempotent(t *testing.T) {
 	brew := &mockManager{name: "brew", installed: map[string]bool{"mise": true}}
 
 	svc := app.NewPrepareService(managers(brew))
-	result, err := svc.Apply(manifest, "Mac")
+	result, err := svc.Apply(context.Background(), manifest, "Mac")
 
 	require.NoError(t, err)
 	assert.Empty(t, brew.installCalls, "already installed package must not be reinstalled")
@@ -152,7 +156,7 @@ func TestPrepareService_Apply_InstallsMissingAndReVerifies(t *testing.T) {
 	brew := &mockManager{name: "brew", installed: map[string]bool{}}
 
 	svc := app.NewPrepareService(managers(brew))
-	result, err := svc.Apply(manifest, "Mac")
+	result, err := svc.Apply(context.Background(), manifest, "Mac")
 
 	require.NoError(t, err)
 	assert.Equal(t, []string{"mise"}, brew.installCalls)
@@ -168,7 +172,7 @@ func TestPrepareService_Apply_InstallFailurePropagates(t *testing.T) {
 	brew := &mockManager{name: "brew", installed: map[string]bool{}, installErr: errors.New("network unreachable")}
 
 	svc := app.NewPrepareService(managers(brew))
-	result, err := svc.Apply(manifest, "Mac")
+	result, err := svc.Apply(context.Background(), manifest, "Mac")
 
 	require.NoError(t, err, "install failure is reported via result.Failed, not a returned error")
 	require.Len(t, result.Failed, 1)
@@ -188,7 +192,7 @@ func TestPrepareService_Apply_DetectionFailureDoesNotInstall(t *testing.T) {
 	}
 
 	svc := app.NewPrepareService(managers(apt))
-	result, err := svc.Apply(manifest, "Linux")
+	result, err := svc.Apply(context.Background(), manifest, "Linux")
 
 	require.NoError(t, err)
 	require.Len(t, result.Failed, 1)
@@ -204,7 +208,7 @@ func TestPrepareService_Apply_TransientDetectionFailureIsRetained(t *testing.T) 
 	detectionErr := errors.New("temporary dpkg database failure")
 	checks := 0
 	apt := &mockManager{name: "apt", installed: map[string]bool{}}
-	apt.isInstalled = func(string) (bool, error) {
+	apt.isInstalled = func(context.Context, string) (bool, error) {
 		checks++
 		if checks == 1 {
 			return false, detectionErr
@@ -213,11 +217,28 @@ func TestPrepareService_Apply_TransientDetectionFailureIsRetained(t *testing.T) 
 	}
 
 	svc := app.NewPrepareService(managers(apt))
-	result, err := svc.Apply(manifest, "Linux")
+	result, err := svc.Apply(context.Background(), manifest, "Linux")
 
 	require.NoError(t, err)
 	assert.Equal(t, 2, checks)
 	require.Len(t, result.Failed, 1)
 	assert.ErrorIs(t, result.Failed[0].Err, detectionErr)
 	assert.Empty(t, apt.installCalls, "a package skipped after detection failure must not be installed")
+}
+
+func TestPrepareService_ForwardsCanceledContext(t *testing.T) {
+	manifest := &domain.Manifest{Modules: []domain.Module{
+		{Name: "setup-mise", File: "mise.sh", Packages: map[string][]string{"brew": {"mise"}}},
+	}}
+	brew := &mockManager{name: "brew", installed: map[string]bool{}}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	result, err := app.NewPrepareService(managers(brew)).Plan(ctx, manifest, "Mac")
+
+	require.NoError(t, err)
+	require.Len(t, result.Packages, 1)
+	require.Len(t, brew.contexts, 1)
+	assert.Same(t, ctx, brew.contexts[0])
+	assert.ErrorIs(t, brew.contexts[0].Err(), context.Canceled)
 }

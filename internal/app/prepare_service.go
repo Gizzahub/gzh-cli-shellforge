@@ -1,6 +1,8 @@
 package app
 
 import (
+	"context"
+
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
@@ -62,7 +64,7 @@ func NewPrepareService(managers map[string]domain.PackageManager) *PrepareServic
 //
 // The manifest is validated before any package is inspected — a structurally
 // invalid manifest fails here, before prepare would ever touch the system.
-func (s *PrepareService) Plan(manifest *domain.Manifest, targetOS string) (*PrepareResult, error) {
+func (s *PrepareService) Plan(ctx context.Context, manifest *domain.Manifest, targetOS string) (*PrepareResult, error) {
 	if errs := manifest.Validate(); len(errs) > 0 {
 		return nil, errs[0]
 	}
@@ -97,7 +99,7 @@ func (s *PrepareService) Plan(manifest *domain.Manifest, targetOS string) (*Prep
 		}
 		status.Supported = true
 
-		installed, err := mgr.IsInstalled(k.name)
+		installed, err := mgr.IsInstalled(ctx, k.name)
 		if err != nil {
 			result.Failed = append(result.Failed, PrepareFailure{Manager: k.manager, Package: k.name, Err: err})
 			continue
@@ -114,8 +116,8 @@ func (s *PrepareService) Plan(manifest *domain.Manifest, targetOS string) (*Prep
 // confirm the final state. Install failures are collected in Failed rather
 // than aborting the run, so one broken package doesn't block the rest;
 // callers treat a non-empty Failed as a non-zero exit.
-func (s *PrepareService) Apply(manifest *domain.Manifest, targetOS string) (*PrepareResult, error) {
-	plan, err := s.Plan(manifest, targetOS)
+func (s *PrepareService) Apply(ctx context.Context, manifest *domain.Manifest, targetOS string) (*PrepareResult, error) {
+	plan, err := s.Plan(ctx, manifest, targetOS)
 	if err != nil {
 		return nil, err
 	}
@@ -128,14 +130,14 @@ func (s *PrepareService) Apply(manifest *domain.Manifest, targetOS string) (*Pre
 			continue
 		}
 		mgr := s.managers[status.Manager]
-		if err := mgr.Install(status.Package); err != nil {
+		if err := mgr.Install(ctx, status.Package); err != nil {
 			installFailures = append(installFailures, PrepareFailure{Manager: status.Manager, Package: status.Package, Err: err})
 			continue
 		}
 		installed = append(installed, status)
 	}
 
-	final, err := s.Plan(manifest, targetOS)
+	final, err := s.Plan(ctx, manifest, targetOS)
 	if err != nil {
 		return nil, err
 	}

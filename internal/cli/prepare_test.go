@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -17,21 +18,24 @@ import (
 type fakePackageManager struct {
 	name         string
 	installed    map[string]bool
-	isInstalled  func(string) (bool, error)
+	isInstalled  func(context.Context, string) (bool, error)
 	installErr   error
 	installCalls []string
+	contexts     []context.Context
 }
 
 func (f *fakePackageManager) Name() string { return f.name }
 
-func (f *fakePackageManager) IsInstalled(pkg string) (bool, error) {
+func (f *fakePackageManager) IsInstalled(ctx context.Context, pkg string) (bool, error) {
+	f.contexts = append(f.contexts, ctx)
 	if f.isInstalled != nil {
-		return f.isInstalled(pkg)
+		return f.isInstalled(ctx, pkg)
 	}
 	return f.installed[pkg], nil
 }
 
-func (f *fakePackageManager) Install(pkg string) error {
+func (f *fakePackageManager) Install(ctx context.Context, pkg string) error {
+	f.contexts = append(f.contexts, ctx)
 	f.installCalls = append(f.installCalls, pkg)
 	if f.installErr != nil {
 		return f.installErr
@@ -87,7 +91,7 @@ func TestPrepareCheck_DoesNotInstall(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{"mise": true}}
 	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac", check: true}
 
-	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
+	err := runPrepare(context.Background(), flags, map[string]domain.PackageManager{"brew": fake})
 
 	require.NoError(t, err, "already installed, so check should pass")
 	assert.Empty(t, fake.installCalls, "check must never call Install")
@@ -97,7 +101,7 @@ func TestPrepareCheck_ReportsMissingAsError(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}}
 	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac", check: true}
 
-	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
+	err := runPrepare(context.Background(), flags, map[string]domain.PackageManager{"brew": fake})
 
 	require.Error(t, err, "missing package should surface as a non-nil error (non-zero exit)")
 	assert.Empty(t, fake.installCalls, "check must never call Install")
@@ -107,7 +111,7 @@ func TestPrepareDryRun_DoesNotInstall(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}} // missing
 	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac", dryRun: true}
 
-	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
+	err := runPrepare(context.Background(), flags, map[string]domain.PackageManager{"brew": fake})
 
 	require.NoError(t, err, "dry-run reports the plan but always exits 0")
 	assert.Empty(t, fake.installCalls, "dry-run must never call Install")
@@ -117,7 +121,7 @@ func TestPrepareApply_SkipsAlreadyInstalled_Idempotent(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{"mise": true}}
 	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
 
-	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
+	err := runPrepare(context.Background(), flags, map[string]domain.PackageManager{"brew": fake})
 
 	require.NoError(t, err)
 	assert.Empty(t, fake.installCalls, "already installed package must not be reinstalled")
@@ -127,7 +131,7 @@ func TestPrepareApply_InstallsMissingPackage(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}}
 	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
 
-	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
+	err := runPrepare(context.Background(), flags, map[string]domain.PackageManager{"brew": fake})
 
 	require.NoError(t, err)
 	assert.Equal(t, []string{"mise"}, fake.installCalls)
@@ -137,7 +141,7 @@ func TestPrepareApply_InstallFailurePropagatesNonZero(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}, installErr: errors.New("boom")}
 	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
 
-	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
+	err := runPrepare(context.Background(), flags, map[string]domain.PackageManager{"brew": fake})
 
 	require.Error(t, err, "install failure must propagate as a non-nil error (non-zero exit)")
 }
@@ -146,7 +150,7 @@ func TestPrepareApply_TransientDetectionFailurePropagatesNonZero(t *testing.T) {
 	detectionErr := errors.New("temporary package status failure")
 	checks := 0
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}}
-	fake.isInstalled = func(string) (bool, error) {
+	fake.isInstalled = func(context.Context, string) (bool, error) {
 		checks++
 		if checks == 1 {
 			return false, detectionErr
@@ -155,7 +159,7 @@ func TestPrepareApply_TransientDetectionFailurePropagatesNonZero(t *testing.T) {
 	}
 	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
 
-	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
+	err := runPrepare(context.Background(), flags, map[string]domain.PackageManager{"brew": fake})
 
 	require.Error(t, err, "an initial detection failure must remain a non-zero apply result")
 	assert.Equal(t, 2, checks)
@@ -172,4 +176,18 @@ func TestDefaultPackageManagers(t *testing.T) {
 
 	other := defaultPackageManagers("Windows")
 	assert.Empty(t, other)
+}
+
+func TestRunPrepare_ForwardsCanceledContext(t *testing.T) {
+	fake := &fakePackageManager{name: "brew", installed: map[string]bool{"mise": true}}
+	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac", check: true}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := runPrepare(ctx, flags, map[string]domain.PackageManager{"brew": fake})
+
+	require.NoError(t, err)
+	require.Len(t, fake.contexts, 1)
+	assert.Same(t, ctx, fake.contexts[0])
+	assert.ErrorIs(t, fake.contexts[0].Err(), context.Canceled)
 }

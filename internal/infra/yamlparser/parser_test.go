@@ -100,6 +100,23 @@ func TestParser_Parse(t *testing.T) {
 			},
 		},
 		{
+			name: "module prerequisite keys preserve snake case schema",
+			content: `modules:
+  - name: prompt
+    file: prompt.sh
+    requires_bin: [starship, mise]
+    requires_path: [$HOME/.config/starship.toml]
+`,
+			wantErr: false,
+			validate: func(t *testing.T, m *domain.Manifest) {
+				t.Helper()
+
+				require.Len(t, m.Modules, 1)
+				assert.Equal(t, []string{"starship", "mise"}, m.Modules[0].RequiresBin)
+				assert.Equal(t, []string{"$HOME/.config/starship.toml"}, m.Modules[0].RequiresPath)
+			},
+		},
+		{
 			name:    "invalid YAML syntax",
 			content: "modules:\n  - name: test\n    invalid yaml: [",
 			wantErr: true,

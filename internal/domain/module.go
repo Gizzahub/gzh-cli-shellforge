@@ -20,10 +20,10 @@ type Module struct {
 	Priority int `yaml:"priority,omitempty"`
 
 	// RequiresBin lists PATH binaries this module needs at runtime (e.g. starship, mise, direnv).
-	RequiresBin []string `yaml:"requires_bin,omitempty"`
+	RequiresBin []string `yaml:"requires_bin,omitempty"` //nolint:tagliatelle // Preserve the documented manifest schema.
 
 	// RequiresPath lists filesystem paths that must exist; ~ and $VAR are expanded.
-	RequiresPath []string `yaml:"requires_path,omitempty"`
+	RequiresPath []string `yaml:"requires_path,omitempty"` //nolint:tagliatelle // Preserve the documented manifest schema.
 
 	// Packages declares external packages this module needs, keyed by package
 	// manager name (e.g. "brew", "cask", "apt"). Consumed by `prepare` to

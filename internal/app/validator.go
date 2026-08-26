@@ -36,9 +36,19 @@ func NewValidationPipeline(validators ...Validator) *ValidationPipeline {
 
 // Run executes all validators and returns all findings.
 func (p *ValidationPipeline) Run(m *domain.Manifest, modulesDir string) []Finding {
-	var all []Finding
-	for _, v := range p.validators {
-		all = append(all, v.Validate(m, modulesDir)...)
+	validatorFindings := make([][]Finding, len(p.validators))
+	count := 0
+	for i, v := range p.validators {
+		validatorFindings[i] = v.Validate(m, modulesDir)
+		count += len(validatorFindings[i])
+	}
+	if count == 0 {
+		return nil
+	}
+
+	all := make([]Finding, 0, count)
+	for _, findings := range validatorFindings {
+		all = append(all, findings...)
 	}
 	return all
 }

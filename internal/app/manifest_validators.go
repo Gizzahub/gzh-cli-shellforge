@@ -15,8 +15,13 @@ func (ManifestStructureValidator) Name() string { return "manifest-structure" }
 
 // Validate reports manifest structure violations.
 func (ManifestStructureValidator) Validate(m *domain.Manifest, _ string) []Finding {
+	validationErrors := m.Validate()
 	var findings []Finding
-	for _, err := range m.Validate() {
+	if len(validationErrors) > 0 {
+		// Preserve the prior nil result when manifest validation finds no violations.
+		findings = make([]Finding, 0, len(validationErrors))
+	}
+	for _, err := range validationErrors {
 		findings = append(findings, Finding{Severity: SeverityError, Message: err.Error()})
 	}
 	return findings

@@ -263,7 +263,7 @@ func TestManager_DeleteSnapshots(t *testing.T) {
 		err := fs.MkdirAll(snapshotDir, 0o755)
 		require.NoError(t, err)
 
-		var snapshots []domain.Snapshot
+		snapshots := make([]domain.Snapshot, 0, 3)
 		for i := 1; i <= 3; i++ {
 			ts := time.Date(2025, 11, i, 10, 0, 0, 0, time.UTC)
 			path := filepath.Join(snapshotDir, ts.Format("2006-01-02_15-04-05"))

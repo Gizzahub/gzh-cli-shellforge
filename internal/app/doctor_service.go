@@ -58,7 +58,12 @@ func (s *DoctorService) Check(manifest *domain.Manifest, targetOS string, lookup
 		}
 	}
 
+	missingCount := len(binMissing) + len(pathMissing)
 	var missing []MissingDep
+	if missingCount > 0 {
+		// Keep the no-missing-dependencies result nil for callers that distinguish it from an empty list.
+		missing = make([]MissingDep, 0, missingCount)
+	}
 	for name, mods := range binMissing {
 		missing = append(missing, MissingDep{Name: name, Modules: mods, Kind: "binary"})
 	}

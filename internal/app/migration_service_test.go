@@ -47,7 +47,7 @@ type mockFileWriter struct {
 	fs afero.Fs
 }
 
-func (m *mockFileWriter) WriteFile(path string, content string) error {
+func (m *mockFileWriter) WriteFile(path, content string) error {
 	return afero.WriteFile(m.fs, path, []byte(content), 0o644)
 }
 

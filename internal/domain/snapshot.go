@@ -76,7 +76,7 @@ func (sl *SnapshotList) KeepNewest(count int) []Snapshot {
 }
 
 // GetToDelete returns snapshots that should be deleted based on retention policy.
-func (sl *SnapshotList) GetToDelete(keepCount int, keepDays int) []Snapshot {
+func (sl *SnapshotList) GetToDelete(keepCount, keepDays int) []Snapshot {
 	sl.SortByNewest()
 
 	// Build map of snapshots to keep

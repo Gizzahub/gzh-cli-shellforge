@@ -18,7 +18,7 @@ type mockLookup struct {
 func (m mockLookup) HasBinary(name string) bool  { return m.bins[name] }
 func (m mockLookup) PathExists(path string) bool { return m.paths[path] }
 
-func newMock(bins []string, paths []string) mockLookup {
+func newMock(bins, paths []string) mockLookup {
 	m := mockLookup{bins: map[string]bool{}, paths: map[string]bool{}}
 	for _, b := range bins {
 		m.bins[b] = true

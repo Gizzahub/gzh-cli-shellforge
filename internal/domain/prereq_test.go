@@ -11,7 +11,7 @@ import (
 func TestExpandPath_Tilde(t *testing.T) {
 	home, _ := os.UserHomeDir()
 	got := domain.ExpandPath("~/foo/bar")
-	want := filepath.Join(home, "foo/bar")
+	want := filepath.Join(home, "foo", "bar")
 	if got != want {
 		t.Errorf("ExpandPath: got %q, want %q", got, want)
 	}

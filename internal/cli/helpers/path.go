@@ -10,7 +10,7 @@ import (
 // ExpandHomePath expands ~ to the user's home directory.
 // Returns the path unchanged if it doesn't start with ~.
 func ExpandHomePath(path string) (string, error) {
-	if len(path) == 0 || path[0] != '~' {
+	if path == "" || path[0] != '~' {
 		return path, nil
 	}
 

@@ -319,7 +319,7 @@ func TestTargetResolver_FishConfD(t *testing.T) {
 	// Test conf.d target resolution
 	got, err := resolver.Resolve("conf.d")
 	require.NoError(t, err)
-	expected := filepath.Join("/home/user", ".config", "fish", "conf.d")
+	expected := filepath.Join(string(filepath.Separator), "home", "user", ".config", "fish", "conf.d")
 	assert.Equal(t, expected, got)
 
 	// Test conf.d relative path

@@ -48,7 +48,7 @@ func TestExpandHomePath(t *testing.T) {
 		{
 			name: "tilde with nested path",
 			path: "~/config/shell/modules",
-			want: filepath.Join(home, "config/shell/modules"),
+			want: filepath.Join(home, "config", "shell", "modules"),
 		},
 	}
 

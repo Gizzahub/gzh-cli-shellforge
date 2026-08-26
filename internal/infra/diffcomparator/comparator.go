@@ -199,13 +199,14 @@ func (c *Comparator) generateSideBySide(result *domain.DiffResult, original, gen
 
 		// Determine line status
 		marker := " "
-		if i < len(original) && i < len(generated) {
+		switch {
+		case i < len(original) && i < len(generated):
 			if original[i] != generated[i] {
 				marker = "~"
 			}
-		} else if i >= len(original) {
+		case i >= len(original):
 			marker = "+"
-		} else {
+		default:
 			marker = "-"
 		}
 

@@ -17,7 +17,7 @@ func NewWriter(fs afero.Fs) *Writer {
 }
 
 // WriteFile writes content to a file, creating parent directories if needed.
-func (w *Writer) WriteFile(path string, content string) error {
+func (w *Writer) WriteFile(path, content string) error {
 	// Create parent directories
 	dir := filepath.Dir(path)
 	if err := w.fs.MkdirAll(dir, 0o755); err != nil {

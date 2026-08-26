@@ -67,7 +67,7 @@ func NewMockBackupWriter() *MockBackupWriter {
 	}
 }
 
-func (m *MockBackupWriter) WriteFile(path string, content string) error {
+func (m *MockBackupWriter) WriteFile(path, content string) error {
 	m.files[path] = content
 	return nil
 }

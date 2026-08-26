@@ -5,27 +5,27 @@ import (
 	"strings"
 )
 
-// WrapError wraps an error with operation context
+// WrapError wraps an error with operation context.
 func WrapError(operation string, err error) error {
 	return fmt.Errorf("%s failed: %w", operation, err)
 }
 
-// InvalidPath returns a standardized invalid path error
+// InvalidPath returns a standardized invalid path error.
 func InvalidPath(pathType string, err error) error {
 	return fmt.Errorf("invalid %s path: %w", pathType, err)
 }
 
-// FileNotFound returns a standardized file not found error
+// FileNotFound returns a standardized file not found error.
 func FileNotFound(path string) error {
 	return fmt.Errorf("file not found: %s", path)
 }
 
-// DirNotFound returns a standardized directory not found error
+// DirNotFound returns a standardized directory not found error.
 func DirNotFound(path string) error {
 	return fmt.Errorf("directory does not exist: %s", path)
 }
 
-// ValidationError returns a standardized validation error
+// ValidationError returns a standardized validation error.
 func ValidationError(message string) error {
 	return fmt.Errorf("validation error: %s", message)
 }

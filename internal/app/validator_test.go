@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/app"
@@ -216,6 +217,36 @@ func TestValidationPipeline_AggregatesFindings(t *testing.T) {
 
 	if len(findings) == 0 {
 		t.Fatal("expected at least one finding")
+	}
+}
+
+type scratchFindingValidator struct {
+	calls   int
+	scratch []app.Finding
+}
+
+func (v *scratchFindingValidator) Name() string { return "scratch" }
+
+func (v *scratchFindingValidator) Validate(*domain.Manifest, string) []app.Finding {
+	v.calls++
+	if v.scratch == nil {
+		v.scratch = make([]app.Finding, 1)
+	}
+	v.scratch[0] = app.Finding{Severity: app.SeverityWarn, Message: fmt.Sprintf("finding-%d", v.calls)}
+	return v.scratch
+}
+
+func TestValidationPipeline_SnapshotsReusedValidatorResults(t *testing.T) {
+	validator := &scratchFindingValidator{}
+	pipeline := app.NewValidationPipeline(validator, validator)
+
+	findings := pipeline.Run(makeManifest(nil), "")
+
+	if len(findings) != 2 {
+		t.Fatalf("expected 2 findings, got %d", len(findings))
+	}
+	if findings[0].Message != "finding-1" || findings[1].Message != "finding-2" {
+		t.Fatalf("findings = %#v, want independent snapshots", findings)
 	}
 }
 

@@ -17,6 +17,7 @@ import (
 type fakePackageManager struct {
 	name         string
 	installed    map[string]bool
+	isInstalled  func(string) (bool, error)
 	installErr   error
 	installCalls []string
 }
@@ -24,6 +25,9 @@ type fakePackageManager struct {
 func (f *fakePackageManager) Name() string { return f.name }
 
 func (f *fakePackageManager) IsInstalled(pkg string) (bool, error) {
+	if f.isInstalled != nil {
+		return f.isInstalled(pkg)
+	}
 	return f.installed[pkg], nil
 }
 
@@ -136,6 +140,26 @@ func TestPrepareApply_InstallFailurePropagatesNonZero(t *testing.T) {
 	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
 
 	require.Error(t, err, "install failure must propagate as a non-nil error (non-zero exit)")
+}
+
+func TestPrepareApply_TransientDetectionFailurePropagatesNonZero(t *testing.T) {
+	detectionErr := errors.New("temporary package status failure")
+	checks := 0
+	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}}
+	fake.isInstalled = func(string) (bool, error) {
+		checks++
+		if checks == 1 {
+			return false, detectionErr
+		}
+		return false, nil
+	}
+	flags := &prepareFlags{manifest: writeTempManifest(t, "brew", "mise"), targetOS: "Mac"}
+
+	err := runPrepare(flags, map[string]domain.PackageManager{"brew": fake})
+
+	require.Error(t, err, "an initial detection failure must remain a non-zero apply result")
+	assert.Equal(t, 2, checks)
+	assert.Empty(t, fake.installCalls, "detection failure must not trigger installation")
 }
 
 func TestDefaultPackageManagers(t *testing.T) {

@@ -120,15 +120,16 @@ func (s *PrepareService) Apply(manifest *domain.Manifest, targetOS string) (*Pre
 		return nil, err
 	}
 
+	initialDetectionFailures := plan.Failed
 	var installed []PackageStatus
-	var failed []PrepareFailure
+	var installFailures []PrepareFailure
 	for _, status := range plan.Packages {
 		if status.Installed || !status.Supported {
 			continue
 		}
 		mgr := s.managers[status.Manager]
 		if err := mgr.Install(status.Package); err != nil {
-			failed = append(failed, PrepareFailure{Manager: status.Manager, Package: status.Package, Err: err})
+			installFailures = append(installFailures, PrepareFailure{Manager: status.Manager, Package: status.Package, Err: err})
 			continue
 		}
 		installed = append(installed, status)
@@ -139,6 +140,19 @@ func (s *PrepareService) Apply(manifest *domain.Manifest, targetOS string) (*Pre
 		return nil, err
 	}
 	final.Installed = installed
-	final.Failed = append(final.Failed, failed...)
+
+	type failureKey struct{ manager, pkg string }
+	finalDetectionFailures := make(map[failureKey]struct{}, len(final.Failed))
+	for _, failure := range final.Failed {
+		finalDetectionFailures[failureKey{failure.Manager, failure.Package}] = struct{}{}
+	}
+	for _, failure := range initialDetectionFailures {
+		key := failureKey{failure.Manager, failure.Package}
+		if _, duplicate := finalDetectionFailures[key]; duplicate {
+			continue
+		}
+		final.Failed = append(final.Failed, failure)
+	}
+	final.Failed = append(final.Failed, installFailures...)
 	return final, nil
 }

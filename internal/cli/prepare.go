@@ -111,7 +111,7 @@ func runPrepare(flags *prepareFlags, managers map[string]domain.PackageManager) 
 		}
 		printPrepareResult(result, flags.verbose, "check")
 		if !result.AllSatisfied() {
-			return fmt.Errorf("prepare check: %d package(s) missing", countMissing(result))
+			return fmt.Errorf("prepare check: %d package(s) not satisfied", countMissing(result))
 		}
 		return nil
 
@@ -130,7 +130,7 @@ func runPrepare(flags *prepareFlags, managers map[string]domain.PackageManager) 
 		}
 		printPrepareResult(result, flags.verbose, "apply")
 		if len(result.Failed) > 0 {
-			return fmt.Errorf("prepare: %d package(s) failed to install", len(result.Failed))
+			return fmt.Errorf("prepare: %d package(s) failed", len(result.Failed))
 		}
 		return nil
 	}

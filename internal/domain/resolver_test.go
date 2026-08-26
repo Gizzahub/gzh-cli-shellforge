@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -83,8 +84,8 @@ func TestResolver_TopologicalSort(t *testing.T) {
 
 			if tt.wantErr {
 				assert.Error(t, err)
-				_, ok := err.(*CircularDependencyError)
-				assert.True(t, ok, "expected CircularDependencyError")
+				var circularErr *CircularDependencyError
+				assert.True(t, errors.As(err, &circularErr), "expected CircularDependencyError")
 			} else {
 				require.NoError(t, err)
 				assert.Len(t, result, len(tt.expected))

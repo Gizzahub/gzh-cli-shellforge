@@ -26,7 +26,11 @@ func (m *MockSnapshotManager) CreateSnapshot(sourcePath string) (*domain.Snapsho
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*domain.Snapshot), args.Error(1)
+	snapshot, ok := args.Get(0).(*domain.Snapshot)
+	if !ok {
+		return nil, fmt.Errorf("unexpected CreateSnapshot result type %T", args.Get(0))
+	}
+	return snapshot, args.Error(1)
 }
 
 func (m *MockSnapshotManager) ListSnapshots(fileName string) (*domain.SnapshotList, error) {
@@ -34,7 +38,11 @@ func (m *MockSnapshotManager) ListSnapshots(fileName string) (*domain.SnapshotLi
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*domain.SnapshotList), args.Error(1)
+	snapshotList, ok := args.Get(0).(*domain.SnapshotList)
+	if !ok {
+		return nil, fmt.Errorf("unexpected ListSnapshots result type %T", args.Get(0))
+	}
+	return snapshotList, args.Error(1)
 }
 
 func (m *MockSnapshotManager) UpdateCurrent(sourcePath string) error {
@@ -52,7 +60,11 @@ func (m *MockSnapshotManager) GetSnapshotByTimestamp(fileName, timestampStr stri
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*domain.Snapshot), args.Error(1)
+	snapshot, ok := args.Get(0).(*domain.Snapshot)
+	if !ok {
+		return nil, fmt.Errorf("unexpected GetSnapshotByTimestamp result type %T", args.Get(0))
+	}
+	return snapshot, args.Error(1)
 }
 
 func (m *MockSnapshotManager) CleanupSnapshots(fileName string, keepCount, keepDays int) ([]domain.Snapshot, error) {
@@ -60,7 +72,11 @@ func (m *MockSnapshotManager) CleanupSnapshots(fileName string, keepCount, keepD
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]domain.Snapshot), args.Error(1)
+	snapshots, ok := args.Get(0).([]domain.Snapshot)
+	if !ok {
+		return nil, fmt.Errorf("unexpected CleanupSnapshots result type %T", args.Get(0))
+	}
+	return snapshots, args.Error(1)
 }
 
 // Mock GitRepository

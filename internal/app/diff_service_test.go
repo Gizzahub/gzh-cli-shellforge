@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
@@ -20,7 +21,11 @@ func (m *MockDiffComparator) Compare(originalPath, generatedPath string, format 
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*domain.DiffResult), args.Error(1)
+	result, ok := args.Get(0).(*domain.DiffResult)
+	if !ok {
+		return nil, fmt.Errorf("unexpected Compare result type %T", args.Get(0))
+	}
+	return result, args.Error(1)
 }
 
 // MockFileReader is a mock implementation of FileReader.

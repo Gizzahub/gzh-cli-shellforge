@@ -98,12 +98,39 @@ func TestAptManager_IsInstalled_ParsesDpkgStatus(t *testing.T) {
 }
 
 func TestAptManager_IsInstalled_UnknownPackageIsMissingNotError(t *testing.T) {
-	runner := &fakeRunner{ok: map[string]bool{}}
+	runner := &commandResultRunner{err: commandExitError{code: 1}}
 	m := &AptManager{Runner: runner}
 
 	installed, err := m.IsInstalled("does-not-exist")
 	require.NoError(t, err)
 	assert.False(t, installed)
+}
+
+func TestAptManager_IsInstalled_FatalDpkgErrorIsReported(t *testing.T) {
+	cause := commandExitError{code: 2}
+	runner := &commandResultRunner{output: []byte("database is locked"), err: cause}
+	m := &AptManager{Runner: runner}
+
+	installed, err := m.IsInstalled("chezmoi")
+
+	assert.False(t, installed)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, cause)
+	assert.Contains(t, err.Error(), "chezmoi")
+	assert.Contains(t, err.Error(), "database is locked")
+}
+
+func TestAptManager_IsInstalled_CommandFailureIsReported(t *testing.T) {
+	cause := errors.New("dpkg-query executable not found")
+	runner := &commandResultRunner{err: cause}
+	m := &AptManager{Runner: runner}
+
+	installed, err := m.IsInstalled("chezmoi")
+
+	assert.False(t, installed)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, cause)
+	assert.Contains(t, err.Error(), "chezmoi")
 }
 
 // dpkgStatusRunner returns a fixed dpkg-query style status line regardless of args.
@@ -112,3 +139,17 @@ type dpkgStatusRunner struct{ status string }
 func (r *dpkgStatusRunner) Run(name string, args ...string) ([]byte, error) {
 	return []byte(r.status), nil
 }
+
+type commandResultRunner struct {
+	output []byte
+	err    error
+}
+
+func (r *commandResultRunner) Run(name string, args ...string) ([]byte, error) {
+	return r.output, r.err
+}
+
+type commandExitError struct{ code int }
+
+func (e commandExitError) Error() string { return "command failed" }
+func (e commandExitError) ExitCode() int { return e.code }

@@ -15,6 +15,7 @@ import (
 type mockManager struct {
 	name         string
 	installed    map[string]bool
+	statusErr    map[string]error
 	installErr   error
 	installCalls []string // packages Install() was actually called with
 }
@@ -22,6 +23,9 @@ type mockManager struct {
 func (m *mockManager) Name() string { return m.name }
 
 func (m *mockManager) IsInstalled(pkg string) (bool, error) {
+	if err := m.statusErr[pkg]; err != nil {
+		return false, err
+	}
 	return m.installed[pkg], nil
 }
 
@@ -166,4 +170,25 @@ func TestPrepareService_Apply_InstallFailurePropagates(t *testing.T) {
 	require.Len(t, result.Failed, 1)
 	assert.Equal(t, "mise", result.Failed[0].Package)
 	assert.False(t, result.AllSatisfied())
+}
+
+func TestPrepareService_Apply_DetectionFailureDoesNotInstall(t *testing.T) {
+	manifest := &domain.Manifest{Modules: []domain.Module{
+		{Name: "setup-chezmoi", File: "chezmoi.sh", Packages: map[string][]string{"apt": {"chezmoi"}}},
+	}}
+	detectionErr := errors.New("dpkg database unavailable")
+	apt := &mockManager{
+		name:      "apt",
+		installed: map[string]bool{},
+		statusErr: map[string]error{"chezmoi": detectionErr},
+	}
+
+	svc := app.NewPrepareService(managers(apt))
+	result, err := svc.Apply(manifest, "Linux")
+
+	require.NoError(t, err)
+	require.Len(t, result.Failed, 1)
+	assert.Equal(t, "chezmoi", result.Failed[0].Package)
+	assert.ErrorIs(t, result.Failed[0].Err, detectionErr)
+	assert.Empty(t, apt.installCalls, "status detection failure must not trigger installation")
 }

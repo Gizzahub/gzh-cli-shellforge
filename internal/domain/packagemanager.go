@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -94,8 +95,16 @@ func (m *AptManager) Name() string { return "apt" }
 func (m *AptManager) IsInstalled(pkg string) (bool, error) {
 	out, err := m.Runner.Run("dpkg-query", "-W", "-f=${Status}", pkg)
 	if err != nil {
-		// Unknown package: dpkg-query exits non-zero. Treat as "missing", not an error.
-		return false, nil
+		var exitErr interface{ ExitCode() int }
+		if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
+			return false, nil
+		}
+
+		output := strings.TrimSpace(string(out))
+		if output == "" {
+			return false, fmt.Errorf("dpkg-query status for %q: %w", pkg, err)
+		}
+		return false, fmt.Errorf("dpkg-query status for %q: %w: %s", pkg, err, output)
 	}
 	return strings.Contains(string(out), "install ok installed"), nil
 }

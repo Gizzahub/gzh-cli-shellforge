@@ -163,7 +163,8 @@ export TEST_VAR="test"
 
 	// Test successful build
 	t.Run("successful build", func(t *testing.T) {
-		cmd := exec.CommandContext(t.Context(),
+		cmd := exec.CommandContext(
+			t.Context(),
 			binary, "build",
 			"--manifest", manifestPath,
 			"--config-dir", tempDir,
@@ -193,7 +194,8 @@ export TEST_VAR="test"
 
 	// Test dry-run
 	t.Run("dry-run build", func(t *testing.T) {
-		cmd := exec.CommandContext(t.Context(),
+		cmd := exec.CommandContext(
+			t.Context(),
 			binary, "build",
 			"--manifest", manifestPath,
 			"--config-dir", tempDir,
@@ -209,7 +211,8 @@ export TEST_VAR="test"
 
 	// Test missing manifest error
 	t.Run("missing manifest", func(t *testing.T) {
-		cmd := exec.CommandContext(t.Context(),
+		cmd := exec.CommandContext(
+			t.Context(),
 			binary, "build",
 			"--manifest", "/nonexistent/manifest.yaml",
 			"--config-dir", tempDir,
@@ -244,7 +247,8 @@ func TestCLI_Validate(t *testing.T) {
 	require.NoError(t, os.WriteFile(modulePath, []byte(moduleContent), 0o644))
 
 	t.Run("valid manifest", func(t *testing.T) {
-		cmd := exec.CommandContext(t.Context(),
+		cmd := exec.CommandContext(
+			t.Context(),
 			binary, "validate",
 			"--manifest", manifestPath,
 			"--config-dir", tempDir,
@@ -265,7 +269,8 @@ func TestCLI_Validate(t *testing.T) {
 `
 		require.NoError(t, os.WriteFile(badManifest, []byte(badContent), 0o644))
 
-		cmd := exec.CommandContext(t.Context(),
+		cmd := exec.CommandContext(
+			t.Context(),
 			binary, "validate",
 			"--manifest", badManifest,
 			"--config-dir", tempDir,
@@ -306,7 +311,8 @@ alias gs='git status'
 	manifestPath := filepath.Join(tempDir, "manifest.yaml")
 
 	t.Run("successful migration", func(t *testing.T) {
-		cmd := exec.CommandContext(t.Context(),
+		cmd := exec.CommandContext(
+			t.Context(),
 			binary, "migrate", rcPath,
 			"--output-dir", outputDir,
 			"--manifest", manifestPath,
@@ -343,7 +349,8 @@ alias gs='git status'
 	})
 
 	t.Run("missing RC file", func(t *testing.T) {
-		cmd := exec.CommandContext(t.Context(),
+		cmd := exec.CommandContext(
+			t.Context(),
 			binary, "migrate", "/nonexistent/.zshrc",
 			"--output-dir", filepath.Join(tempDir, "modules2"),
 			"--manifest", filepath.Join(tempDir, "manifest2.yaml"),
@@ -417,7 +424,8 @@ line4
 
 	for _, tt := range tests {
 		t.Run(tt.format, func(t *testing.T) {
-			cmd := exec.CommandContext(t.Context(),
+			cmd := exec.CommandContext(
+				t.Context(),
 				binary, "diff", file1, file2,
 				"--format", tt.format,
 			)

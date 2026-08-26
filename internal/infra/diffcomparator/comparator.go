@@ -89,15 +89,15 @@ func (c *Comparator) generateSummary(result *domain.DiffResult, original, genera
 
 	// Generate summary content
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Original:  %s (%d lines)\n", result.OriginalFile, len(original)))
-	sb.WriteString(fmt.Sprintf("Generated: %s (%d lines)\n\n", result.GeneratedFile, len(generated)))
+	fmt.Fprintf(&sb, "Original:  %s (%d lines)\n", result.OriginalFile, len(original))
+	fmt.Fprintf(&sb, "Generated: %s (%d lines)\n\n", result.GeneratedFile, len(generated))
 	sb.WriteString("Statistics:\n")
-	sb.WriteString(fmt.Sprintf("  Added:      +%d lines\n", result.Statistics.LinesAdded))
-	sb.WriteString(fmt.Sprintf("  Removed:    -%d lines\n", result.Statistics.LinesRemoved))
-	sb.WriteString(fmt.Sprintf("  Modified:   ~%d lines\n", result.Statistics.LinesModified))
-	sb.WriteString(fmt.Sprintf("  Unchanged:   %d lines\n", result.Statistics.LinesUnchanged))
-	sb.WriteString(fmt.Sprintf("  Total:       %d lines\n\n", result.Statistics.TotalLines))
-	sb.WriteString(fmt.Sprintf("Change rate: %.1f%%\n", result.Statistics.ChangePercentage()))
+	fmt.Fprintf(&sb, "  Added:      +%d lines\n", result.Statistics.LinesAdded)
+	fmt.Fprintf(&sb, "  Removed:    -%d lines\n", result.Statistics.LinesRemoved)
+	fmt.Fprintf(&sb, "  Modified:   ~%d lines\n", result.Statistics.LinesModified)
+	fmt.Fprintf(&sb, "  Unchanged:   %d lines\n", result.Statistics.LinesUnchanged)
+	fmt.Fprintf(&sb, "  Total:       %d lines\n\n", result.Statistics.TotalLines)
+	fmt.Fprintf(&sb, "Change rate: %.1f%%\n", result.Statistics.ChangePercentage())
 
 	result.Content = sb.String()
 	return result, nil
@@ -171,7 +171,7 @@ func (c *Comparator) generateSideBySide(result *domain.DiffResult, original, gen
 	maxLen := max(len(generated), len(original))
 
 	// Header
-	sb.WriteString(fmt.Sprintf("%-40s | %-40s\n", result.OriginalFile, result.GeneratedFile))
+	fmt.Fprintf(&sb, "%-40s | %-40s\n", result.OriginalFile, result.GeneratedFile)
 	sb.WriteString(strings.Repeat("-", 83) + "\n")
 
 	// Line-by-line comparison
@@ -202,7 +202,7 @@ func (c *Comparator) generateSideBySide(result *domain.DiffResult, original, gen
 			marker = "-"
 		}
 
-		sb.WriteString(fmt.Sprintf("%-40s %s %-40s\n", origLine, marker, genLine))
+		fmt.Fprintf(&sb, "%-40s %s %-40s\n", origLine, marker, genLine)
 	}
 
 	result.Content = sb.String()

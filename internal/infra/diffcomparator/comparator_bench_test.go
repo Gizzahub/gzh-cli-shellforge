@@ -243,7 +243,7 @@ func BenchmarkComparator_splitLines(b *testing.B) {
 func generateFileContent(lines int) string {
 	var sb strings.Builder
 	for i := range lines {
-		sb.WriteString(fmt.Sprintf("# Line %d: This is a sample line for testing purposes\n", i+1))
+		fmt.Fprintf(&sb, "# Line %d: This is a sample line for testing purposes\n", i+1)
 	}
 	return sb.String()
 }
@@ -303,7 +303,7 @@ func generateShellConfig(lines int) string {
 	// Section 1: Environment variables
 	sb.WriteString("# === Environment Variables ===\n")
 	for i := 0; i < sectionSize && remaining > 0; i++ {
-		sb.WriteString(fmt.Sprintf("export VAR_%d=\"value_%d\"\n", i, i))
+		fmt.Fprintf(&sb, "export VAR_%d=\"value_%d\"\n", i, i)
 		remaining--
 	}
 	sb.WriteString("\n")
@@ -311,7 +311,7 @@ func generateShellConfig(lines int) string {
 	// Section 2: PATH setup
 	sb.WriteString("# === PATH Setup ===\n")
 	for i := 0; i < sectionSize && remaining > 0; i++ {
-		sb.WriteString(fmt.Sprintf("export PATH=\"/path/to/bin%d:$PATH\"\n", i))
+		fmt.Fprintf(&sb, "export PATH=\"/path/to/bin%d:$PATH\"\n", i)
 		remaining--
 	}
 	sb.WriteString("\n")
@@ -319,7 +319,7 @@ func generateShellConfig(lines int) string {
 	// Section 3: Aliases
 	sb.WriteString("# === Aliases ===\n")
 	for i := 0; i < sectionSize && remaining > 0; i++ {
-		sb.WriteString(fmt.Sprintf("alias cmd%d='command %d'\n", i, i))
+		fmt.Fprintf(&sb, "alias cmd%d='command %d'\n", i, i)
 		remaining--
 	}
 	sb.WriteString("\n")
@@ -327,7 +327,7 @@ func generateShellConfig(lines int) string {
 	// Section 4: Functions
 	sb.WriteString("# === Functions ===\n")
 	for i := 0; i < sectionSize && remaining > 0; i++ {
-		sb.WriteString(fmt.Sprintf("function func%d() {\n  echo \"Function %d\"\n}\n", i, i))
+		fmt.Fprintf(&sb, "function func%d() {\n  echo \"Function %d\"\n}\n", i, i)
 		remaining -= 3
 	}
 	sb.WriteString("\n")

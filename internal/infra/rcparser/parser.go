@@ -159,7 +159,7 @@ func (p *Parser) detectSectionHeader(line string) string {
 
 	// Try ALL CAPS pattern
 	matches = domain.AllCapsPattern.FindStringSubmatch(line)
-	if matches != nil && len(matches) > 1 {
+	if len(matches) > 1 {
 		return strings.TrimSpace(matches[1])
 	}
 

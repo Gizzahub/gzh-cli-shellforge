@@ -7,6 +7,27 @@ import (
 	"strings"
 )
 
+const (
+	shellZsh  = "zsh"
+	shellBash = "bash"
+	shellFish = "fish"
+
+	targetZshrc    = "zshrc"
+	targetZprofile = "zprofile"
+	targetZshenv   = "zshenv"
+	targetZlogin   = "zlogin"
+	targetZlogout  = "zlogout"
+	targetProfile  = "profile"
+
+	targetBashrc      = "bashrc"
+	targetBashProfile = "bash_profile"
+	targetBashLogin   = "bash_login"
+	targetBashLogout  = "bash_logout"
+
+	targetConfig = "config"
+	targetConfD  = "conf.d"
+)
+
 // systemTargetPaths maps the documented system-wide target names to their absolute paths.
 // These targets bypass home-relative resolution and require elevated privileges to write.
 // Arbitrary absolute targets are intentionally excluded to limit blast radius.
@@ -47,24 +68,24 @@ func (r *TargetResolver) initPathMaps() {
 	fishConfigBase := r.resolveFishConfigBase()
 
 	r.pathMaps = map[string]map[string]string{
-		"zsh": {
-			"zshrc":    ".zshrc",
-			"zprofile": ".zprofile",
-			"zshenv":   ".zshenv",
-			"zlogin":   ".zlogin",
-			"zlogout":  ".zlogout",
-			"profile":  ".profile",
+		shellZsh: {
+			targetZshrc:    ".zshrc",
+			targetZprofile: ".zprofile",
+			targetZshenv:   ".zshenv",
+			targetZlogin:   ".zlogin",
+			targetZlogout:  ".zlogout",
+			targetProfile:  ".profile",
 		},
-		"bash": {
-			"bashrc":       ".bashrc",
-			"bash_profile": ".bash_profile",
-			"profile":      ".profile",
-			"bash_login":   ".bash_login",
-			"bash_logout":  ".bash_logout",
+		shellBash: {
+			targetBashrc:      ".bashrc",
+			targetBashProfile: ".bash_profile",
+			targetProfile:     ".profile",
+			targetBashLogin:   ".bash_login",
+			targetBashLogout:  ".bash_logout",
 		},
-		"fish": {
-			"config": filepath.Join(fishConfigBase, "fish", "config.fish"),
-			"conf.d": filepath.Join(fishConfigBase, "fish", "conf.d"),
+		shellFish: {
+			targetConfig: filepath.Join(fishConfigBase, shellFish, "config.fish"),
+			targetConfD:  filepath.Join(fishConfigBase, shellFish, targetConfD),
 		},
 	}
 }
@@ -173,7 +194,7 @@ func (r *TargetResolver) IsDirectoryTarget(target string) bool {
 	target = strings.ToLower(target)
 	// Directory targets that generate multiple files
 	directoryTargets := map[string]bool{
-		"conf.d": true,
+		targetConfD: true,
 	}
 	return directoryTargets[target]
 }
@@ -181,12 +202,12 @@ func (r *TargetResolver) IsDirectoryTarget(target string) bool {
 // GetDefaultTarget returns the default target for the current shell type.
 func (r *TargetResolver) GetDefaultTarget() string {
 	switch r.shellType {
-	case "zsh":
-		return "zshrc"
-	case "bash":
-		return "bashrc"
-	case "fish":
-		return "config"
+	case shellZsh:
+		return targetZshrc
+	case shellBash:
+		return targetBashrc
+	case shellFish:
+		return targetConfig
 	default:
 		return ""
 	}

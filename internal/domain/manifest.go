@@ -36,7 +36,7 @@ func (m *Manifest) IsLegacy() bool {
 // GetShellType returns the shell type, defaulting to "zsh".
 func (m *Manifest) GetShellType() string {
 	if m.Shell.Type == "" {
-		return "zsh"
+		return shellZsh
 	}
 	return m.Shell.Type
 }

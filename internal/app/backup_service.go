@@ -6,6 +6,8 @@ import (
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
 
+const gitCommittedMessage = " (committed to git)"
+
 // SnapshotManager defines the interface for snapshot operations.
 type SnapshotManager interface {
 	Initialize() error
@@ -95,7 +97,7 @@ func (s *BackupService) Backup(sourcePath, message string) (*BackupResult, error
 		}
 
 		result.GitCommitted = true
-		result.Message += " (committed to git)"
+		result.Message += gitCommittedMessage
 	}
 
 	return result, nil
@@ -155,7 +157,7 @@ func (s *BackupService) Restore(fileName, timestampStr, targetPath string, dryRu
 			commitMsg := fmt.Sprintf("Restore %s from %s", fileName, snapshot.FormatTimestamp())
 			if err := s.gitRepo.AddAndCommit(commitMsg); err == nil {
 				result.GitCommitted = true
-				result.Message += " (committed to git)"
+				result.Message += gitCommittedMessage
 			}
 		}
 	}
@@ -212,7 +214,7 @@ func (s *BackupService) Cleanup(fileName string, dryRun bool) (*CleanupResult, e
 		if err := s.initializeGit(); err == nil {
 			commitMsg := fmt.Sprintf("Cleanup %s: deleted %d old snapshots", fileName, len(deleted))
 			if err := s.gitRepo.AddAndCommit(commitMsg); err == nil {
-				result.Message += " (committed to git)"
+				result.Message += gitCommittedMessage
 			}
 		}
 	}

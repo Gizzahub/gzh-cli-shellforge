@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+const (
+	osMac   = "Mac"
+	osLinux = "Linux"
+)
+
 // Section represents a parsed section from an RC file.
 type Section struct {
 	Name        string           // Section name (extracted from header comment)
@@ -109,11 +114,11 @@ func InferDependencies(content string) []string {
 // not included in the default ["Mac", "Linux"] set.
 func InferOSSupport(content string) []string {
 	if !strings.Contains(content, "case $MACHINE") && !strings.Contains(content, "case \"$MACHINE\"") {
-		return []string{"Mac", "Linux"}
+		return []string{osMac, osLinux}
 	}
 
 	var oses []string
-	for _, candidate := range []string{"Mac", "Linux", "FreeBSD", "OpenBSD", "NetBSD"} {
+	for _, candidate := range []string{osMac, osLinux, "FreeBSD", "OpenBSD", "NetBSD"} {
 		if strings.Contains(content, candidate+")") {
 			oses = append(oses, candidate)
 		}
@@ -121,7 +126,7 @@ func InferOSSupport(content string) []string {
 	if len(oses) > 0 {
 		return oses
 	}
-	return []string{"Mac", "Linux"}
+	return []string{osMac, osLinux}
 }
 
 // GenerateModuleName creates a valid module name from section name.

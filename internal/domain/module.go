@@ -34,7 +34,7 @@ type Module struct {
 // GetTarget returns the target RC file, defaulting to "zshrc".
 func (m *Module) GetTarget() string {
 	if m.Target == "" {
-		return "zshrc"
+		return targetZshrc
 	}
 	return m.Target
 }

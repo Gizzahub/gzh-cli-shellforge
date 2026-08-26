@@ -30,6 +30,8 @@ func TestParser_Parse(t *testing.T) {
 `,
 			wantErr: false,
 			validate: func(t *testing.T, m *domain.Manifest) {
+				t.Helper()
+
 				require.Len(t, m.Modules, 1)
 				assert.Equal(t, "test-module", m.Modules[0].Name)
 				assert.Equal(t, "test.sh", m.Modules[0].File)
@@ -51,6 +53,8 @@ func TestParser_Parse(t *testing.T) {
 `,
 			wantErr: false,
 			validate: func(t *testing.T, m *domain.Manifest) {
+				t.Helper()
+
 				require.Len(t, m.Modules, 2)
 				assert.Equal(t, "base", m.Modules[0].Name)
 				assert.Equal(t, "dependent", m.Modules[1].Name)
@@ -65,6 +69,8 @@ func TestParser_Parse(t *testing.T) {
 `,
 			wantErr: false,
 			validate: func(t *testing.T, m *domain.Manifest) {
+				t.Helper()
+
 				require.Len(t, m.Modules, 1)
 				assert.Equal(t, "minimal", m.Modules[0].Name)
 				assert.Empty(t, m.Modules[0].Requires)
@@ -84,6 +90,8 @@ func TestParser_Parse(t *testing.T) {
 `,
 			wantErr: false,
 			validate: func(t *testing.T, m *domain.Manifest) {
+				t.Helper()
+
 				require.Len(t, m.Modules, 1)
 				assert.Equal(t, map[string][]string{
 					"brew": {"mise"},
@@ -102,6 +110,8 @@ func TestParser_Parse(t *testing.T) {
 			content: "",
 			wantErr: false,
 			validate: func(t *testing.T, m *domain.Manifest) {
+				t.Helper()
+
 				assert.Empty(t, m.Modules)
 			},
 		},

@@ -113,18 +113,18 @@ func (s *MigrationService) generateModuleContent(module domain.Module, content s
 
 	// Module header
 	sb.WriteString("#!/bin/bash\n")
-	sb.WriteString(fmt.Sprintf("# Module: %s\n", module.Name))
+	fmt.Fprintf(&sb, "# Module: %s\n", module.Name)
 
 	if module.Description != "" {
-		sb.WriteString(fmt.Sprintf("# Description: %s\n", module.Description))
+		fmt.Fprintf(&sb, "# Description: %s\n", module.Description)
 	}
 
 	if len(module.Requires) > 0 {
-		sb.WriteString(fmt.Sprintf("# Requires: %s\n", strings.Join(module.Requires, ", ")))
+		fmt.Fprintf(&sb, "# Requires: %s\n", strings.Join(module.Requires, ", "))
 	}
 
 	if len(module.OS) > 0 {
-		sb.WriteString(fmt.Sprintf("# OS: %s\n", strings.Join(module.OS, ", ")))
+		fmt.Fprintf(&sb, "# OS: %s\n", strings.Join(module.OS, ", "))
 	}
 
 	sb.WriteString("\n")
@@ -146,13 +146,13 @@ func (s *MigrationService) generateManifestYAML(manifest *domain.Manifest) strin
 	sb.WriteString("modules:\n")
 
 	for _, module := range manifest.Modules {
-		sb.WriteString(fmt.Sprintf("  - name: %s\n", module.Name))
-		sb.WriteString(fmt.Sprintf("    file: %s\n", module.File))
+		fmt.Fprintf(&sb, "  - name: %s\n", module.Name)
+		fmt.Fprintf(&sb, "    file: %s\n", module.File)
 
 		if len(module.Requires) > 0 {
 			sb.WriteString("    requires:\n")
 			for _, dep := range module.Requires {
-				sb.WriteString(fmt.Sprintf("      - %s\n", dep))
+				fmt.Fprintf(&sb, "      - %s\n", dep)
 			}
 		} else {
 			sb.WriteString("    requires: []\n")
@@ -161,12 +161,12 @@ func (s *MigrationService) generateManifestYAML(manifest *domain.Manifest) strin
 		if len(module.OS) > 0 {
 			sb.WriteString("    os:\n")
 			for _, os := range module.OS {
-				sb.WriteString(fmt.Sprintf("      - %s\n", os))
+				fmt.Fprintf(&sb, "      - %s\n", os)
 			}
 		}
 
 		if module.Description != "" {
-			sb.WriteString(fmt.Sprintf("    description: %s\n", module.Description))
+			fmt.Fprintf(&sb, "    description: %s\n", module.Description)
 		}
 
 		sb.WriteString("\n")

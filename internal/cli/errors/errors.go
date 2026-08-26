@@ -33,7 +33,7 @@ func ValidationError(message string) error {
 // RequiredFlag returns a standardized required flag error with help
 func RequiredFlag(flagName string, examples ...string) error {
 	var msg strings.Builder
-	msg.WriteString(fmt.Sprintf("--%s flag is required", flagName))
+	fmt.Fprintf(&msg, "--%s flag is required", flagName)
 	if len(examples) > 0 {
 		msg.WriteString("\n\nExamples:")
 		for _, ex := range examples {

@@ -12,6 +12,8 @@ import (
 )
 
 func setupTestManager(t *testing.T) (*Manager, afero.Fs, *domain.BackupConfig) {
+	t.Helper()
+
 	fs := afero.NewMemMapFs()
 	config := domain.NewBackupConfig("/backup/shellforge")
 

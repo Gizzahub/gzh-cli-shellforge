@@ -60,16 +60,16 @@ func (r *Renderer) RenderModuleFile(template *domain.Template, data *domain.Temp
 	// Build header
 	var header strings.Builder
 	header.WriteString("#!/bin/bash\n")
-	header.WriteString(fmt.Sprintf("# %s\n", data.ModuleName))
+	fmt.Fprintf(&header, "# %s\n", data.ModuleName)
 
 	description := data.Description
 	if description == "" {
 		description = template.Description
 	}
-	header.WriteString(fmt.Sprintf("# %s\n", description))
+	fmt.Fprintf(&header, "# %s\n", description)
 
 	if len(data.Requires) > 0 {
-		header.WriteString(fmt.Sprintf("# Requires: %s\n", strings.Join(data.Requires, ", ")))
+		fmt.Fprintf(&header, "# Requires: %s\n", strings.Join(data.Requires, ", "))
 	}
 
 	header.WriteString("\n")

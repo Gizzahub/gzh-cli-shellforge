@@ -49,6 +49,8 @@ func TestBuilderService_Build(t *testing.T) {
 			},
 			wantErr: false,
 			validate: func(t *testing.T, result *BuildResult, fs afero.Fs) {
+				t.Helper()
+
 				assert.Equal(t, 2, result.TotalModuleCount)
 				require.Len(t, result.Targets, 1)
 				target := result.Targets[0]
@@ -89,6 +91,8 @@ func TestBuilderService_Build(t *testing.T) {
 			},
 			wantErr: false,
 			validate: func(t *testing.T, result *BuildResult, fs afero.Fs) {
+				t.Helper()
+
 				assert.Equal(t, 2, result.TotalModuleCount)
 				// Collect all module names across targets
 				var allModuleNames []string
@@ -120,6 +124,8 @@ func TestBuilderService_Build(t *testing.T) {
 			},
 			wantErr: false,
 			validate: func(t *testing.T, result *BuildResult, fs afero.Fs) {
+				t.Helper()
+
 				require.Len(t, result.Targets, 1)
 				assert.NotEmpty(t, result.Targets[0].Content)
 				// Verify directory was not created
@@ -146,6 +152,8 @@ func TestBuilderService_Build(t *testing.T) {
 			},
 			wantErr: false,
 			validate: func(t *testing.T, result *BuildResult, fs afero.Fs) {
+				t.Helper()
+
 				assert.Equal(t, 1, result.TotalModuleCount)
 				require.Len(t, result.Targets, 1)
 				assert.Contains(t, result.Targets[0].Content, "FILE NOT FOUND")
@@ -199,6 +207,8 @@ func TestBuilderService_Build(t *testing.T) {
 			},
 			wantErr: false,
 			validate: func(t *testing.T, result *BuildResult, fs afero.Fs) {
+				t.Helper()
+
 				require.Len(t, result.Targets, 1)
 				assert.Contains(t, result.Targets[0].Content, "# This is a test module")
 			},

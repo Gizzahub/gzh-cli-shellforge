@@ -99,6 +99,8 @@ func (m *MockGitRepository) HasChanges() (bool, error) {
 }
 
 func setupTestService(t *testing.T) (*BackupService, *MockSnapshotManager, *MockGitRepository, *domain.BackupConfig) {
+	t.Helper()
+
 	snapshotMgr := new(MockSnapshotManager)
 	gitRepo := new(MockGitRepository)
 	config := domain.NewBackupConfig("/backup/shellforge")

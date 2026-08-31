@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package factory constructs application services used by command-line handlers.
 package factory
 

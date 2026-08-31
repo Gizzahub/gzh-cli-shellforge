@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package snapshot manages snapshots of shell configuration files.
 package snapshot
 

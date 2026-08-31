@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package cli implements the Shellforge command-line interface and command handlers.
 package cli
 

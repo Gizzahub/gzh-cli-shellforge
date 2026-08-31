@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package output formats command-line configuration and operation results.
 package output
 

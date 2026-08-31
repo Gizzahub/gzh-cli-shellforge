@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package rcparser parses shell runtime-configuration files.
 package rcparser
 

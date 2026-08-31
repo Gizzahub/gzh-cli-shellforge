@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 package app
 
 import "github.com/gizzahub/gzh-cli-shellforge/internal/domain"

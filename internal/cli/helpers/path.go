@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package helpers provides common utility functions for CLI commands.
 package helpers
 

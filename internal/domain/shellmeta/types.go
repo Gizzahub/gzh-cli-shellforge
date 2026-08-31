@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 package shellmeta
 
 // ShellProfiles aggregates all shell profile metadata from multiple YAML files.

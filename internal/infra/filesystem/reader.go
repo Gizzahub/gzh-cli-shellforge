@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package filesystem provides file-reading and file-writing infrastructure.
 package filesystem
 

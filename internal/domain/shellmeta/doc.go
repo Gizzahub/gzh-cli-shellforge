@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package shellmeta provides shell profile metadata loading and querying.
 //
 // This package loads shell initialization file mappings from YAML files and

@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package domain defines Shellforge domain models, validation, dependency resolution, and related errors.
 package domain
 

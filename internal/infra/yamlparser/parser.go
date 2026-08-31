@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package yamlparser parses Shellforge YAML configuration files.
 package yamlparser
 

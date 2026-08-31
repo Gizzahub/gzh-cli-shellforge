@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package cmd provides public API for embedding shellforge commands.
 package cmd
 

@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Archmagece
+// SPDX-License-Identifier: MIT
+
 // Package diffcomparator compares generated shell configuration content.
 package diffcomparator
 

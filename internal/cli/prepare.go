@@ -25,11 +25,12 @@ const (
 )
 
 type prepareFlags struct {
-	manifest string
-	targetOS string
-	check    bool
-	dryRun   bool
-	verbose  bool
+	configDir string
+	manifest  string
+	targetOS  string
+	check     bool
+	dryRun    bool
+	verbose   bool
 }
 
 func newPrepareCmd() *cobra.Command {
@@ -69,6 +70,7 @@ installs.`,
 		},
 	}
 
+	cmd.Flags().StringVarP(&flags.configDir, "config-dir", "c", "modules", "Directory containing module files (for CLI parity with validate/build)")
 	cmd.Flags().StringVarP(&flags.manifest, "manifest", "m", "manifest.yaml", "Path to manifest file")
 	cmd.Flags().StringVar(&flags.targetOS, "os", "", "Target OS (auto-detected if omitted)")
 	cmd.Flags().BoolVar(&flags.check, "check", false, "Report missing packages without installing")
@@ -103,6 +105,11 @@ func runPrepare(ctx context.Context, flags *prepareFlags, managers map[string]do
 	targetOS := flags.targetOS
 	if targetOS == "" {
 		targetOS = helpers.DetectOS()
+	}
+
+	if flags.verbose {
+		fmt.Printf("Manifest: %s\n", flags.manifest)
+		fmt.Printf("Module directory: %s\n", flags.configDir)
 	}
 
 	services := factory.NewServices()

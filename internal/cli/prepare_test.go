@@ -77,6 +77,11 @@ func TestPrepareCmd_Flags(t *testing.T) {
 	manifestFlag := cmd.Flags().Lookup("manifest")
 	require.NotNil(t, manifestFlag)
 	assert.Equal(t, "manifest.yaml", manifestFlag.DefValue)
+
+	configDirFlag := cmd.Flags().Lookup("config-dir")
+	require.NotNil(t, configDirFlag)
+	assert.Equal(t, "modules", configDirFlag.DefValue)
+	assert.Equal(t, "c", configDirFlag.Shorthand)
 }
 
 func TestPrepareCmd_Help(t *testing.T) {

@@ -7,6 +7,7 @@ package domain
 type Graph struct {
 	nodes map[string]*Node
 	edges map[string][]string // node -> list of dependents
+	order []string            // node names in insertion (manifest) order
 }
 
 // Node represents a node in the dependency graph.
@@ -25,6 +26,9 @@ func NewGraph() *Graph {
 
 // AddNode adds a module as a node in the graph.
 func (g *Graph) AddNode(module *Module) {
+	if _, exists := g.nodes[module.Name]; !exists {
+		g.order = append(g.order, module.Name)
+	}
 	g.nodes[module.Name] = &Node{
 		Module:   module,
 		InDegree: 0,
@@ -62,11 +66,8 @@ func (g *Graph) GetDependents(name string) []string {
 	return g.edges[name]
 }
 
-// GetAllNodes returns all node names in the graph.
+// GetAllNodes returns all node names in insertion order, so callers that walk
+// the graph produce the same output on every run (map order is randomized).
 func (g *Graph) GetAllNodes() []string {
-	names := make([]string, 0, len(g.nodes))
-	for name := range g.nodes {
-		names = append(names, name)
-	}
-	return names
+	return append([]string(nil), g.order...)
 }

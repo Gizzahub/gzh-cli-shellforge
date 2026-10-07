@@ -3,7 +3,10 @@
 
 package domain
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 // Resolver handles dependency resolution and topological sorting.
 type Resolver struct{}
@@ -46,10 +49,12 @@ func (r *Resolver) TopologicalSort(graph *Graph, targetOS string) ([]Module, err
 		}
 	}
 
-	// Find all nodes with in-degree 0
+	// Find all nodes with in-degree 0, in manifest order: ranging over the map
+	// would seed the queue randomly, and the stable priority sort downstream
+	// keeps that order for modules that share a priority.
 	queue := []string{}
-	for name, degree := range inDegree {
-		if degree == 0 {
+	for _, name := range graph.GetAllNodes() {
+		if degree, ok := inDegree[name]; ok && degree == 0 {
 			queue = append(queue, name)
 		}
 	}
@@ -94,6 +99,8 @@ func (r *Resolver) detectCycle(inDegree map[string]int) error {
 			cycleNodes = append(cycleNodes, name)
 		}
 	}
+
+	sort.Strings(cycleNodes) // map order is random; keep the message stable
 
 	// Build cycle path (simplified - just show nodes in cycle)
 	cyclePath := strings.Join(cycleNodes, " → ")

@@ -36,7 +36,7 @@ func TestResolver_TopologicalSort(t *testing.T) {
 				{Name: "config", File: "config.sh", Requires: []string{"tool1", "tool2"}, OS: []string{"Mac"}},
 			},
 			targetOS: "Mac",
-			expected: []string{"base", "tool1", "tool2", "config"}, // tool1/tool2 order may vary
+			expected: []string{"base", "tool1", "tool2", "config"}, // ties follow manifest order
 			wantErr:  false,
 		},
 		{
@@ -67,7 +67,7 @@ func TestResolver_TopologicalSort(t *testing.T) {
 				{Name: "b", File: "b.sh", Requires: []string{}, OS: []string{"Mac"}},
 			},
 			targetOS: "Mac",
-			expected: []string{"a", "b"}, // order may vary
+			expected: []string{"a", "b"},
 			wantErr:  false,
 		},
 	}
@@ -96,9 +96,7 @@ func TestResolver_TopologicalSort(t *testing.T) {
 					resultNames[i] = mod.Name
 				}
 
-				for _, expectedName := range tt.expected {
-					assert.Contains(t, resultNames, expectedName)
-				}
+				assert.Equal(t, tt.expected, resultNames)
 
 				// Verify dependency order (if a depends on b, b must come before a)
 				moduleIndex := make(map[string]int)
@@ -116,6 +114,36 @@ func TestResolver_TopologicalSort(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestResolver_TopologicalSort_TiesFollowManifestOrder guards against seeding
+// Kahn's queue from map iteration. Go randomizes map order per range, so the
+// old code returned these independent modules in a different order almost
+// every run; the builder's stable priority sort then carried that into the
+// generated RC file as a spurious diff for modules sharing a priority.
+func TestResolver_TopologicalSort_TiesFollowManifestOrder(t *testing.T) {
+	names := []string{"kubeconfig", "colima", "zeta", "alpha", "mid", "beta", "omega", "delta"}
+	modules := make([]Module, 0, len(names)+1)
+	for _, n := range names {
+		modules = append(modules, Module{Name: n, File: n + ".sh"})
+	}
+	// A dependent released mid-walk must also land in a fixed position.
+	modules = append(modules, Module{Name: "after-zeta", File: "after-zeta.sh", Requires: []string{"zeta"}})
+	want := append(append([]string{}, names...), "after-zeta")
+
+	resolver := NewResolver()
+	for run := 0; run < 50; run++ {
+		graph, err := resolver.BuildGraph(&Manifest{Modules: modules})
+		require.NoError(t, err)
+		result, err := resolver.TopologicalSort(graph, "Mac")
+		require.NoError(t, err)
+
+		got := make([]string, len(result))
+		for i, mod := range result {
+			got[i] = mod.Name
+		}
+		require.Equal(t, want, got, "run %d", run)
 	}
 }
 

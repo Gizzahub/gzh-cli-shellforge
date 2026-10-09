@@ -1,4 +1,4 @@
-# CLAUDE.md
+# gzh-cli-shellforge
 
 LLM-optimized guidance for working with this repository.
 
@@ -141,24 +141,6 @@ gz-shellforge build && gz-shellforge deploy --backup
 
 ---
 
-## Project Structure
-
-```
-.
-├── cmd/shellforge/          # Entry point
-├── internal/                # Private packages
-│   ├── app/                 # Services
-│   ├── cli/                 # Commands
-│   ├── domain/              # Models
-│   └── infra/               # Infrastructure
-├── pkg/                     # Public APIs
-├── data/                    # Data files
-├── examples/                # Usage examples
-└── docs/                    # Documentation
-```
-
----
-
 ## Code Style
 
 - **Binary name**: `gz-shellforge`
@@ -171,9 +153,6 @@ gz-shellforge build && gz-shellforge deploy --backup
 
 ```
 {type}({scope}): {description}
-
-Model: claude-{model}
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **Types**: feat, fix, docs, refactor, test, chore

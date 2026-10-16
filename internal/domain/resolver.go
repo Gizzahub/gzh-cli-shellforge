@@ -37,6 +37,40 @@ func (r *Resolver) BuildGraph(manifest *Manifest) (*Graph, error) {
 	return graph, nil
 }
 
+// ValidateAcyclic reports a circular dependency in graph without applying OS
+// filtering. Callers that must reject malformed manifests before performing a
+// side effect use this rather than TopologicalSort, which deliberately filters
+// modules for build output.
+func (r *Resolver) ValidateAcyclic(graph *Graph) error {
+	inDegree := make(map[string]int, graph.Size())
+	queue := make([]string, 0, graph.Size())
+	for _, name := range graph.GetAllNodes() {
+		node, _ := graph.GetNode(name)
+		inDegree[name] = node.InDegree
+		if node.InDegree == 0 {
+			queue = append(queue, name)
+		}
+	}
+
+	processed := 0
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+		processed++
+		for _, dependent := range graph.GetDependents(current) {
+			inDegree[dependent]--
+			if inDegree[dependent] == 0 {
+				queue = append(queue, dependent)
+			}
+		}
+	}
+
+	if processed != graph.Size() {
+		return r.detectCycle(inDegree)
+	}
+	return nil
+}
+
 // TopologicalSort performs Kahn's algorithm to sort modules by dependencies.
 // Only includes modules that apply to the target OS.
 func (r *Resolver) TopologicalSort(graph *Graph, targetOS string) ([]Module, error) {

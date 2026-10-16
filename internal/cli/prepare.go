@@ -6,6 +6,8 @@ package cli
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"sort"
 
 	"github.com/spf13/cobra"
@@ -66,7 +68,7 @@ installs.`,
 			if targetOS == "" {
 				targetOS = helpers.DetectOS()
 			}
-			return runPrepare(cmd.Context(), flags, defaultPackageManagers(targetOS))
+			return runPrepare(cmd.Context(), flags, defaultPackageManagersWithOutput(targetOS, cmd.OutOrStdout()))
 		},
 	}
 
@@ -84,15 +86,23 @@ installs.`,
 // to targetOS. Other OSes get no managers — their declared packages show up
 // as unsupported rather than erroring.
 func defaultPackageManagers(targetOS string) map[string]domain.PackageManager {
-	switch targetOS {
+	return defaultPackageManagersWithOutput(targetOS, os.Stdout)
+}
+
+func defaultPackageManagersWithOutput(targetOS string, output io.Writer) map[string]domain.PackageManager {
+	normalizedOS, known := helpers.NormalizeKnownOS(targetOS)
+	if !known {
+		return map[string]domain.PackageManager{}
+	}
+	switch normalizedOS {
 	case macOSName:
 		return map[string]domain.PackageManager{
-			brewPackageManagerID: domain.NewBrewFormulaManager(),
-			"cask":               domain.NewBrewCaskManager(),
+			brewPackageManagerID: &domain.BrewFormulaManager{Runner: domain.OsCommandRunner{}, Output: output},
+			"cask":               &domain.BrewCaskManager{Runner: domain.OsCommandRunner{}, Output: output},
 		}
 	case linuxOSName:
 		return map[string]domain.PackageManager{
-			"apt": domain.NewAptManager(),
+			"apt": &domain.AptManager{Runner: domain.OsCommandRunner{}, Output: output},
 		}
 	default:
 		return map[string]domain.PackageManager{}
@@ -106,7 +116,11 @@ func runPrepare(ctx context.Context, flags *prepareFlags, managers map[string]do
 	if targetOS == "" {
 		targetOS = helpers.DetectOS()
 	}
-
+	normalizedOS, known := helpers.NormalizeKnownOS(targetOS)
+	if !known {
+		return fmt.Errorf("prepare: unsupported target OS %q", targetOS)
+	}
+	targetOS = normalizedOS
 	if flags.verbose {
 		fmt.Printf("Manifest: %s\n", flags.manifest)
 		fmt.Printf("Module directory: %s\n", flags.configDir)

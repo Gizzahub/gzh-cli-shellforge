@@ -63,6 +63,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`prepare` 검증과 설치 결과 처리**: 설치 전에 순환 의존성을 거부하고,
+  설치 명령이 성공해도 패키지를 다시 감지하지 못하면 실패로 보고한다.
+  지원 OS 이름은 대소문자를 구분하지 않으며, 설치 출력은 실행 중 전달한다.
+- **Go 1.27 품질 검사 호환성**: 저장소 전용 golangci-lint pin을 공식 안정판
+  2.14.0으로 갱신해 export data v5를 읽지 못하던 오류를 해결한다.
 - **`make lint` no longer reports PASS when golangci-lint is absent.** The target fell back to `go vet` or skipped silently, so a missing linter was indistinguishable from a clean run.
 - **`go.sum` was missing the `/go.mod` hashes** for `pflag v1.0.10` and `golang.org/x/text v0.37.0`, which left the module unbuildable from a clean module cache.
 

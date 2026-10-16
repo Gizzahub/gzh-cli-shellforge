@@ -6,6 +6,7 @@ package app
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 )
@@ -75,6 +76,14 @@ func (s *PrepareService) Plan(ctx context.Context, manifest *domain.Manifest, ta
 	if errs := manifest.Validate(); len(errs) > 0 {
 		return nil, errs[0]
 	}
+	resolver := domain.NewResolver()
+	graph, err := resolver.BuildGraph(manifest)
+	if err != nil {
+		return nil, err
+	}
+	if err := resolver.ValidateAcyclic(graph); err != nil {
+		return nil, err
+	}
 
 	type pkgKey struct{ manager, name string }
 	modulesFor := map[pkgKey][]string{}
@@ -94,7 +103,6 @@ func (s *PrepareService) Plan(ctx context.Context, manifest *domain.Manifest, ta
 			}
 		}
 	}
-
 	result := &PrepareResult{CheckedOS: targetOS}
 	for _, k := range order {
 		status := PackageStatus{Manager: k.manager, Package: k.name, Modules: modulesFor[k]}
@@ -136,7 +144,7 @@ func (s *PrepareService) Apply(ctx context.Context, manifest *domain.Manifest, t
 	}
 
 	initialDetectionFailures := plan.Failed
-	var installed []PackageStatus
+	var installedAttempts []PackageStatus
 	var installFailures []PrepareFailure
 	for _, status := range plan.Packages {
 		if status.Installed || !status.Supported {
@@ -154,15 +162,13 @@ func (s *PrepareService) Apply(ctx context.Context, manifest *domain.Manifest, t
 			installFailures = append(installFailures, PrepareFailure{Manager: status.Manager, Package: status.Package, Err: installErr})
 			continue
 		}
-		installed = append(installed, status)
+		installedAttempts = append(installedAttempts, status)
 	}
 
 	final, err := s.Plan(ctx, manifest, targetOS)
 	if err != nil {
 		return nil, err
 	}
-	final.Installed = installed
-
 	type failureKey struct{ manager, pkg string }
 	finalDetectionFailures := make(map[failureKey]struct{}, len(final.Failed))
 	for _, failure := range final.Failed {
@@ -176,6 +182,27 @@ func (s *PrepareService) Apply(ctx context.Context, manifest *domain.Manifest, t
 		final.Failed = append(final.Failed, failure)
 	}
 	final.Failed = append(final.Failed, installFailures...)
+	for _, status := range installedAttempts {
+		key := failureKey{status.Manager, status.Package}
+		if _, detectionFailed := finalDetectionFailures[key]; detectionFailed {
+			continue
+		}
+		for _, finalStatus := range final.Packages {
+			if finalStatus.Manager != status.Manager || finalStatus.Package != status.Package {
+				continue
+			}
+			if finalStatus.Installed {
+				final.Installed = append(final.Installed, finalStatus)
+			} else {
+				final.Failed = append(final.Failed, PrepareFailure{
+					Manager: status.Manager,
+					Package: status.Package,
+					Err:     fmt.Errorf("package was not detected after successful install"),
+				})
+			}
+			break
+		}
+	}
 	return final, nil
 }
 

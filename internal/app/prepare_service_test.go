@@ -134,6 +134,20 @@ func TestPrepareService_Plan_InvalidManifestFailsBeforeInspectingPackages(t *tes
 	assert.Empty(t, brew.installCalls)
 }
 
+func TestPrepareRejectsCycle(t *testing.T) {
+	manifest := &domain.Manifest{Modules: []domain.Module{
+		{Name: "first", File: "first.sh", Requires: []string{"second"}, Packages: map[string][]string{"brew": {"first"}}},
+		{Name: "second", File: "second.sh", Requires: []string{"first"}},
+	}}
+	brew := &mockManager{name: "brew", installed: map[string]bool{}}
+
+	_, err := app.NewPrepareService(managers(brew)).Apply(context.Background(), manifest, "Mac")
+
+	require.Error(t, err)
+	assert.Empty(t, brew.contexts, "a cycle must be rejected before package detection or install")
+	assert.Empty(t, brew.installCalls)
+}
+
 func TestPrepareService_Apply_SkipsAlreadyInstalled_Idempotent(t *testing.T) {
 	manifest := &domain.Manifest{Modules: []domain.Module{
 		{Name: "setup-mise", File: "mise.sh", Packages: map[string][]string{"brew": {"mise"}}},
@@ -162,7 +176,38 @@ func TestPrepareService_Apply_InstallsMissingAndReVerifies(t *testing.T) {
 	assert.Equal(t, []string{"mise"}, brew.installCalls)
 	require.Len(t, result.Installed, 1)
 	assert.Equal(t, "mise", result.Installed[0].Package)
+	assert.True(t, result.Installed[0].Installed)
 	assert.True(t, result.AllSatisfied(), "post-install re-verify should show it installed")
+}
+
+func TestPrepareFailsWhenNotRedetected(t *testing.T) {
+	manifest := &domain.Manifest{Modules: []domain.Module{
+		{Name: "setup-mise", File: "mise.sh", Packages: map[string][]string{"brew": {"mise"}}},
+	}}
+	brew := &mockManager{name: "brew", installed: map[string]bool{}}
+	brew.isInstalled = func(context.Context, string) (bool, error) { return false, nil }
+
+	result, err := app.NewPrepareService(managers(brew)).Apply(context.Background(), manifest, "Mac")
+
+	require.NoError(t, err)
+	assert.Equal(t, []string{"mise"}, brew.installCalls)
+	require.Len(t, result.Failed, 1)
+	assert.Contains(t, result.Failed[0].Err.Error(), "not detected after successful install")
+	assert.Empty(t, result.Installed, "a package is installed only after re-detection succeeds")
+	assert.False(t, result.AllSatisfied())
+}
+
+func TestPrepareOSCaseInsensitive(t *testing.T) {
+	manifest := &domain.Manifest{Modules: []domain.Module{
+		{Name: "mac-only", File: "mac.sh", OS: []string{"Mac"}, Packages: map[string][]string{"brew": {"mise"}}},
+	}}
+	brew := &mockManager{name: "brew", installed: map[string]bool{"mise": true}}
+
+	result, err := app.NewPrepareService(managers(brew)).Plan(context.Background(), manifest, "mac")
+
+	require.NoError(t, err)
+	require.Len(t, result.Packages, 1)
+	assert.True(t, result.Packages[0].Installed)
 }
 
 func TestPrepareService_Apply_InstallFailurePropagates(t *testing.T) {

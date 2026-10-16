@@ -42,10 +42,12 @@ RACE_FLAG := -race
 # the same unmodified shared cache it reported 0 issues and named no worktree
 # path. That is why the pin moved instead of the cache being wiped -- a cache
 # wipe is machine-wide, one-shot, and would come back with the next reclaimed
-# worktree. gzh-cli, gzh-cli-quality and gzh-cli-package-manager already pin
-# v2.13.1, so this aligns with them rather than choosing a new version.
-# (TASK-159, TASK-162)
-GOLANGCI_LINT_VERSION := v2.13.1
+# worktree. That evidence justified the earlier v2.13.1 pin and its alignment
+# with gzh-cli, gzh-cli-quality and gzh-cli-package-manager (TASK-159, TASK-162).
+# Go 1.27 uses export data v5. v2.13.1 cannot read it even when built with
+# that compiler. Use the official stable v2.14.0; keep the exact module and
+# compiler verification below instead of falling back to a PATH binary.
+GOLANGCI_LINT_VERSION := v2.14.0
 GOLANGCI_LINT_BARE := $(GOLANGCI_LINT_VERSION:v%=%)
 # All local lint paths use this exact managed binary. The directory is
 # repo-owned rather than the shared $(GOPATH)/bin -- every Go project on a

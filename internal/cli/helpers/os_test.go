@@ -44,3 +44,23 @@ func TestDetectOS_ReturnsKnownValue(t *testing.T) {
 		t.Errorf("DetectOS() = %q, expected known value or %q", result, runtime.GOOS)
 	}
 }
+
+func TestNormalizeKnownOS(t *testing.T) {
+	tests := map[string]string{
+		"mac":     "Mac",
+		"LINUX":   "Linux",
+		"FreeBSD": "FreeBSD",
+		"openbsd": "OpenBSD",
+		"NETBSD":  "NetBSD",
+		"windows": "Windows",
+	}
+	for input, want := range tests {
+		got, ok := NormalizeKnownOS(input)
+		if !ok || got != want {
+			t.Errorf("NormalizeKnownOS(%q) = %q, %t; want %q, true", input, got, ok, want)
+		}
+	}
+	if _, ok := NormalizeKnownOS("Mca"); ok {
+		t.Error("NormalizeKnownOS accepted an unknown OS")
+	}
+}

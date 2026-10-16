@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os/exec"
 	"strings"
 )
@@ -39,6 +40,14 @@ type CommandRunner interface {
 	Run(ctx context.Context, name string, args ...string) ([]byte, error)
 }
 
+// StreamingCommandRunner can route a command's stdout and stderr to a writer
+// while the command is still running. Package managers use it for installs so
+// a user can observe a successful long-running installation as it progresses.
+type StreamingCommandRunner interface {
+	CommandRunner
+	RunWithOutput(ctx context.Context, output io.Writer, name string, args ...string) error
+}
+
 // OsCommandRunner is the production CommandRunner backed by os/exec.
 type OsCommandRunner struct{}
 
@@ -51,8 +60,23 @@ func (OsCommandRunner) Run(ctx context.Context, name string, args ...string) ([]
 	return out, err
 }
 
+// RunWithOutput executes name with its stdout and stderr streamed to output.
+func (OsCommandRunner) RunWithOutput(ctx context.Context, output io.Writer, name string, args ...string) error {
+	cmd := exec.CommandContext(ctx, name, args...) //nolint:gosec // args come from the manifest, not user input at runtime
+	cmd.Stdout = output
+	cmd.Stderr = output
+	err := cmd.Run()
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return ctxErr
+	}
+	return err
+}
+
 // BrewFormulaManager manages Homebrew formulae (manifest key "brew").
-type BrewFormulaManager struct{ Runner CommandRunner }
+type BrewFormulaManager struct {
+	Runner CommandRunner
+	Output io.Writer
+}
 
 // NewBrewFormulaManager creates a BrewFormulaManager backed by the real brew CLI.
 func NewBrewFormulaManager() *BrewFormulaManager {
@@ -76,15 +100,18 @@ func (m *BrewFormulaManager) IsInstalled(ctx context.Context, pkg string) (bool,
 
 // Install installs the Homebrew formula.
 func (m *BrewFormulaManager) Install(ctx context.Context, pkg string) error {
-	out, err := m.Runner.Run(ctx, brewCommand, "install", pkg)
+	err := runInstall(ctx, m.Runner, m.Output, brewCommand, "install", pkg)
 	if err != nil {
-		return fmt.Errorf("brew install %s: %w: %s", pkg, err, strings.TrimSpace(string(out)))
+		return fmt.Errorf("brew install %s: %w", pkg, err)
 	}
 	return nil
 }
 
 // BrewCaskManager manages Homebrew casks (manifest key "cask").
-type BrewCaskManager struct{ Runner CommandRunner }
+type BrewCaskManager struct {
+	Runner CommandRunner
+	Output io.Writer
+}
 
 // NewBrewCaskManager creates a BrewCaskManager backed by the real brew CLI.
 func NewBrewCaskManager() *BrewCaskManager {
@@ -108,15 +135,18 @@ func (m *BrewCaskManager) IsInstalled(ctx context.Context, pkg string) (bool, er
 
 // Install installs the Homebrew cask.
 func (m *BrewCaskManager) Install(ctx context.Context, pkg string) error {
-	out, err := m.Runner.Run(ctx, brewCommand, "install", "--cask", pkg)
+	err := runInstall(ctx, m.Runner, m.Output, brewCommand, "install", "--cask", pkg)
 	if err != nil {
-		return fmt.Errorf("brew install --cask %s: %w: %s", pkg, err, strings.TrimSpace(string(out)))
+		return fmt.Errorf("brew install --cask %s: %w", pkg, err)
 	}
 	return nil
 }
 
 // AptManager manages Debian/Ubuntu packages (manifest key "apt").
-type AptManager struct{ Runner CommandRunner }
+type AptManager struct {
+	Runner CommandRunner
+	Output io.Writer
+}
 
 // NewAptManager creates an AptManager backed by the real dpkg-query/apt-get CLIs.
 func NewAptManager() *AptManager {
@@ -149,9 +179,31 @@ func (m *AptManager) IsInstalled(ctx context.Context, pkg string) (bool, error) 
 
 // Install installs the Debian or Ubuntu package.
 func (m *AptManager) Install(ctx context.Context, pkg string) error {
-	out, err := m.Runner.Run(ctx, "apt-get", "install", "-y", pkg)
+	err := runInstall(ctx, m.Runner, m.Output, "apt-get", "install", "-y", pkg)
 	if err != nil {
-		return fmt.Errorf("apt-get install -y %s: %w: %s", pkg, err, strings.TrimSpace(string(out)))
+		return fmt.Errorf("apt-get install -y %s: %w", pkg, err)
+	}
+	return nil
+}
+
+func runInstall(ctx context.Context, runner CommandRunner, output io.Writer, name string, args ...string) error {
+	if output != nil {
+		if streaming, ok := runner.(StreamingCommandRunner); ok {
+			return streaming.RunWithOutput(ctx, output, name, args...)
+		}
+	}
+
+	out, err := runner.Run(ctx, name, args...)
+	if output != nil && len(out) > 0 {
+		if _, writeErr := output.Write(out); writeErr != nil && err == nil {
+			return writeErr
+		}
+	}
+	if err != nil {
+		if message := strings.TrimSpace(string(out)); message != "" {
+			return fmt.Errorf("%w: %s", err, message)
+		}
+		return err
 	}
 	return nil
 }

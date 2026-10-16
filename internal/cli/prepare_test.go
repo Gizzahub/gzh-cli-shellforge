@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -142,6 +143,17 @@ func TestPrepareApply_InstallsMissingPackage(t *testing.T) {
 	assert.Equal(t, []string{"mise"}, fake.installCalls)
 }
 
+func TestPrepareFailsWhenNotRedetected(t *testing.T) {
+	fake := &fakePackageManager{name: "brew"}
+	fake.isInstalled = func(context.Context, string) (bool, error) { return false, nil }
+	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
+
+	err := runPrepare(context.Background(), flags, map[string]domain.PackageManager{"brew": fake})
+
+	require.Error(t, err, "a successful install that remains undetected must exit non-zero")
+	assert.Equal(t, []string{"mise"}, fake.installCalls)
+}
+
 func TestPrepareApply_InstallFailurePropagatesNonZero(t *testing.T) {
 	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}, installErr: errors.New("boom")}
 	flags := &prepareFlags{manifest: writeTempManifest(t), targetOS: "Mac"}
@@ -181,6 +193,49 @@ func TestDefaultPackageManagers(t *testing.T) {
 
 	other := defaultPackageManagers("Windows")
 	assert.Empty(t, other)
+}
+
+func TestPrepareOSCaseInsensitive(t *testing.T) {
+	assert.Contains(t, defaultPackageManagers("mac"), "brew")
+	assert.Contains(t, defaultPackageManagers("LINUX"), "apt")
+}
+
+func TestPrepareUsesConfiguredOutputWriter(t *testing.T) {
+	var output bytes.Buffer
+	managers := defaultPackageManagersWithOutput("mac", &output)
+	brew, ok := managers[brewPackageManagerID].(*domain.BrewFormulaManager)
+
+	require.True(t, ok)
+	assert.Same(t, &output, brew.Output)
+}
+
+func TestPrepareSkipsPackagesForOtherOS(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "manifest.yaml")
+	content := "modules:\n" +
+		"  - name: mac-only\n" +
+		"    file: init/mac.sh\n" +
+		"    os: [Mac]\n" +
+		"    packages:\n" +
+		"      brew: [mise]\n"
+	require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
+	fake := &fakePackageManager{name: "brew", installed: map[string]bool{}}
+
+	err := runPrepare(context.Background(), &prepareFlags{manifest: path, targetOS: "Windows"}, map[string]domain.PackageManager{"brew": fake})
+
+	require.NoError(t, err, "packages for another OS are intentionally skipped")
+	assert.Empty(t, fake.contexts)
+	assert.Empty(t, fake.installCalls)
+}
+
+func TestPrepareRejectsUnknownOSBeforeManifestParsing(t *testing.T) {
+	fake := &fakePackageManager{name: "brew"}
+
+	err := runPrepare(context.Background(), &prepareFlags{manifest: "missing.yaml", targetOS: "Mca"}, map[string]domain.PackageManager{"brew": fake})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "unsupported target OS")
+	assert.Empty(t, fake.contexts)
+	assert.Empty(t, fake.installCalls)
 }
 
 func TestRunPrepare_PropagatesCanceledContextInEveryMode(t *testing.T) {

@@ -47,7 +47,9 @@ RACE_FLAG := -race
 # Go 1.27 uses export data v5. v2.13.1 cannot read it even when built with
 # that compiler. Use the official stable v2.14.0; keep the exact module and
 # compiler verification below instead of falling back to a PATH binary.
-GOLANGCI_LINT_VERSION := v2.14.0
+# v2.15.0 is the release verified on CI with go1.27.3; v2.14.0 was the
+# stable release when this Go 1.27 alignment started.
+GOLANGCI_LINT_VERSION := v2.15.0
 GOLANGCI_LINT_BARE := $(GOLANGCI_LINT_VERSION:v%=%)
 # All local lint paths use this exact managed binary. The directory is
 # repo-owned rather than the shared $(GOPATH)/bin -- every Go project on a

@@ -106,6 +106,10 @@ type DeployResult struct {
 
 // Deploy copies built configuration files to their actual paths.
 func (s *DeployService) Deploy(opts DeployOptions) (*DeployResult, error) {
+	if !opts.CreateBackup && !opts.DryRun {
+		return nil, fmt.Errorf("deploy requires backup or dry-run explicitly enabled")
+	}
+
 	var err error
 	opts, err = defaultDeployOptions(opts)
 	if err != nil {

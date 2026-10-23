@@ -168,7 +168,7 @@ func printMigrationResult(result *app.MigrateResult, verbose bool) {
 	fmt.Println("  1. Review generated module files")
 	fmt.Println("  2. Edit manifest.yaml if needed")
 	fmt.Println("  3. Test with: gz-shellforge build --manifest manifest.yaml --os $(uname -s) --dry-run")
-	fmt.Println("  4. Deploy: gz-shellforge build --manifest manifest.yaml --os $(uname -s) --output ~/.zshrc")
+	fmt.Println("  4. Deploy: gz-shellforge build --manifest manifest.yaml && gz-shellforge deploy --backup")
 }
 
 func splitLines(content string, maxLines int) []string {

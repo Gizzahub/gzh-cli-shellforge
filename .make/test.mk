@@ -19,7 +19,8 @@ test-coverage: test ## Generate HTML coverage report
 	@echo "Generating coverage report..."
 	$(GO) tool cover -html=$(COVERAGE_OUT) -o $(COVERAGE_HTML)
 	@echo "Coverage report: $(COVERAGE_HTML)"
-	@$(GO) tool cover -func=$(COVERAGE_OUT) | tail -1
+	@coverage_result=$$($(GO) tool cover -func=$(COVERAGE_OUT)) && \
+		printf '%s\n' "$$coverage_result" | awk '/^total:/ { print; found=1; if (($$NF + 0) < 80) { print "Coverage below required 80%" > "/dev/stderr"; exit 1 } } END { if (!found) exit 1 }'
 
 test-verbose: ## Run tests with verbose output
 	@echo "Running tests (verbose)..."

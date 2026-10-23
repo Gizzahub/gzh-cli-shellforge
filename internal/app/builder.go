@@ -207,16 +207,15 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 			continue
 		}
 
-		filePath, err := resolver.Resolve(target)
-		if err != nil {
-			return nil, err
-		}
-
 		// Get relative path for deploy metadata
 		destPath, err := resolver.GetRelativePath(target)
 		if err != nil {
 			return nil, err
 		}
+
+		// Build always stages files; only deploy may touch their destinations.
+		sourcePath := strings.TrimLeft(destPath, string(filepath.Separator))
+		filePath := filepath.Join(outputDir, sourcePath)
 
 		content, moduleNames := s.generateContent(mods, opts, shellType, target, now)
 		totalModuleCount += len(mods)
@@ -240,7 +239,7 @@ func (s *BuilderService) buildMultiTarget(opts BuildOptions, manifest *domain.Ma
 
 		// Add to metadata
 		metaFiles = append(metaFiles, domain.BuildFileInfo{
-			Source:   filepath.Base(filePath),
+			Source:   sourcePath,
 			Target:   target,
 			DestPath: destPath,
 		})
@@ -406,7 +405,7 @@ func (s *BuilderService) buildDirectoryTarget(opts BuildOptions, mods []domain.M
 
 		// Add to metadata with full destination path
 		metaFiles = append(metaFiles, domain.BuildFileInfo{
-			Source:   filepath.Join("conf.d", fileName),
+			Source:   filepath.Join(relDirPath, fileName),
 			Target:   target,
 			DestPath: filepath.Join(relDirPath, fileName),
 		})

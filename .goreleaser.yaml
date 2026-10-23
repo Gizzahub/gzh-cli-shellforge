@@ -1,0 +1,51 @@
+version: 2
+project_name: gz-shellforge
+
+builds:
+  - id: gz-shellforge
+    main: ./cmd/shellforge
+    binary: gz-shellforge
+    env: [CGO_ENABLED=0]
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w
+      - -X github.com/gizzahub/gzh-cli-shellforge/internal/cli.version={{ .Version }}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files: [LICENSE, README.md]
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+snapshot:
+  version_template: '{{ .Env.RELEASE_VERSION }}-snapshot'
+
+changelog:
+  disable: true
+
+# Preparation only; publishing requires a separately approved workflow.
+release:
+  disable: true
+
+homebrew_casks:
+  - name: gz-shellforge
+    ids: [default]
+    binaries: [gz-shellforge]
+    skip_upload: true
+    repository:
+      owner: Gizzahub
+      name: homebrew-tap
+    url:
+      template: 'https://github.com/Gizzahub/gzh-cli-shellforge/releases/download/v{{ .Version }}/{{ .ArtifactName }}'
+    homepage: https://github.com/Gizzahub/gzh-cli-shellforge
+    description: Build and safely deploy modular shell configurations
+    license: MIT

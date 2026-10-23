@@ -36,16 +36,16 @@ This command performs validation without building the configuration,
 making it useful for quickly checking manifest correctness during
 development.`,
 		Example: `  # Validate default manifest
-  shellforge validate
+  gz-shellforge validate
 
   # Validate custom manifest
-  shellforge validate --manifest custom.yaml --config-dir modules
+  gz-shellforge validate --manifest custom.yaml --config-dir modules
 
   # Verbose validation with detailed output
-  shellforge validate --verbose
+  gz-shellforge validate --verbose
 
   # Also check external tool prerequisites (requires_bin / requires_path)
-  shellforge validate --check-prereqs`,
+  gz-shellforge validate --check-prereqs`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runValidate(flags)
 		},

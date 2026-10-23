@@ -1,7 +1,10 @@
 package app
 
 import (
+	"path/filepath"
 	"testing"
+
+	"github.com/gizzahub/gzh-cli-shellforge/internal/domain"
 
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -312,4 +315,113 @@ func TestBuilderService_Build_RealExample(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, target.Content, string(content))
 	}
+}
+
+func TestBuilderService_FishDirectoryTargetsAndSelection(t *testing.T) {
+	for _, dryRun := range []bool{false, true} {
+		fs := afero.NewMemMapFs()
+		require.NoError(t, afero.WriteFile(fs, "manifest.yaml", []byte(`shell:
+  type: fish
+modules:
+  - name: Tool Setup
+    file: tool.fish
+    target: conf.d
+    description: Tool initialization
+    priority: 10
+  - name: another
+    file: another.fish
+    target: conf.d
+  - name: main
+    file: main.fish
+    target: config
+`), 0o600))
+		require.NoError(t, afero.WriteFile(fs, "tool.fish", []byte("set -gx TEST_TOOL ready\n"), 0o600))
+		require.NoError(t, afero.WriteFile(fs, "another.fish", []byte("echo another\n"), 0o600))
+		require.NoError(t, afero.WriteFile(fs, "main.fish", []byte("echo main\n"), 0o600))
+		reader := filesystem.NewReader(fs)
+		service := NewBuilderService(yamlparser.New(fs), reader, filesystem.NewWriter(fs))
+		result, err := service.Build(BuildOptions{ConfigDir: ".", Manifest: "manifest.yaml", OutputDir: "build", OS: "Linux", Shell: "fish", Targets: []string{"CONF.D"}, DryRun: dryRun})
+		require.NoError(t, err)
+		require.Len(t, result.Targets, 2)
+		var foundTool bool
+		for _, target := range result.Targets {
+			require.Equal(t, "conf.d", target.Target)
+			require.NotContains(t, target.Content, "echo main")
+			if target.ModuleNames[0] == "Tool Setup" {
+				foundTool = true
+				require.Equal(t, filepath.Join("build", ".config", "fish", "conf.d", "tool_setup.fish"), target.FilePath)
+				require.Contains(t, target.Content, "set -gx TEST_TOOL ready")
+				require.Contains(t, target.Content, "# Tool initialization")
+				require.Contains(t, target.Content, "# Priority: 10")
+			}
+			exists, err := afero.Exists(fs, target.FilePath)
+			require.NoError(t, err)
+			require.Equal(t, !dryRun, exists)
+		}
+		require.True(t, foundTool)
+		if !dryRun {
+			data, err := afero.ReadFile(fs, filepath.Join("build", domain.MetadataFileName))
+			require.NoError(t, err)
+			metadata, err := domain.ParseBuildMetadata(data)
+			require.NoError(t, err)
+			require.Len(t, metadata.Files, 2)
+			for _, file := range metadata.Files {
+				require.Contains(t, file.DestPath, ".config/fish/conf.d/")
+				require.True(t, reader.FileExists(filepath.Join("build", file.Source)), "deploy source must refer to staged file")
+			}
+			deployer := NewDeployService(reader, filesystem.NewWriter(fs))
+			deployment, err := deployer.Deploy(DeployOptions{BuildDir: "build", HomeDir: "/home/test", CreateBackup: true})
+			require.NoError(t, err)
+			require.Zero(t, deployment.ErrorCount)
+			require.Equal(t, 2, deployment.DeployedCount)
+		}
+	}
+}
+
+func TestBuilderService_SystemTargetStagesBeforeExplicitDeployment(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	require.NoError(t, afero.WriteFile(fs, "manifest.yaml", []byte("modules:\n  - name: system\n    file: system.sh\n    target: etc-profile\n"), 0o600))
+	require.NoError(t, afero.WriteFile(fs, "system.sh", []byte("echo staged-system\n"), 0o600))
+	require.NoError(t, fs.MkdirAll("/etc", 0o755))
+	require.NoError(t, afero.WriteFile(fs, "/etc/profile", []byte("original-system\n"), 0o600))
+	reader := filesystem.NewReader(fs)
+	writer := filesystem.NewWriter(fs)
+	service := NewBuilderService(yamlparser.New(fs), reader, writer)
+	result, err := service.Build(BuildOptions{ConfigDir: ".", Manifest: "manifest.yaml", OutputDir: "build", OS: "Linux"})
+	require.NoError(t, err)
+	require.Len(t, result.Targets, 1)
+	require.Equal(t, filepath.Join("build", "etc", "profile"), result.Targets[0].FilePath)
+	unchanged, err := afero.ReadFile(fs, "/etc/profile")
+	require.NoError(t, err)
+	require.Equal(t, "original-system\n", string(unchanged), "build must not touch system destination")
+	deployer := NewDeployServiceWithChecker(reader, writer, &MockPermissionChecker{})
+	_, err = deployer.Deploy(DeployOptions{BuildDir: "build", HomeDir: "/home/test"})
+	require.Error(t, err)
+	deployed, err := deployer.Deploy(DeployOptions{BuildDir: "build", HomeDir: "/home/test", CreateBackup: true})
+	require.NoError(t, err)
+	require.Zero(t, deployed.ErrorCount)
+	require.Equal(t, 1, deployed.DeployedCount)
+	backup, err := afero.ReadFile(fs, deployed.DeployedFiles[0].BackupPath)
+	require.NoError(t, err)
+	require.Equal(t, unchanged, backup)
+	actual, err := afero.ReadFile(fs, "/etc/profile")
+	require.NoError(t, err)
+	require.Contains(t, string(actual), "echo staged-system")
+}
+
+func TestBuilderService_FishConfigMetadataPointsAtStagedFile(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	require.NoError(t, afero.WriteFile(fs, "manifest.yaml", []byte("shell:\n  type: fish\nmodules:\n  - name: config\n    file: config.fish\n    target: config\n"), 0o600))
+	require.NoError(t, afero.WriteFile(fs, "config.fish", []byte("echo fish-config\n"), 0o600))
+	reader := filesystem.NewReader(fs)
+	writer := filesystem.NewWriter(fs)
+	_, err := NewBuilderService(yamlparser.New(fs), reader, writer).Build(BuildOptions{ConfigDir: ".", Manifest: "manifest.yaml", OutputDir: "build", OS: "Linux"})
+	require.NoError(t, err)
+	result, err := NewDeployService(reader, writer).Deploy(DeployOptions{BuildDir: "build", HomeDir: "/home/test", CreateBackup: true})
+	require.NoError(t, err)
+	require.Zero(t, result.ErrorCount)
+	require.Equal(t, 1, result.DeployedCount)
+	actual, err := afero.ReadFile(fs, "/home/test/.config/fish/config.fish")
+	require.NoError(t, err)
+	require.Contains(t, string(actual), "echo fish-config")
 }

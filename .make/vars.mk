@@ -7,10 +7,10 @@ BUILD_DIR := build
 MAIN_PKG := ./cmd/shellforge
 
 # Version information
-VERSION ?= $(shell git describe --tags --abbrev=0 2>/dev/null || echo "dev")
+VERSION ?= $(shell sed -n 's/^var version = "\(.*\)"/\1/p' internal/cli/root.go)
 GIT_COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 BUILD_DATE ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-LDFLAGS := -ldflags "-X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT) -X main.BuildDate=$(BUILD_DATE)"
+LDFLAGS := -ldflags "-X github.com/gizzahub/gzh-cli-shellforge/internal/cli.version=$(VERSION)"
 
 # Go commands
 GO := go

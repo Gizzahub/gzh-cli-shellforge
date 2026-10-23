@@ -41,19 +41,19 @@ This command reads the manifest and displays module information including:
 Use --filter to show only modules for a specific OS.
 Use --verbose to show detailed information including full file paths.`,
 		Example: `  # List all modules
-  shellforge list
+  gz-shellforge list
 
   # List with custom manifest
-  shellforge list --manifest custom.yaml --config-dir modules
+  gz-shellforge list --manifest custom.yaml --config-dir modules
 
   # List only Mac-compatible modules
-  shellforge list --filter Mac
+  gz-shellforge list --filter Mac
 
   # List with verbose output
-  shellforge list --verbose
+  gz-shellforge list --verbose
 
   # List Linux modules with verbose output
-  shellforge list --filter Linux --verbose`,
+  gz-shellforge list --filter Linux --verbose`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runList(cmd, flags)
 		},

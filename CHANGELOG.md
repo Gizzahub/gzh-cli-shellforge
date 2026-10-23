@@ -22,6 +22,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.6.0] - 2026-10-23
+
+### Changed
+
+- Require explicit `--backup` or `--dry-run` for deploy, including application service callers.
+- Stage system files inside the build directory; resolve nested fish deployment sources correctly.
+- Return a failing CLI exit status when a target cannot be backed up or deployed.
+- Report the `gz-shellforge` binary name and inject the release version into the CLI.
+- Add pinned, nonpublishing release archive, checksum and Homebrew cask preparation.
+
 ## [Unreleased]
 
 ### Added

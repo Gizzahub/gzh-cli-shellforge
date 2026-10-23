@@ -85,11 +85,3 @@ install-fumpt: ## Install gofumpt
 	else \
 		echo "gofumpt already installed"; \
 	fi
-
-install-goreleaser: ## Install goreleaser
-	@echo "Installing goreleaser..."
-	@if ! command -v goreleaser >/dev/null 2>&1; then \
-		$(GO) install github.com/goreleaser/goreleaser@latest; \
-	else \
-		echo "goreleaser already installed"; \
-	fi

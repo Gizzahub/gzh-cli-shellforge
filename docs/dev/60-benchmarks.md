@@ -1,6 +1,104 @@
 # Performance Benchmarks
 
-This document describes the performance characteristics of the diff comparison system and provides benchmark results for reference.
+This document records CLI startup and memory observations alongside diff comparison benchmarks.
+
+## CLI 시작·메모리 관측 — 2026-10-23
+
+PRODUCT.md G2 / Quality Gates의 startup \<10ms, 10모듈 build \<50ms,
+메모리 \<10MB 목표는 그대로 유지한다. PRODUCT는 cold/warm, 표본 수,
+percentile, 메모리 metric과 MB 단위를 정하지 않았다. 아래는 그 빈틈을 드러내는
+재현 가능한 **관측 방법**이며 승인된 수용 기준을 새로 정의하지 않는다.
+특히 warm median이나 footprint만 골라 전체 성능 PASS라고 해석하지 않는다.
+
+### 재현 방법과 경계
+
+저장소 루트의 `make perf-startup`은 `make build`로 로컬 바이너리를 만들고
+`scripts/startup-profile.py`를 실행한다. Python 3 표준 라이브러리, Go,
+macOS `/usr/bin/time -l`, `xattr`, `sysctl`, `sw_vers`가 필요하다.
+선택한 binary의 quarantine 속성이 있으면 거부하며 제거하지 않는다.
+현재 구현은 macOS 전용 관측기이며 다른 OS의 메모리 숫자로 바꾸어 출력하지 않는다.
+
+- 바이너리 SHA256·Go buildinfo·source HEAD·OS/build·CPU·시각을 기록한다.
+  source HEAD와 실제 binary buildinfo를 모두 보존해 dirty build를 숨기지 않는다.
+- `--version`, `--help`, 10모듈 build, 빈 Go `main` 대조군을 각각 실행한다.
+  build는 task 임시 manifest와 파일을 사용한다. 사용자 dotfile은 읽거나 배포하지 않는다.
+- 각 workload의 첫 관측 1회와 같은 경로의 후속 30회를 구분한다.
+  후속 표본의 raw 값·min·median·nearest-rank p95·max를 모두 기록한다.
+  외부 Python 프로세스의 `perf_counter_ns`로 subprocess 생성부터 종료까지 잰다.
+  프로세스 생성과 stdout/stderr 수집 비용이 포함되므로 Go 함수 실행 시간과 다르다.
+- 로컬 executable을 새 inode로 복사해 첫 실행을 각각 5회 더 관측한다.
+  shellforge와 빈 Go 대조군의 실행 순서를 번갈아 배치한다. 이는 **fresh-copy**
+  표본이며 filesystem/dyld/security cache가 차가움을 입증하지 않는다.
+  reboot, cache purge, 전역 보안 설정 변경이나 quarantine 우회를 하지 않는다.
+- 메모리는 각 workload를 별도 프로세스로 5회 실행한 `/usr/bin/time -l`의
+  `maximum resident set size`와 `peak memory footprint`를 각각 bytes로 기록한다.
+  둘은 서로 대체할 수 없으며 elapsed 표본과도 별도 실행이다.
+- `GODEBUG=inittrace=1`은 마지막 별도 프로세스에서만 사용한다. tracing 자체의
+  overhead가 있으므로 그 시간과 uninstrumented elapsed를 직접 빼지 않는다.
+- 전체 raw JSON은 `tmp/startup-profile.json`에 쓴다. 측정 fixture와 대조군은
+  이 실행이 만든 고유 tmp 하위에서 생성·정리한다. 결과 JSON은 검토를 위해 남긴다.
+  직접 호출할 때 `--samples`, `--fresh-copies`, `--output`으로 관측 수와 출력만
+  바꿀 수 있다. 임의의 count를 제품의 정식 수용 기준으로 간주하지 않는다.
+
+### 관측 결과
+
+2026-10-23 14:41:33 UTC, Apple M5 Max, macOS 27.0.1 (26A434),
+Go 1.27.3 darwin/arm64, Python 3.14.5. 생산 소스는 `89baf366`이며
+Make 바이너리 크기는 8,463,778 bytes다. 이 후속에서는 생산 Go 코드를 바꾸지 않았다.
+측정 binary의 `vcs.modified=true`는 README·측정기 작업 diff를 포함한다. 공개 릴리스
+자산을 바꾼 것이 아니며, 해당 릴리스의 정확한 bytes를 측정했다고 주장하지 않는다.
+이전 25회 측정의 288.850ms 첫 호출과 다른 표본이므로 전후 개선율로 비교하지 않는다.
+
+| workload          | 첫 관측 ms | warm median ms | warm p95 ms | warm max ms |
+| ----------------- | ---------: | -------------: | ----------: | ----------: |
+| `--version`       |    284.105 |          7.652 |       9.455 |       9.597 |
+| `--help`          |      7.863 |          6.872 |       7.967 |       8.613 |
+| 10모듈 build      |      8.034 |          7.619 |       8.324 |       8.396 |
+| 빈 Go main 대조군 |    233.366 |          4.276 |       5.039 |       5.417 |
+
+fresh-copy 첫 실행의 원시 표본(ms):
+
+- shellforge: 111.929, 109.877, 102.379, 102.787, 100.496.
+- 빈 Go main: 64.131, 64.198, 86.183, 60.779, 64.446.
+
+| workload     | maximum RSS 범위 bytes | peak footprint 범위 bytes |
+| ------------ | ---------------------: | ------------------------: |
+| `--version`  |  11,501,568–11,812,864 |       5,128,840–5,456,568 |
+| `--help`     |  11,567,104–11,616,256 |       5,128,840–5,194,400 |
+| 10모듈 build |  12,206,080–12,419,072 |       5,407,368–5,620,360 |
+| 빈 Go main   |    4,243,456–4,571,136 |       3,015,184–3,359,272 |
+
+생산 binary를 다시 빌드하지 않은 확인 실행(14:47:01 UTC, 같은 표본 수)에서는
+`--version` 첫 관측 5.689ms, warm median 4.539ms / p95 5.046ms /
+max 5.116ms였고, 10모듈 build는 warm median 5.033ms / max 6.381ms였다.
+반면 매 실행 새로 만든 빈 Go main의 첫 관측은 255.333ms였다.
+이 실행의 fresh-copy 원시 표본(ms)은 shellforge
+308.338, 120.950, 157.037, 127.030, 105.800이고, 빈 Go main은
+72.510, 74.592, 67.688, 67.123, 114.774였다. 같은 application code에서도
+관측 분포가 달라진다. 이를 코드 최적화나 안정적인 cold-start 통과로 보고하지 않는다.
+확인 실행 JSON은 `tmp/startup-profile-confirmation.json`에 따로 남겼다.
+
+### 초기화 원인 조사와 최적화 판단
+
+`BenchmarkNewRootCmd`는 프로세스 launch와 command registration을 분리한다.
+3회 결과는 79,800 / 101,710 / 80,475 ns/op, 약 52,802 B/op,
+305 allocs/op다. allocation profile의 주요 항목은 pflag의 flag 등록과
+FlagSet이 사용하는 buffered writer다. 반복 benchmark의 누적 allocation을
+한 번의 실행 RSS로 보고하지 않는다.
+
+별도 inittrace의 initializer clock 합은 0.319ms, 약 99,304 bytes였다.
+그중 domain의 exported regexp 초기화는 0.050ms, YAML은 0.036ms였다.
+이 단일 traced 표본이나 command constructor의 0.08–0.10ms만으로
+100–284ms 첫 실행 tail을 설명할 수 없다. 빈 Go main에서도 큰 첫 실행 tail을
+관측했으므로 문제가 CLI command 등록에만 있다고 단정할 근거도 없다.
+이 대조군은 OS loader·cache·보안 검사를 각각 격리한 실험이 아니므로 어느 것을
+확정 원인으로 지목하지 않는다. executable 크기와 import graph도 두 바이너리 사이에 다르다.
+
+따라서 lazy registration이나 exported regexp의 변경을 추가하지 않았다.
+공개 API·CLI 도움말·배포 안전 계약을 바꾸는 추측성 최적화는 이 근거로 정당화되지 않는다.
+startup의 첫 실행과 maximum RSS는 목표보다 높으며 전체 성능 PASS는 아니다.
+수용 workload/metric 정의와 더 세분화한 launch tracing이 남는다.
+아래의 기존 diff benchmark는 별도 workload의 과거 자료이며 이번 CLI 관측의 대용이 아니다.
 
 ## Running Benchmarks
 

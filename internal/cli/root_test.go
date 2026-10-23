@@ -219,3 +219,14 @@ func TestRootCmd_HelpCommand(t *testing.T) {
 	output := buf.String()
 	assert.Contains(t, output, "Available Commands:", "help command should show available commands")
 }
+
+// BenchmarkNewRootCmd measures command registration separately from process launch.
+func BenchmarkNewRootCmd(b *testing.B) {
+	b.ReportAllocs()
+	for b.Loop() {
+		cmd := NewRootCmd()
+		if cmd.Use != shellforgeCommandName {
+			b.Fatal("unexpected command identity")
+		}
+	}
+}

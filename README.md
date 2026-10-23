@@ -47,11 +47,12 @@ mkdir ~/shellforge && cd ~/shellforge
 gz-shellforge migrate ~/.zshrc
 
 # 3. Build for your OS
-gz-shellforge build --os Mac --output ~/.zshrc.new
+gz-shellforge build --os Mac --output-dir ./build
 
 # 4. Test and deploy
-gz-shellforge diff ~/.zshrc ~/.zshrc.new
-mv ~/.zshrc.new ~/.zshrc
+gz-shellforge diff ~/.zshrc ./build/.zshrc
+gz-shellforge deploy --dry-run
+gz-shellforge deploy --backup
 ```
 
 **[Complete tutorial →](docs/user/00-quick-start.md)**
@@ -119,7 +120,12 @@ modules/
 gz-shellforge validate
 
 # Build for specific OS
-gz-shellforge build --os Mac --output ~/.zshrc
+gz-shellforge build --os Mac --output-dir ./build
+
+# Review before deploying with a backup
+gz-shellforge diff ~/.zshrc ./build/.zshrc
+gz-shellforge deploy --dry-run
+gz-shellforge deploy --backup
 
 # List modules with filtering
 gz-shellforge list --filter Mac

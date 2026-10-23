@@ -33,3 +33,7 @@ test-verbose: ## Run tests with verbose output
 bench: ## Run benchmarks
 	@echo "Running benchmarks..."
 	$(GOTEST) -bench=. -benchmem -run=^$$ ./... | tee bench.txt
+
+.PHONY: perf-startup
+perf-startup: build ## Observe macOS startup, ten-module build and memory without changing acceptance thresholds
+	python3 scripts/startup-profile.py --binary "$(BUILD_DIR)/$(BINARY_NAME)" --output tmp/startup-profile.json

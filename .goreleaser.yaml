@@ -49,3 +49,11 @@ homebrew_casks:
     homepage: https://github.com/Gizzahub/gzh-cli-shellforge
     description: Build and safely deploy modular shell configurations
     license: MIT
+    # Use Homebrew's declarative flight API for the unsigned macOS binary.
+    # Escape staged_path so GoReleaser preserves the Homebrew runtime token.
+    custom_block: |
+      postflight_steps do
+        on_macos do
+          run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ "{{staged_path}}" }}/gz-shellforge"]
+        end
+      end

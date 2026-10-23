@@ -40,7 +40,9 @@ G2. **Build performance**
 
 - Target: 기동 < 10ms, 10모듈 빌드 < 50ms, 메모리 < 10MB, 바이너리 ~8MB
 - Metric: macOS 에서 릴리스 바이너리에
-  `scripts/startup-profile.py --binary <릴리스 바이너리>` 를 실행해 잰다
+  `python3 scripts/startup-profile.py --binary <릴리스 바이너리> --output tmp/startup-profile.json`
+  을 실행해 잰다. 스크립트는 `com.apple.quarantine` 속성이 붙은 바이너리를
+  거부하므로 릴리스 산출물은 `gh release download` 나 `curl` 로 받는다
   (`make perf-startup` 은 로컬 Make 빌드를 재는 개발용 참고값이다). 기동은
   `version` workload 의 warm median(같은 실행 파일을 반복 실행한 표본의 중앙값),
   10모듈 빌드는 `build_10_modules` workload 의 warm median, 메모리는 `version`

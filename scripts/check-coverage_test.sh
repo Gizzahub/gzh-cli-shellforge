@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # Synthetic profiles exercise the exact boundary without changing source coverage.
-script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 expect_status() {
     local expected=$1 profile=$2 actual
     if printf '%s\n' "$profile" | awk -f "$script_dir/check-coverage.awk"; then

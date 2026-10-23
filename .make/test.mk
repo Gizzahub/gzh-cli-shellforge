@@ -15,11 +15,16 @@ test-integration: ## Run integration tests only
 	@echo "Running integration tests..."
 	$(GOTEST) -v -run Integration -timeout $(TEST_TIMEOUT) ./...
 
-test-coverage: test ## Generate HTML coverage report
+test-coverage: test test-coverage-gate ## Generate HTML coverage report
 	@echo "Generating coverage report..."
 	$(GO) tool cover -html=$(COVERAGE_OUT) -o $(COVERAGE_HTML)
 	@echo "Coverage report: $(COVERAGE_HTML)"
-	@$(GO) tool cover -func=$(COVERAGE_OUT) | tail -1
+	@$(GO) tool cover -func=$(COVERAGE_OUT) >/dev/null
+	@awk -f scripts/check-coverage.awk "$(COVERAGE_OUT)"
+
+.PHONY: test-coverage-gate
+test-coverage-gate: ## Verify exact coverage threshold enforcement
+	@bash scripts/check-coverage_test.sh
 
 test-verbose: ## Run tests with verbose output
 	@echo "Running tests (verbose)..."
@@ -28,3 +33,7 @@ test-verbose: ## Run tests with verbose output
 bench: ## Run benchmarks
 	@echo "Running benchmarks..."
 	$(GOTEST) -bench=. -benchmem -run=^$$ ./... | tee bench.txt
+
+.PHONY: perf-startup
+perf-startup: build ## Observe macOS startup, ten-module build and memory without changing acceptance thresholds
+	python3 scripts/startup-profile.py --binary "$(BUILD_DIR)/$(BINARY_NAME)" --output tmp/startup-profile.json

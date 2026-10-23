@@ -14,9 +14,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "0.5.1"
+var version = "0.6.0"
 
-const shellforgeCommandName = "shellforge"
+const shellforgeCommandName = "gz-shellforge"
 
 func mustMarkFlagRequired(cmd *cobra.Command, names ...string) {
 	for _, name := range names {

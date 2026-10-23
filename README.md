@@ -4,14 +4,14 @@
 
 Transform your monolithic `.zshrc`/`.bashrc` into organized, maintainable modules with automatic dependency resolution and OS-specific filtering.
 
-[![Tests](https://img.shields.io/badge/tests-291_passing-brightgreen)]()
-[![Coverage](https://img.shields.io/badge/coverage-78.0%25-brightgreen)]()
-[![Go Version](https://img.shields.io/badge/go-1.21%2B-blue)]()
-[![License](https://img.shields.io/badge/license-MIT-blue)]()
+[![Tests](https://img.shields.io/badge/tests-291_passing-brightgreen)](<>)
+[![Coverage](https://img.shields.io/badge/coverage-78.0%25-brightgreen)](<>)
+[![Go Version](https://img.shields.io/badge/go-1.21%2B-blue)](<>)
+[![License](https://img.shields.io/badge/license-MIT-blue)](<>)
 
 **[Quick Start](docs/user/00-quick-start.md)** | **[Documentation](docs/user/)** | **[Examples](examples/)**
 
----
+______________________________________________________________________
 
 ## What It Does
 
@@ -22,7 +22,7 @@ Transform your monolithic `.zshrc`/`.bashrc` into organized, maintainable module
 - ✅ **Templates** - Generate common modules quickly
 - ✅ **Backup/Restore** - Version control with git
 
----
+______________________________________________________________________
 
 ## Quick Start
 
@@ -47,38 +47,45 @@ mkdir ~/shellforge && cd ~/shellforge
 gz-shellforge migrate ~/.zshrc
 
 # 3. Build for your OS
-gz-shellforge build --os Mac --output ~/.zshrc.new
+gz-shellforge build --os Mac --output-dir ./build
 
 # 4. Test and deploy
-gz-shellforge diff ~/.zshrc ~/.zshrc.new
-mv ~/.zshrc.new ~/.zshrc
+gz-shellforge diff ~/.zshrc ./build/.zshrc
+gz-shellforge deploy --dry-run
+gz-shellforge deploy --backup
 ```
 
 **[Complete tutorial →](docs/user/00-quick-start.md)**
 
----
+______________________________________________________________________
 
 ## Core Features
 
 ### Dependency Resolution
+
 Automatically sorts modules using topological sort (Kahn's algorithm). No more manual ordering or "works by accident" configs.
 
 ### OS Filtering
+
 Write once, deploy everywhere. Modules tagged with `os: [Mac]` only load on macOS, `os: [Linux]` only on Linux.
 
 ### Migration Tools
+
 Convert your existing monolithic `.zshrc` to organized modules automatically. Detects sections, infers dependencies, and categorizes content.
 
 ### Template System
+
 Generate common modules from 6 built-in templates: PATH, environment variables, aliases, tool initialization, and more.
 
 ### Backup & Restore
+
 Git-backed versioning with timestamped snapshots. Rollback to any previous configuration instantly.
 
 ### Diff Comparison
+
 Compare original and generated configs with 4 output formats: summary, unified, context, side-by-side.
 
----
+______________________________________________________________________
 
 ## Example: Module Structure
 
@@ -110,7 +117,7 @@ modules/
 
 **[See complete examples →](examples/)**
 
----
+______________________________________________________________________
 
 ## Commands
 
@@ -119,7 +126,12 @@ modules/
 gz-shellforge validate
 
 # Build for specific OS
-gz-shellforge build --os Mac --output ~/.zshrc
+gz-shellforge build --os Mac --output-dir ./build
+
+# Review before deploying with a backup
+gz-shellforge diff ~/.zshrc ./build/.zshrc
+gz-shellforge deploy --dry-run
+gz-shellforge deploy --backup
 
 # List modules with filtering
 gz-shellforge list --filter Mac
@@ -142,46 +154,50 @@ gz-shellforge diff ~/.zshrc ~/.zshrc.new
 
 **[Full command reference →](docs/user/40-command-reference.md)**
 
----
+______________________________________________________________________
 
 ## Documentation
 
 ### For Users
+
 - **[Quick Start Guide](docs/user/00-quick-start.md)** - Get started in 5 minutes
 - **[Complete Workflows](docs/user/30-workflows.md)** - Step-by-step guide
 - **[Command Reference](docs/user/40-command-reference.md)** - All commands with examples
 - **[User Documentation](docs/user/)** - Complete user guide
 
 ### For Developers
+
 - **[Architecture](docs/dev/00-architecture.md)** - System design (Hexagonal)
 - **[Tech Stack](docs/dev/50-tech-stack.md)** - Technology decisions
 - **[Contributing Guide](docs/dev/CONTRIBUTING.md)** - How to contribute
 - **[Developer Documentation](docs/dev/)** - Complete developer guide
 
----
+______________________________________________________________________
 
 ## Performance
 
 Go implementation is significantly faster than Python version:
 
-| Metric | Python | Go | Improvement |
-|--------|--------|----|----|
-| Startup | ~200ms | <10ms | **20x faster** |
-| Build (10 modules) | ~300ms | <50ms | **6x faster** |
-| Memory | ~80MB | <10MB | **8x lighter** |
-| Binary size | ~40MB | ~8MB | **5x smaller** |
+| Metric             | Python | Go     | Improvement    |
+| ------------------ | ------ | ------ | -------------- |
+| Startup            | ~200ms | \<10ms | **20x faster** |
+| Build (10 modules) | ~300ms | \<50ms | **6x faster**  |
+| Memory             | ~80MB  | \<10MB | **8x lighter** |
+| Binary size        | ~40MB  | ~8MB   | **5x smaller** |
 
----
+______________________________________________________________________
 
 ## Why Shellforge?
 
 ### Problem
+
 - Manual shell script concatenation causes ordering errors
 - No dependency tracking leads to tools loading before dependencies
 - OS-specific logic scattered everywhere, hard to maintain
 - No validation until runtime errors occur
 
 ### Solution
+
 - Automatic dependency resolution with topological sort
 - OS-specific module filtering (Mac/Linux)
 - Pre-deployment validation catches errors early
@@ -190,16 +206,16 @@ Go implementation is significantly faster than Python version:
 
 ### Compared to Alternatives
 
-| Feature | Shellforge | dotbot | chezmoi | stow |
-|---------|-----------|--------|---------|------|
-| **Multi-file unified management** | ✅ | ❌ | △ | ❌ |
-| **Build/deploy separation** | ✅ | ❌ | ❌ | ❌ |
-| Automatic dependency resolution | ✅ | ❌ | ❌ | ❌ |
-| OS auto-detection | ✅ | ❌ | ✅ | ❌ |
-| Shell-config specialized | ✅ | ❌ | ❌ | ❌ |
-| Migration tooling | ✅ | ❌ | △ | ❌ |
-| Template system | ✅ | △ | ✅ | ❌ |
-| Single binary | ✅ | ❌ | ✅ | ✅ |
+| Feature                           | Shellforge | dotbot | chezmoi | stow |
+| --------------------------------- | ---------- | ------ | ------- | ---- |
+| **Multi-file unified management** | ✅         | ❌     | △       | ❌   |
+| **Build/deploy separation**       | ✅         | ❌     | ❌      | ❌   |
+| Automatic dependency resolution   | ✅         | ❌     | ❌      | ❌   |
+| OS auto-detection                 | ✅         | ❌     | ✅      | ❌   |
+| Shell-config specialized          | ✅         | ❌     | ❌      | ❌   |
+| Migration tooling                 | ✅         | ❌     | △       | ❌   |
+| Template system                   | ✅         | △      | ✅      | ❌   |
+| Single binary                     | ✅         | ❌     | ✅      | ✅   |
 
 ### Who It's For
 
@@ -207,7 +223,7 @@ Go implementation is significantly faster than Python version:
 - **Teams & organizations** — share a standard dev environment, simplify onboarding, collaborate through version control
 - **DevOps** — automate shell config in CI/CD, manage container-image configs, treat configuration as code
 
----
+______________________________________________________________________
 
 ## Status
 
@@ -216,6 +232,7 @@ Go implementation is significantly faster than Python version:
 **Status**: Active development
 
 ### Implemented Features
+
 - ✅ Build, validate, list commands
 - ✅ Migration from monolithic configs
 - ✅ Template generation (6 types)
@@ -224,15 +241,17 @@ Go implementation is significantly faster than Python version:
 - ✅ OS filtering (Mac/Linux)
 
 ### Planned Features
+
 - ⏳ Plugin system for custom validators
 - ⏳ BSD support (FreeBSD 13+)
 - ⏳ Fish shell support
 
----
+______________________________________________________________________
 
 ## Installation
 
 ### Prerequisites
+
 - Go 1.21 or later
 - Git (for backup/restore features)
 
@@ -251,28 +270,28 @@ gz-shellforge --version
 # Output: shellforge version 0.5.1
 ```
 
----
+______________________________________________________________________
 
 ## Contributing
 
 Contributions welcome! Please:
 
 1. Read the [Contributing Guide](CONTRIBUTING.md)
-2. Fork the repository
-3. Create a feature branch
-4. Write tests for new features
-5. Ensure all tests pass: `make test`
-6. Submit a pull request
+1. Fork the repository
+1. Create a feature branch
+1. Write tests for new features
+1. Ensure all tests pass: `make test`
+1. Submit a pull request
 
 See [Development Guide](.claude/DEVELOPMENT.md) for architecture details.
 
----
+______________________________________________________________________
 
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
----
+______________________________________________________________________
 
 ## Support
 
@@ -281,6 +300,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - **Examples**: [examples/](examples/)
 - **Discussions**: [GitHub Discussions](https://github.com/gizzahub/gzh-cli-shellforge/discussions)
 
----
+______________________________________________________________________
 
 **Built with Go, designed for shell power users** 🚀

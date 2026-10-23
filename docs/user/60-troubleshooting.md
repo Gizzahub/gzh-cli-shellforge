@@ -2,7 +2,7 @@
 
 Common issues and solutions for Shellforge users.
 
----
+______________________________________________________________________
 
 ## Table of Contents
 
@@ -15,13 +15,14 @@ Common issues and solutions for Shellforge users.
 - [Platform-Specific Issues](#platform-specific-issues)
 - [Getting More Help](#getting-more-help)
 
----
+______________________________________________________________________
 
 ## Installation Issues
 
 ### Command Not Found: gz-shellforge
 
 **Problem:**
+
 ```bash
 $ gz-shellforge --version
 zsh: command not found: gz-shellforge
@@ -30,11 +31,13 @@ zsh: command not found: gz-shellforge
 **Solutions:**
 
 1. **Check if Go bin is in PATH:**
+
    ```bash
    echo $PATH | grep "$(go env GOPATH)/bin"
    ```
 
    If not found, add to your shell config:
+
    ```bash
    # For zsh (~/.zshrc)
    export PATH="$PATH:$(go env GOPATH)/bin"
@@ -46,12 +49,14 @@ zsh: command not found: gz-shellforge
    source ~/.zshrc  # or source ~/.bashrc
    ```
 
-2. **Verify installation:**
+1. **Verify installation:**
+
    ```bash
    ls -la $(go env GOPATH)/bin/gz-shellforge
    ```
 
-3. **Reinstall if missing:**
+1. **Reinstall if missing:**
+
    ```bash
    go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
    ```
@@ -59,6 +64,7 @@ zsh: command not found: gz-shellforge
 ### Go Version Too Old
 
 **Problem:**
+
 ```
 go: module requires Go 1.21 or later
 ```
@@ -82,6 +88,7 @@ go version
 ### Build Fails During Installation
 
 **Problem:**
+
 ```
 # github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge
 build error: ...
@@ -90,29 +97,33 @@ build error: ...
 **Solutions:**
 
 1. **Clean Go cache:**
+
    ```bash
    go clean -modcache
    go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
    ```
 
-2. **Check network connectivity:**
+1. **Check network connectivity:**
+
    ```bash
    ping pkg.go.dev
    ```
 
-3. **Use proxy if behind firewall:**
+1. **Use proxy if behind firewall:**
+
    ```bash
    export GOPROXY=https://proxy.golang.org,direct
    go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
    ```
 
----
+______________________________________________________________________
 
 ## Build Errors
 
 ### Circular Dependency Detected
 
 **Problem:**
+
 ```
 Error: circular dependency detected
 Cycle: module-a → module-b → module-c → module-a
@@ -121,6 +132,7 @@ Cycle: module-a → module-b → module-c → module-a
 **Solution:**
 
 1. **Identify the cycle** in `manifest.yaml`:
+
    ```yaml
    # WRONG - creates cycle
    - name: module-a
@@ -133,7 +145,8 @@ Cycle: module-a → module-b → module-c → module-a
      requires: [module-b]
    ```
 
-2. **Break the cycle** by removing unnecessary dependency:
+1. **Break the cycle** by removing unnecessary dependency:
+
    ```yaml
    # CORRECT
    - name: module-a
@@ -146,7 +159,8 @@ Cycle: module-a → module-b → module-c → module-a
      requires: [module-b]
    ```
 
-3. **Validate after fix:**
+1. **Validate after fix:**
+
    ```bash
    gz-shellforge validate -v
    ```
@@ -154,6 +168,7 @@ Cycle: module-a → module-b → module-c → module-a
 ### Module File Not Found
 
 **Problem:**
+
 ```
 Error: module file not found: modules/init.d/missing.sh
 Module: my-module
@@ -162,23 +177,27 @@ Module: my-module
 **Solutions:**
 
 1. **Check file path in manifest:**
+
    ```yaml
    # Ensure file path is relative to config-dir
    - name: my-module
      file: init.d/my-module.sh  # NOT: /absolute/path/to/file.sh
    ```
 
-2. **Verify file exists:**
+1. **Verify file exists:**
+
    ```bash
    ls -la modules/init.d/my-module.sh
    ```
 
-3. **Check file permissions:**
+1. **Check file permissions:**
+
    ```bash
    chmod 644 modules/init.d/my-module.sh
    ```
 
-4. **Use correct config-dir flag:**
+1. **Use correct config-dir flag:**
+
    ```bash
    gz-shellforge build --config-dir modules --os Mac
    ```
@@ -186,6 +205,7 @@ Module: my-module
 ### OS Not Specified
 
 **Problem:**
+
 ```
 Error: --os flag is required
 ```
@@ -205,6 +225,7 @@ gz-shellforge build --output ~/.zshrc  # Missing --os
 ### Output File Permission Denied
 
 **Problem:**
+
 ```
 Error: failed to write output file: permission denied
 File: /etc/zshrc
@@ -213,28 +234,32 @@ File: /etc/zshrc
 **Solutions:**
 
 1. **Use user home directory:**
+
    ```bash
    # Use ~ not /
    gz-shellforge build --os Mac --output ~/.zshrc
    ```
 
-2. **Check file permissions:**
+1. **Check file permissions:**
+
    ```bash
    ls -la ~/.zshrc
    ```
 
-3. **Use sudo only if really needed:**
+1. **Use sudo only if really needed:**
+
    ```bash
    sudo gz-shellforge build --os Mac --output /etc/zshrc
    ```
 
----
+______________________________________________________________________
 
 ## Validation Errors
 
 ### Invalid YAML Syntax
 
 **Problem:**
+
 ```
 Error: failed to parse manifest
 Line 10: mapping values are not allowed here
@@ -243,6 +268,7 @@ Line 10: mapping values are not allowed here
 **Solutions:**
 
 1. **Check YAML syntax:**
+
    ```yaml
    # WRONG - missing quotes
    - name: my-module
@@ -253,10 +279,11 @@ Line 10: mapping values are not allowed here
      description: "This is: valid"
    ```
 
-2. **Validate YAML online:**
+1. **Validate YAML online:**
    Use [YAML Lint](http://www.yamllint.com/) to check syntax
 
-3. **Check indentation:**
+1. **Check indentation:**
+
    ```yaml
    # WRONG - inconsistent indentation
    modules:
@@ -272,6 +299,7 @@ Line 10: mapping values are not allowed here
 ### Missing Required Fields
 
 **Problem:**
+
 ```
 Error: module missing required field: name
 Module index: 3
@@ -293,6 +321,7 @@ modules:
 ### Duplicate Module Names
 
 **Problem:**
+
 ```
 Error: duplicate module name: os-detection
 ```
@@ -318,13 +347,14 @@ modules:
     file: init.d/other.sh
 ```
 
----
+______________________________________________________________________
 
 ## Migration Issues
 
 ### No Sections Detected
 
 **Problem:**
+
 ```
 Warning: No sections detected in RC file
 File: ~/.zshrc
@@ -333,6 +363,7 @@ File: ~/.zshrc
 **Solutions:**
 
 1. **Check section header formats** Shellforge supports:
+
    ```bash
    # Supported formats:
    # --- Section Name ---
@@ -341,7 +372,8 @@ File: ~/.zshrc
    # SECTION NAME
    ```
 
-2. **Add headers manually** if missing:
+1. **Add headers manually** if missing:
+
    ```bash
    # Edit your .zshrc before migration
    # Add section headers like:
@@ -352,7 +384,8 @@ File: ~/.zshrc
    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
    ```
 
-3. **Use dry-run to preview:**
+1. **Use dry-run to preview:**
+
    ```bash
    gz-shellforge migrate ~/.zshrc --dry-run -v
    ```
@@ -365,22 +398,26 @@ Migration put modules in wrong categories (init.d vs rc_pre.d vs rc_post.d).
 **Solutions:**
 
 1. **Review generated manifest:**
+
    ```bash
    cat manifest.yaml
    ```
 
-2. **Manually move files:**
+1. **Manually move files:**
+
    ```bash
    mv modules/init.d/nvm.sh modules/rc_pre.d/nvm.sh
    ```
 
-3. **Update manifest:**
+1. **Update manifest:**
+
    ```yaml
    - name: nvm
      file: rc_pre.d/nvm.sh  # Update path
    ```
 
-4. **Re-categorize guidelines:**
+1. **Re-categorize guidelines:**
+
    - `init.d/` - PATH, OS detection, early init
    - `rc_pre.d/` - Tool initialization (nvm, rbenv, pyenv)
    - `rc_post.d/` - Aliases, functions, customization
@@ -405,11 +442,12 @@ Manually add dependencies in `manifest.yaml`:
 ```
 
 **Common dependency patterns:**
+
 - If module uses `$MACHINE` → requires `os-detection`
 - If module uses `brew` → requires `brew-path` (Mac only)
 - If module sources a file → requires module that creates that file
 
----
+______________________________________________________________________
 
 ## Runtime Errors
 
@@ -421,12 +459,14 @@ Functions defined in modules don't work after sourcing generated config.
 **Solutions:**
 
 1. **Check module load order:**
+
    ```bash
    gz-shellforge list -v
    # Ensure function definitions load before usage
    ```
 
-2. **Verify dependencies:**
+1. **Verify dependencies:**
+
    ```yaml
    - name: helper-functions
      file: rc_post.d/helpers.sh
@@ -437,7 +477,8 @@ Functions defined in modules don't work after sourcing generated config.
      requires: [helper-functions]  # Add if needed
    ```
 
-3. **Test generated config:**
+1. **Test generated config:**
+
    ```bash
    # Source in new shell
    zsh -c 'source ~/.zshrc.new; type my_function'
@@ -451,19 +492,22 @@ Environment variables from modules not available.
 **Solutions:**
 
 1. **Check if module loads for your OS:**
+
    ```yaml
    - name: mac-env
      file: rc_pre.d/mac-env.sh
      os: [Mac]  # Won't load on Linux!
    ```
 
-2. **Verify build OS matches:**
+1. **Verify build OS matches:**
+
    ```bash
    # If on Mac, build for Mac
    gz-shellforge build --os Mac --output ~/.zshrc
    ```
 
-3. **Check load order:**
+1. **Check load order:**
+
    ```bash
    # ENV vars should load early
    gz-shellforge list -v
@@ -477,26 +521,29 @@ Aliases defined in modules don't work.
 **Solutions:**
 
 1. **Ensure aliases load last:**
+
    ```yaml
    - name: my-aliases
      file: rc_post.d/aliases.sh  # Should be in rc_post.d/
      requires: []
    ```
 
-2. **Check shell type:**
+1. **Check shell type:**
+
    ```bash
    # Some aliases work only in zsh or bash
    echo $SHELL
    ```
 
-3. **Verify syntax:**
+1. **Verify syntax:**
+
    ```bash
    # Correct alias syntax
    alias ll='ls -la'
    alias k='kubectl'
    ```
 
----
+______________________________________________________________________
 
 ## Performance Issues
 
@@ -508,6 +555,7 @@ Shell takes too long to start after using Shellforge.
 **Solutions:**
 
 1. **Profile shell startup:**
+
    ```bash
    # Zsh profiling
    zsh -i -c exit
@@ -518,13 +566,15 @@ Shell takes too long to start after using Shellforge.
    zprof
    ```
 
-2. **Identify slow modules:**
+1. **Identify slow modules:**
    Look for modules doing:
+
    - Network calls
    - Heavy computation
    - Large file reads
 
-3. **Optimize slow modules:**
+1. **Optimize slow modules:**
+
    ```bash
    # Use conditional loading
    if [ -d "$NVM_DIR" ]; then
@@ -539,7 +589,7 @@ Shell takes too long to start after using Shellforge.
    }
    ```
 
-4. **Defer non-critical modules:**
+1. **Defer non-critical modules:**
    Move to separate file and source asynchronously.
 
 ### Large Output File
@@ -550,6 +600,7 @@ Generated shell config is too large.
 **Solutions:**
 
 1. **Remove unused modules:**
+
    ```bash
    # List all modules
    gz-shellforge list -v
@@ -557,17 +608,18 @@ Generated shell config is too large.
    # Remove unused from manifest.yaml
    ```
 
-2. **Split large modules:**
+1. **Split large modules:**
    Break large modules into smaller, focused ones.
 
-3. **Use external files:**
+1. **Use external files:**
    Instead of inline content, source external files:
+
    ```bash
    # In module:
    [ -f ~/.aliases ] && source ~/.aliases
    ```
 
----
+______________________________________________________________________
 
 ## Platform-Specific Issues
 
@@ -576,6 +628,7 @@ Generated shell config is too large.
 #### Homebrew Not Found After Build
 
 **Problem:**
+
 ```
 brew: command not found
 ```
@@ -583,11 +636,13 @@ brew: command not found
 **Solution:**
 
 1. **Check brew-path module exists:**
+
    ```bash
    gz-shellforge list --filter Mac -v | grep brew
    ```
 
-2. **Verify PATH in module:**
+1. **Verify PATH in module:**
+
    ```bash
    cat modules/init.d/05-brew-path.sh
    # Should contain:
@@ -596,7 +651,8 @@ brew: command not found
    export PATH="/usr/local/bin:$PATH"     # Intel Mac
    ```
 
-3. **Ensure module loads:**
+1. **Ensure module loads:**
+
    ```yaml
    - name: brew-path
      file: init.d/05-brew-path.sh
@@ -607,6 +663,7 @@ brew: command not found
 #### macOS Catalina+ zsh Warning
 
 **Problem:**
+
 ```
 The default interactive shell is now zsh.
 To update your account to use zsh, please run `chsh -s /bin/zsh`.
@@ -614,6 +671,7 @@ To update your account to use zsh, please run `chsh -s /bin/zsh`.
 
 **Solution:**
 This is normal. Shellforge works with both zsh and bash. Ignore or switch to zsh:
+
 ```bash
 chsh -s /bin/zsh
 ```
@@ -628,11 +686,13 @@ Changes don't apply system-wide.
 **Solution:**
 
 1. **User config:**
+
    ```bash
    gz-shellforge build --os Linux --output ~/.bashrc
    ```
 
-2. **System-wide config:**
+1. **System-wide config:**
+
    ```bash
    sudo gz-shellforge build --os Linux --output /etc/bashrc
    # Or
@@ -661,7 +721,7 @@ elif command -v pacman >/dev/null 2>&1; then
 fi
 ```
 
----
+______________________________________________________________________
 
 ## Getting More Help
 
@@ -709,7 +769,8 @@ If problem persists:
 1. **Check existing issues:**
    [GitHub Issues](https://github.com/gizzahub/gzh-cli-shellforge/issues)
 
-2. **Gather information:**
+1. **Gather information:**
+
    ```bash
    gz-shellforge --version
    go version
@@ -717,63 +778,71 @@ If problem persists:
    echo $SHELL
    ```
 
-3. **Create minimal reproduction:**
+1. **Create minimal reproduction:**
+
    - Simplify manifest to minimal case
    - Include exact commands and error messages
 
-4. **Submit issue:**
+1. **Submit issue:**
    Include:
+
    - Shellforge version
    - Operating system
    - Complete error message
    - Steps to reproduce
    - Manifest.yaml (if applicable)
 
----
+______________________________________________________________________
 
 ## Common Error Messages Reference
 
-| Error Message | Likely Cause | Solution |
-|---------------|--------------|----------|
-| `command not found: gz-shellforge` | Not in PATH | Add Go bin to PATH |
-| `circular dependency detected` | Dependency cycle | Remove circular requires |
-| `module file not found` | Wrong file path | Check path in manifest |
-| `--os flag is required` | Missing OS flag | Add --os Mac or --os Linux |
-| `permission denied` | Wrong output location | Use ~/.zshrc not /etc/zshrc |
-| `invalid YAML syntax` | YAML parsing error | Check indentation and quotes |
-| `duplicate module name` | Name collision | Use unique module names |
-| `failed to parse manifest` | Corrupt YAML | Validate YAML syntax |
+| Error Message                      | Likely Cause          | Solution                     |
+| ---------------------------------- | --------------------- | ---------------------------- |
+| `command not found: gz-shellforge` | Not in PATH           | Add Go bin to PATH           |
+| `circular dependency detected`     | Dependency cycle      | Remove circular requires     |
+| `module file not found`            | Wrong file path       | Check path in manifest       |
+| `--os flag is required`            | Missing OS flag       | Add --os Mac or --os Linux   |
+| `permission denied`                | Wrong output location | Use ~/.zshrc not /etc/zshrc  |
+| `invalid YAML syntax`              | YAML parsing error    | Check indentation and quotes |
+| `duplicate module name`            | Name collision        | Use unique module names      |
+| `failed to parse manifest`         | Corrupt YAML          | Validate YAML syntax         |
 
----
+______________________________________________________________________
 
 ## Best Practices to Avoid Issues
 
 ### 1. Always Validate Before Building
+
 ```bash
 gz-shellforge validate && gz-shellforge build --os Mac --output ~/.zshrc
 ```
 
 ### 2. Use Dry Run First
+
 ```bash
 gz-shellforge build --os Mac --dry-run | less
 ```
 
 ### 3. Backup Before Changing
+
 ```bash
 gz-shellforge backup --file ~/.zshrc --message "Before rebuild"
 ```
 
 ### 4. Test in New Shell
+
 ```bash
 zsh -c 'source ~/.zshrc.new; echo "Test passed"'
 ```
 
 ### 5. Keep Modules Simple
+
 - One concern per module
 - Clear dependencies
 - Descriptive names
 
 ### 6. Use Version Control
+
 ```bash
 cd ~/shellforge
 git init
@@ -781,7 +850,7 @@ git add .
 git commit -m "Initial shellforge setup"
 ```
 
----
+______________________________________________________________________
 
 ## Still Having Issues?
 
@@ -791,6 +860,6 @@ git commit -m "Initial shellforge setup"
 - **GitHub Issues**: [Report a bug](https://github.com/gizzahub/gzh-cli-shellforge/issues/new)
 - **Discussions**: [Ask a question](https://github.com/gizzahub/gzh-cli-shellforge/discussions)
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-01

@@ -123,8 +123,9 @@ func TestDeployService_Deploy_Success(t *testing.T) {
 	}))
 
 	opts := DeployOptions{
-		BuildDir: "./build",
-		HomeDir:  "/home/test",
+		BuildDir:     "./build",
+		HomeDir:      "/home/test",
+		CreateBackup: true,
 	}
 
 	result, err := service.Deploy(opts)
@@ -162,8 +163,9 @@ func TestDeployService_Deploy_FishNestedPath(t *testing.T) {
 	}))
 
 	opts := DeployOptions{
-		BuildDir: "./build",
-		HomeDir:  "/home/test",
+		BuildDir:     "./build",
+		HomeDir:      "/home/test",
+		CreateBackup: true,
 	}
 
 	result, err := service.Deploy(opts)
@@ -193,9 +195,10 @@ func TestDeployService_Deploy_DryRun(t *testing.T) {
 	}))
 
 	opts := DeployOptions{
-		BuildDir: "./build",
-		HomeDir:  "/home/test",
-		DryRun:   true,
+		BuildDir:     "./build",
+		HomeDir:      "/home/test",
+		CreateBackup: true,
+		DryRun:       true,
 	}
 
 	result, err := service.Deploy(opts)
@@ -276,8 +279,9 @@ func TestDeployService_Deploy_MetadataNotFound(t *testing.T) {
 	reader.AddDirectory("./build", []string{".zshrc"})
 
 	opts := DeployOptions{
-		BuildDir: "./build",
-		HomeDir:  "/home/test",
+		BuildDir:     "./build",
+		HomeDir:      "/home/test",
+		CreateBackup: true,
 	}
 
 	_, err := service.Deploy(opts)
@@ -295,8 +299,9 @@ func TestDeployService_Deploy_EmptyMetadata(t *testing.T) {
 	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{}))
 
 	opts := DeployOptions{
-		BuildDir: "./build",
-		HomeDir:  "/home/test",
+		BuildDir:     "./build",
+		HomeDir:      "/home/test",
+		CreateBackup: true,
 	}
 
 	_, err := service.Deploy(opts)
@@ -320,8 +325,9 @@ func TestDeployService_Deploy_SystemTarget_UsesAbsolutePath(t *testing.T) {
 	}))
 
 	opts := DeployOptions{
-		BuildDir: "./build",
-		HomeDir:  "/home/test",
+		BuildDir:     "./build",
+		HomeDir:      "/home/test",
+		CreateBackup: true,
 	}
 
 	result, err := service.Deploy(opts)
@@ -356,8 +362,9 @@ func TestDeployService_Deploy_SystemTarget_PermissionDenied(t *testing.T) {
 	}))
 
 	opts := DeployOptions{
-		BuildDir: "./build",
-		HomeDir:  "/home/test",
+		BuildDir:     "./build",
+		HomeDir:      "/home/test",
+		CreateBackup: true,
 	}
 
 	result, err := service.Deploy(opts)
@@ -377,7 +384,7 @@ func TestDeployService_Deploy_SystemTarget_PermissionDenied(t *testing.T) {
 	}
 }
 
-func TestDeployService_Deploy_SystemTarget_BackupForcedWithoutFlag(t *testing.T) {
+func TestDeployService_Deploy_SystemTarget_BackupWithFlag(t *testing.T) {
 	reader := NewMockDirectoryReader()
 	writer := NewMockBackupWriter()
 	checker := &MockPermissionChecker{err: nil}
@@ -394,7 +401,7 @@ func TestDeployService_Deploy_SystemTarget_BackupForcedWithoutFlag(t *testing.T)
 	opts := DeployOptions{
 		BuildDir:     "./build",
 		HomeDir:      "/home/test",
-		CreateBackup: false, // not requested by user, but must still happen for system files
+		CreateBackup: true, // explicitly required for deployment
 	}
 
 	result, err := service.Deploy(opts)
@@ -406,9 +413,9 @@ func TestDeployService_Deploy_SystemTarget_BackupForcedWithoutFlag(t *testing.T)
 		t.Errorf("DeployedCount = %d, want 1", result.DeployedCount)
 	}
 
-	// Backup must be created even though CreateBackup was false
+	// Backup must be created for an existing system file
 	if result.DeployedFiles[0].BackupPath == "" {
-		t.Error("backup must be forced for system targets even when CreateBackup=false")
+		t.Error("backup must be created for system targets")
 	}
 }
 
@@ -425,9 +432,10 @@ func TestDeployService_Deploy_SystemTarget_DryRun(t *testing.T) {
 	}))
 
 	opts := DeployOptions{
-		BuildDir: "./build",
-		HomeDir:  "/home/test",
-		DryRun:   true,
+		BuildDir:     "./build",
+		HomeDir:      "/home/test",
+		CreateBackup: true,
+		DryRun:       true,
 	}
 
 	result, err := service.Deploy(opts)
@@ -477,5 +485,65 @@ func TestDeployDestination_PreservesSystemPathsAndResolvesUserPaths(t *testing.T
 				t.Errorf("deployDestination() = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+// rejectingWriter makes any write in a preview or refused deployment visible.
+type rejectingWriter struct {
+	calls int
+	err   error
+}
+
+func (w *rejectingWriter) WriteFile(_, _ string) error { w.calls++; return w.err }
+func (w *rejectingWriter) Copy(_, _ string) error      { w.calls++; return w.err }
+func (w *rejectingWriter) MkdirAll(_ string) error     { w.calls++; return w.err }
+
+func TestDeployService_RequiresExplicitSafetyOption(t *testing.T) {
+	writer := &rejectingWriter{}
+	// Nil reader proves refusal occurs before even inspecting the build files.
+	result, err := NewDeployService(nil, writer).Deploy(DeployOptions{})
+	if err == nil || result != nil || writer.calls != 0 {
+		t.Fatalf("unsafe deploy: result=%v err=%v writes=%d", result, err, writer.calls)
+	}
+}
+
+func TestDeployService_DryRunNeverWritesIncludingBackupsAndDirectories(t *testing.T) {
+	for _, backup := range []bool{false, true} {
+		reader := NewMockDirectoryReader()
+		reader.AddDirectory("build", nil)
+		reader.AddFile("build/config", "new")
+		reader.AddFile("/home/test/.config/fish/config.fish", "original")
+		reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{
+			{Source: "config", DestPath: ".config/fish/config.fish"},
+			{Source: "config", DestPath: "/etc/profile"},
+		}))
+		writer := &rejectingWriter{err: fmt.Errorf("unexpected write")}
+		// Nil checker proves a system preview does not probe permissions by creating files.
+		result, err := NewDeployServiceWithChecker(reader, writer, nil).Deploy(DeployOptions{BuildDir: "build", HomeDir: "/home/test", DryRun: true, CreateBackup: backup})
+		if err != nil || writer.calls != 0 || result.SkippedCount != 2 || len(result.BackupPaths) != 0 {
+			t.Fatalf("preview mutated: result=%+v err=%v calls=%d", result, err, writer.calls)
+		}
+	}
+}
+
+type backupFailWriter struct{ copies []string }
+
+func (w *backupFailWriter) WriteFile(_, _ string) error { return nil }
+func (w *backupFailWriter) MkdirAll(_ string) error     { return nil }
+func (w *backupFailWriter) Copy(_, dst string) error {
+	w.copies = append(w.copies, dst)
+	return fmt.Errorf("backup denied")
+}
+
+func TestDeployService_BackupFailureNeverOverwritesTarget(t *testing.T) {
+	reader := NewMockDirectoryReader()
+	reader.AddDirectory("build", nil)
+	reader.AddFile("build/config", "new")
+	reader.AddFile("/home/test/.zshrc", "original")
+	reader.AddFile("build/"+domain.MetadataFileName, createTestMetadata([]domain.BuildFileInfo{{Source: "config", DestPath: ".zshrc"}}))
+	writer := &backupFailWriter{}
+	result, err := NewDeployService(reader, writer).Deploy(DeployOptions{BuildDir: "build", HomeDir: "/home/test", CreateBackup: true})
+	if err != nil || result.ErrorCount != 1 || result.DeployedCount != 0 || len(writer.copies) != 1 || writer.copies[0] == "/home/test/.zshrc" {
+		t.Fatalf("backup failure: result=%+v err=%v copies=%v", result, err, writer.copies)
 	}
 }

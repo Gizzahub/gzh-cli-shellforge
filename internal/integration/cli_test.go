@@ -55,7 +55,7 @@ func TestCLI_Version(t *testing.T) {
 	output, err := cmd.CombinedOutput()
 
 	require.NoError(t, err, "Command should succeed")
-	assert.Contains(t, string(output), "0.5.1", "Should show version number")
+	assert.Contains(t, string(output), "0.6.0", "Should show version number")
 }
 
 // TestCLI_Help tests the --help flag.

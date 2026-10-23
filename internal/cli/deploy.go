@@ -36,7 +36,7 @@ to their actual destination paths (e.g., ~/.zshrc).
 The deploy process:
   1. Reads files from the build directory (default: ./build)
   2. Determines destination paths based on file names
-  3. Optionally backs up existing files
+  3. Backs up existing files before overwriting
   4. Copies files to their destinations
 
 Typical workflow:
@@ -44,7 +44,7 @@ Typical workflow:
   2. Review: ls -la ./build/              # Check generated files
   3. Deploy: gz-shellforge deploy --backup # Deploy with backup`,
 		Example: `  # Deploy from default build directory
-  gz-shellforge deploy
+  gz-shellforge deploy --backup
 
   # Preview without deploying
   gz-shellforge deploy --dry-run
@@ -53,7 +53,7 @@ Typical workflow:
   gz-shellforge deploy --backup
 
   # Deploy from custom build directory
-  gz-shellforge deploy --build-dir ~/staging
+  gz-shellforge deploy --backup --build-dir ~/staging
 
   # Combined workflow
   gz-shellforge build && gz-shellforge deploy --backup`,
@@ -71,6 +71,10 @@ Typical workflow:
 }
 
 func runDeploy(flags *deployFlags) error {
+	if !flags.backup && !flags.dryRun {
+		return fmt.Errorf("deploy requires --backup or --dry-run")
+	}
+
 	// Get home directory
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -113,6 +117,9 @@ func runDeploy(flags *deployFlags) error {
 
 	// Display results
 	printDeployResult(flags, result)
+	if result.ErrorCount > 0 {
+		return fmt.Errorf("deployment failed for %d file(s)", result.ErrorCount)
+	}
 
 	return nil
 }
@@ -138,7 +145,7 @@ func printDeployResult(flags *deployFlags, result *app.DeployResult) {
 			fmt.Printf("  • %s → %s\n", file.SourcePath, file.DestPath)
 		}
 		fmt.Println()
-		fmt.Printf("Run without --dry-run to deploy these files.\n")
+		fmt.Printf("Run with --backup to deploy these files.\n")
 		return
 	}
 

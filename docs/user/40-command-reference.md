@@ -15,7 +15,7 @@ Quick reference guide for common `gz-shellforge` command usage patterns.
 - [Cleanup Command](#cleanup-command)
 - [Real-World Scenarios](#real-world-scenarios)
 
----
+______________________________________________________________________
 
 ## Migrate Command
 
@@ -61,7 +61,7 @@ gz-shellforge migrate ~/.zshrc
 # Creates: ./modules/ and ./manifest.yaml
 ```
 
----
+______________________________________________________________________
 
 ## Build Command
 
@@ -136,7 +136,7 @@ gz-shellforge build --os Mac --dry-run > preview.txt
 less preview.txt
 ```
 
----
+______________________________________________________________________
 
 ## Validate Command
 
@@ -188,7 +188,7 @@ gz-shellforge validate \
   -v
 ```
 
----
+______________________________________________________________________
 
 ## List Command
 
@@ -251,7 +251,7 @@ gz-shellforge list \
   -v
 ```
 
----
+______________________________________________________________________
 
 ## Diff Command
 
@@ -322,7 +322,7 @@ else
 fi
 ```
 
----
+______________________________________________________________________
 
 ## Template Command
 
@@ -415,7 +415,7 @@ gz-shellforge template generate os-specific \
   -r os-detection
 ```
 
----
+______________________________________________________________________
 
 ## Backup Command
 
@@ -483,7 +483,7 @@ gz-shellforge backup \
   -v
 ```
 
----
+______________________________________________________________________
 
 ## Restore Command
 
@@ -552,7 +552,7 @@ source ~/.zshrc
 echo "Restore successful, shell reloaded"
 ```
 
----
+______________________________________________________________________
 
 ## Cleanup Command
 
@@ -632,7 +632,7 @@ for file in ~/.zshrc ~/.bashrc ~/.bash_profile; do
 done
 ```
 
----
+______________________________________________________________________
 
 ## Real-World Scenarios
 
@@ -806,7 +806,7 @@ gz-shellforge build --os Mac --output ~/.zshrc
 source ~/.zshrc
 ```
 
----
+______________________________________________________________________
 
 ## Tips and Tricks
 
@@ -858,6 +858,6 @@ gz-shellforge build --help
 gz-shellforge --version
 ```
 
----
+______________________________________________________________________
 
 For more detailed workflow guides, see [WORKFLOW.md](WORKFLOW.md).

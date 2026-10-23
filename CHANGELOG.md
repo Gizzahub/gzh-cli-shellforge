@@ -16,17 +16,30 @@
      is itself an edit to this file — that is how this file sat unchanged from
      2026-06-01 to 2026-08-25 at 587 prose lines against a 500-line limit, with
      the prepare command shipped and unrecorded. -->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.6.0] - 2026-10-23
+
+### Changed
+
+- Require explicit `--backup` or `--dry-run` for deploy, including application service callers.
+- Stage system files inside the build directory; resolve nested fish deployment sources correctly.
+- Return a failing CLI exit status when a target cannot be backed up or deployed.
+- Report the `gz-shellforge` binary name and inject the release version into the CLI.
+- Add pinned, nonpublishing release archive, checksum and Homebrew cask preparation.
+
 ## [Unreleased]
 
 ### Added
 
 - **System-Wide Config Targets** (`etc-profile`, `etc-zshrc`, `etc-zshenv`): modules can now target `/etc/profile`, `/etc/zshrc`, and `/etc/zsh/zshenv`
+
   - `IsSystemTarget(name)` in `internal/domain` identifies system targets across all shell types
   - System targets resolve directly to absolute paths; `TargetResolver.GetRelativePath` returns the absolute path for these targets — callers must use `filepath.IsAbs` and must not join with HomeDir
   - `GetValidTargets` and `IsValidTarget` now include system targets for every shell type
@@ -36,15 +49,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dry-run mode carries a sudo hint in the `Error` field for system targets
   - `PermissionChecker` interface added to `DeployService` for test injection; `NewDeployServiceWithChecker` constructor
 
-
-
 - **BSD OS Detection** (per-OS granularity): `DetectOS()` now returns `"FreeBSD"`, `"OpenBSD"`, `"NetBSD"` instead of a single `"BSD"` umbrella
+
   - `os-detection.sh` example module updated with per-OS BSD branches (`uname -s` → `FreeBSD`, `OpenBSD`, `NetBSD`)
   - `InferOSSupport()` in migration now detects `FreeBSD)`, `OpenBSD)`, `NetBSD)` case branches when inferring manifest `os:` values
   - Manifest modules can now target specific BSDs: `os: [FreeBSD]` or `os: [FreeBSD, OpenBSD]`
   - PRODUCT.md "지원 환경" updated to list FreeBSD/OpenBSD/NetBSD
 
 - **Pluggable Validation Pipeline** (Phase 1): Introduced a `Validator` interface and `ValidationPipeline` in `internal/app`
+
   - `Finding` struct with `error`/`warn` severity levels; `validate` exit code reflects errors only
   - Built-in validators: `ManifestStructureValidator`, `CircularDependencyValidator`, `FileExistenceValidator`
   - `PrereqValidator` wraps `DoctorService` so prereq checking logic is shared between `validate` and `doctor`
@@ -52,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 100% coverage on all new validator logic
 
 - **`prepare` command**: manifest modules can declare external packages (`packages:` with brew/cask/apt) and `gz-shellforge prepare` verifies or installs them before validate/build/deploy
+
   - `--check` reports missing packages and exits non-zero; `--dry-run` prints the plan — neither installs
   - Apply skips already-installed packages and reports an install failure as a non-zero exit without aborting the remaining installs
   - `PackageManager` detection lives in `internal/domain`; the orchestration is `internal/app/prepare_service.go`
@@ -95,35 +109,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Fixed test assertion in list_test.go to match new error format
   - **Impact**: ~150 lines removed, 3 new packages created, improved code maintainability
 
----
+______________________________________________________________________
 
 ## Past releases
 
 Released versions are archived one file per release line. This file carries only
 unreleased changes.
 
-| Line                           | Releases                                                                    |
-| ------------------------------ | --------------------------------------------------------------------------- |
-| [0.6.x](docs/changelog/0.6.md) | 0.6.0 (2025-12-02)                                                          |
-| [0.5.x](docs/changelog/0.5.md) | 0.5.1 (2025-11-30), 0.5.0 (2025-11-28)                                      |
-| [0.4.x](docs/changelog/0.4.md) | 0.4.0 (2025-11-27)                                                          |
-| [0.3.x](docs/changelog/0.3.md) | 0.3.0 (2025-11-27)                                                          |
-| [0.2.x](docs/changelog/0.2.md) | 0.2.1 (2025-11-27), 0.2.0-beta (2025-11-27), 0.2.0-alpha (2025-11-27)       |
-| [0.1.x](docs/changelog/0.1.md) | 0.1.0 (2025-11-27)                                                          |
+| Line                           | Releases                                                              |
+| ------------------------------ | --------------------------------------------------------------------- |
+| [0.6.x](docs/changelog/0.6.md) | 0.6.0 (2025-12-02)                                                    |
+| [0.5.x](docs/changelog/0.5.md) | 0.5.1 (2025-11-30), 0.5.0 (2025-11-28)                                |
+| [0.4.x](docs/changelog/0.4.md) | 0.4.0 (2025-11-27)                                                    |
+| [0.3.x](docs/changelog/0.3.md) | 0.3.0 (2025-11-27)                                                    |
+| [0.2.x](docs/changelog/0.2.md) | 0.2.1 (2025-11-27), 0.2.0-beta (2025-11-27), 0.2.0-alpha (2025-11-27) |
+| [0.1.x](docs/changelog/0.1.md) | 0.1.0 (2025-11-27)                                                    |
 
----
+______________________________________________________________________
 
 ## Development
 
 ### Project Status
+
 - **Stability**: Alpha (core features stable, API may change)
 - **Production Ready**: Yes, for build and validate use cases
 - **Test Coverage**: 71-100% across modules
 
 ### Contributors
+
 - Initial Go implementation by Claude (Anthropic)
 - Based on Python version: gzh-cli-shellforge-py
 
----
+______________________________________________________________________
 
-[Unreleased]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.6.0...HEAD
+[unreleased]: https://github.com/gizzahub/gzh-cli-shellforge/compare/v0.6.0...HEAD

@@ -2,19 +2,21 @@
 
 Complete installation guide for Shellforge on all supported platforms.
 
----
+______________________________________________________________________
 
 ## Prerequisites
 
 ### Required
+
 - **Go 1.21 or later** - [Download](https://go.dev/dl/)
 - **Git** - For backup/restore features
 
 ### Optional
+
 - **Make** - For building from source
 - **Shell** - zsh 5.8+ or bash 4.0+ (usually pre-installed)
 
----
+______________________________________________________________________
 
 ## Quick Installation
 
@@ -42,7 +44,7 @@ cd gzh-cli-shellforge
 make install
 ```
 
----
+______________________________________________________________________
 
 ## Platform-Specific Installation
 
@@ -89,20 +91,23 @@ gz-shellforge --version
 #### macOS-Specific Notes
 
 **M1/M2 (Apple Silicon) Macs:**
+
 - Homebrew is in `/opt/homebrew/`
 - Use Rosetta 2 for x86_64 binaries if needed
 
 **Intel Macs:**
+
 - Homebrew is in `/usr/local/`
 - Standard installation works
 
 **Security Warning:**
 If you get "developer cannot be verified" warning:
+
 ```bash
 xattr -d com.apple.quarantine $(which gz-shellforge)
 ```
 
----
+______________________________________________________________________
 
 ### Linux
 
@@ -172,11 +177,12 @@ For auto-backup on login, create `~/.config/systemd/user/shellforge-backup.servi
 
 **SELinux:**
 If SELinux is enabled, you may need to adjust permissions:
+
 ```bash
 chcon -t bin_t $(which gz-shellforge)
 ```
 
----
+______________________________________________________________________
 
 ### BSD (Experimental)
 
@@ -198,7 +204,7 @@ gz-shellforge --version
 
 **Note**: BSD support is experimental. Some features may not work as expected.
 
----
+______________________________________________________________________
 
 ## Verifying Installation
 
@@ -231,7 +237,7 @@ go env GOPATH
 go env GOROOT
 ```
 
----
+______________________________________________________________________
 
 ## Post-Installation Setup
 
@@ -247,6 +253,7 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
 Reload:
+
 ```bash
 source ~/.zshrc
 ```
@@ -261,6 +268,7 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
 Reload:
+
 ```bash
 source ~/.bashrc
 ```
@@ -274,6 +282,7 @@ set -gx PATH $PATH (go env GOPATH)/bin
 ```
 
 Reload:
+
 ```fish
 source ~/.config/fish/config.fish
 ```
@@ -337,7 +346,7 @@ cd ~
 rm -rf ~/test-shellforge
 ```
 
----
+______________________________________________________________________
 
 ## Updating Shellforge
 
@@ -363,7 +372,7 @@ gz-shellforge --version
 curl -s https://api.github.com/repos/gizzahub/gzh-cli-shellforge/releases/latest | grep '"tag_name"'
 ```
 
----
+______________________________________________________________________
 
 ## Uninstalling Shellforge
 
@@ -397,12 +406,13 @@ rm ~/.config/fish/completions/gz-shellforge.fish
 ### Remove from PATH
 
 Remove the export line from your shell config:
+
 ```bash
 # Remove this line from ~/.zshrc or ~/.bashrc
 export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
----
+______________________________________________________________________
 
 ## Building from Source (Advanced)
 
@@ -468,7 +478,7 @@ go build -gcflags="all=-N -l" -o build/gz-shellforge cmd/shellforge/main.go
 go run cmd/shellforge/main.go --version
 ```
 
----
+______________________________________________________________________
 
 ## Installation Troubleshooting
 
@@ -477,6 +487,7 @@ go run cmd/shellforge/main.go --version
 **Problem:** Go version too old
 
 **Solution:**
+
 ```bash
 # Check current version
 go version
@@ -491,6 +502,7 @@ go version
 **Problem:** Command not found after installation
 
 **Solution:**
+
 ```bash
 # Check if binary exists
 ls -la $(go env GOPATH)/bin/gz-shellforge
@@ -506,6 +518,7 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 **Problem:** Permission denied when installing
 
 **Solution:**
+
 ```bash
 # Don't use sudo with go install
 # Instead, ensure GOPATH is writable
@@ -520,6 +533,7 @@ ls -la $(go env GOPATH)
 **Problem:** Cannot download packages
 
 **Solution:**
+
 ```bash
 # Use Go proxy
 export GOPROXY=https://proxy.golang.org,direct
@@ -536,6 +550,7 @@ go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
 **Problem:** Build fails with errors
 
 **Solution:**
+
 ```bash
 # Clean Go cache
 go clean -modcache
@@ -547,11 +562,12 @@ make clean
 make build
 ```
 
----
+______________________________________________________________________
 
 ## System Requirements
 
 ### Minimum Requirements
+
 - **OS**: macOS 10.15+, Linux (any recent distro), FreeBSD 13+
 - **CPU**: Any 64-bit processor (amd64 or arm64)
 - **RAM**: 10MB (binary is ~8MB)
@@ -559,13 +575,14 @@ make build
 - **Go**: 1.21+ (for installation)
 
 ### Recommended Requirements
+
 - **OS**: macOS 13+, Ubuntu 22.04+, Fedora 38+
 - **CPU**: Multi-core (for faster builds)
 - **RAM**: 50MB (for large configs)
 - **Disk**: 500MB (for extensive backups)
 - **Shell**: zsh 5.8+ or bash 5.0+
 
----
+______________________________________________________________________
 
 ## Docker Installation (Alternative)
 
@@ -596,17 +613,17 @@ docker build -t shellforge:local .
 docker run shellforge:local --version
 ```
 
----
+______________________________________________________________________
 
 ## Next Steps
 
 After installation:
 
 1. **[Quick Start Guide](00-quick-start.md)** - Get started in 5 minutes
-2. **[Basic Usage](20-basic-usage.md)** - Learn essential commands
-3. **[Complete Workflows](30-workflows.md)** - Full workflow examples
+1. **[Basic Usage](20-basic-usage.md)** - Learn essential commands
+1. **[Complete Workflows](30-workflows.md)** - Full workflow examples
 
----
+______________________________________________________________________
 
 ## Getting Help
 
@@ -615,7 +632,7 @@ After installation:
 - **GitHub Issues**: [Report a problem](https://github.com/gizzahub/gzh-cli-shellforge/issues)
 - **Discussions**: [Ask a question](https://github.com/gizzahub/gzh-cli-shellforge/discussions)
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-01
 **Tested On**: macOS 14 (Sonoma), Ubuntu 22.04, Arch Linux, FreeBSD 13

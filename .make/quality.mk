@@ -3,7 +3,7 @@
 
 .PHONY: lint fmt vet quality check
 .PHONY: fmt-diff lint-diff fmt-check lint-check
-.PHONY: fmt-md security
+.PHONY: fmt-md format-md format-md-check format-md-all-check format-md-diff mdformat-install-test markdown-selector-test security
 
 # ==============================================================================
 # Standard Quality Checks
@@ -26,7 +26,7 @@ vet: ## Run go vet
 	@echo "Running go vet..."
 	$(GOVET) ./...
 
-quality: fmt lint test ## Run all quality checks (fmt + lint + test)
+quality: fmt lint test format-md-check mdformat-install-test markdown-selector-test ## Run all quality checks (fmt + lint + test + Markdown contract)
 	@echo "✅ All quality checks passed"
 
 check: vet lint ## Quick check (vet + lint, no tests)
@@ -61,14 +61,31 @@ lint-check: install-lint ## Run lint without fixing (for CI)
 # Additional Quality Tools
 # ==============================================================================
 
-fmt-md: ## Format markdown files (requires mdformat)
-	@echo "Formatting markdown..."
-	@if command -v mdformat >/dev/null 2>&1; then \
-		find . -name "*.md" -not -path "./vendor/*" -not -path "./.git/*" | xargs mdformat; \
-		echo "✅ Markdown formatted"; \
-	else \
-		echo "⚠️  mdformat not installed. Install: pip install mdformat"; \
-	fi
+# Git 조회·필터·formatter 실패를 전파하고 공백/개행 경로를 NUL로 보존한다.
+# ignored venv와 symlink는 저장소 소유 Markdown 입력에서 제외한다.
+# ./ 접두사는 '-'로 시작하는 파일명이 formatter 옵션이 되는 것을 막는다.
+MDFORMAT_BASE ?= origin/master
+MDFORMAT_RUN = "$(MDFORMAT_PYTHON)" -I scripts/mdformat-files.py
+
+fmt-md: install-mdformat ## Format all repository-owned Markdown explicitly
+	@$(MDFORMAT_RUN) all --formatter "$(MDFORMAT)"
+
+format-md: fmt-md ## Compatibility alias for explicit whole-repository formatting
+
+format-md-check: install-mdformat ## Check changed Markdown without modifying source
+	@$(MDFORMAT_RUN) changed --base "$(MDFORMAT_BASE)" --formatter "$(MDFORMAT)" --check
+
+format-md-all-check: install-mdformat ## Check all repository-owned Markdown explicitly
+	@$(MDFORMAT_RUN) all --formatter "$(MDFORMAT)" --check
+
+format-md-diff: install-mdformat ## Format changed Markdown only
+	@$(MDFORMAT_RUN) changed --base "$(MDFORMAT_BASE)" --formatter "$(MDFORMAT)"
+
+mdformat-install-test: install-mdformat ## Verify offline installer fixture after preparation
+	@/bin/bash scripts/test-mdformat-install.sh "$(MDFORMAT_PYTHON)"
+
+markdown-selector-test: install-mdformat ## Verify selector with isolated Git fixtures
+	@"$(MDFORMAT_PYTHON)" -I scripts/test-mdformat-files.py
 
 security: ## Run security scan (gosec)
 	@echo "Running security scan..."

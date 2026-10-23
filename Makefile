@@ -8,6 +8,7 @@ include .make/test.mk
 include .make/quality.mk
 include .make/deps.mk
 include .make/tools.mk
+include .make/release.mk
 include .make/dev.mk
 include .make/docker.mk
 

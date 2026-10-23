@@ -67,26 +67,30 @@ internal/
 ### Dependency Rules (Critical)
 
 1. **Domain Layer** (`internal/domain/`)
+
    - Contains: Module, Manifest, Graph, Resolver entities
    - NO imports from other internal packages
    - NO imports of external libraries (except standard library)
    - Pure Go business logic only
    - When adding domain logic: NEVER import from app/infra/cli
 
-2. **Application Layer** (`internal/app/`)
+1. **Application Layer** (`internal/app/`)
+
    - Contains: BuilderService, ValidatorService (use cases)
    - Depends ONLY on domain interfaces
    - Defines interfaces for infrastructure (ManifestParser, FileReader, FileWriter)
    - Orchestrates domain logic
    - When adding services: Define interfaces, don't import infra directly
 
-3. **Infrastructure Layer** (`internal/infra/`)
+1. **Infrastructure Layer** (`internal/infra/`)
+
    - Contains: YAML parser, filesystem, git wrappers
    - Implements interfaces defined by app layer
    - Uses external libraries (yaml.v3, afero, os/exec)
    - When adding adapters: Implement app layer interfaces
 
-4. **CLI Layer** (`internal/cli/`)
+1. **CLI Layer** (`internal/cli/`)
+
    - Contains: Cobra commands (build, validate, list)
    - Depends on app layer services
    - Handles flag parsing and output formatting
@@ -95,6 +99,7 @@ internal/
 ### Key Architectural Patterns
 
 **Dependency Injection Example:**
+
 ```go
 // main.go wires everything together
 fs := afero.NewOsFs()
@@ -107,6 +112,7 @@ buildCmd := cli.NewBuildCmd(builder)  // Inject service
 ```
 
 **Interface-Based Design:**
+
 ```go
 // app/builder.go defines what it needs
 type ManifestParser interface {
@@ -125,16 +131,19 @@ func (p *Parser) Parse(path string) (*domain.Manifest, error) { ... }
 The heart of Shellforge is topological sorting of shell module dependencies:
 
 1. **Graph Construction** (`internal/domain/graph.go`)
+
    - Modules are nodes, dependencies are directed edges
    - Each module has in-degree count (number of dependencies)
 
-2. **Topological Sort** (`internal/domain/resolver.go`)
+1. **Topological Sort** (`internal/domain/resolver.go`)
+
    - Uses Kahn's Algorithm (BFS-based)
    - Complexity: O(V + E) where V=modules, E=dependencies
    - OS filtering is integrated into the sort
    - Cycle detection reports clear error paths
 
-3. **OS Filtering** (`internal/domain/module.go`)
+1. **OS Filtering** (`internal/domain/module.go`)
+
    - Module.AppliesTo(targetOS) checks OS field
    - Empty OS field = applies to all platforms
    - Case-insensitive matching
@@ -142,11 +151,13 @@ The heart of Shellforge is topological sorting of shell module dependencies:
 ### Critical Implementation Details
 
 **Circular Dependency Detection:**
+
 - After topological sort, if `result.length != nodes.length`, cycle exists
 - Remaining nodes are part of the cycle
 - Implementation: `resolver.go:detectCycle()`
 
 **Module Load Order:**
+
 - Modules with zero dependencies load first
 - Each module loads only after all its dependencies
 - Order is deterministic (not random)
@@ -163,6 +174,7 @@ The heart of Shellforge is topological sorting of shell module dependencies:
 ### Testing Patterns
 
 **Domain Tests** (pure logic, no mocks):
+
 ```go
 func TestModule_AppliesTo(t *testing.T) {
     tests := []struct {
@@ -182,6 +194,7 @@ func TestModule_AppliesTo(t *testing.T) {
 ```
 
 **App Layer Tests** (with mocks):
+
 ```go
 // Use afero.MemMapFs for filesystem mocking
 fs := afero.NewMemMapFs()
@@ -191,6 +204,7 @@ reader := filesystem.NewReader(fs)
 ```
 
 **Integration Tests:**
+
 - Use `examples/` directory for real manifest testing
 - Create temp directories for file operations
 - Clean up after tests
@@ -200,40 +214,40 @@ reader := filesystem.NewReader(fs)
 ### DO NOT Create/Modify These Without Discussion:
 
 1. **Domain Entities**: Adding new entities to `internal/domain/` changes core model
-2. **Interface Definitions**: New interfaces in `app/` affect all layers below
-3. **Manifest Format**: Changes break backward compatibility
+1. **Interface Definitions**: New interfaces in `app/` affect all layers below
+1. **Manifest Format**: Changes break backward compatibility
 
 ### Safe to Add/Modify:
 
 1. **CLI Commands**: New commands in `internal/cli/` (follow existing patterns)
-2. **Infrastructure Adapters**: New implementations in `internal/infra/`
-3. **Test Files**: Always add tests alongside new code
-4. **Documentation**: README, docs/* files
+1. **Infrastructure Adapters**: New implementations in `internal/infra/`
+1. **Test Files**: Always add tests alongside new code
+1. **Documentation**: README, docs/\* files
 
 ## Common Development Tasks
 
 ### Adding a New CLI Command
 
 1. Create `internal/cli/newcommand.go`
-2. Follow pattern from `build.go` or `validate.go`
-3. Add to root command in `internal/cli/root.go`
-4. Create test file `internal/cli/newcommand_test.go`
-5. Update README.md with command documentation
+1. Follow pattern from `build.go` or `validate.go`
+1. Add to root command in `internal/cli/root.go`
+1. Create test file `internal/cli/newcommand_test.go`
+1. Update README.md with command documentation
 
 ### Adding a New Use Case
 
 1. Define interface in `internal/app/`
-2. Implement service with injected dependencies
-3. Add tests with mocked infrastructure
-4. Wire up in CLI command
+1. Implement service with injected dependencies
+1. Add tests with mocked infrastructure
+1. Wire up in CLI command
 
 ### Adding Infrastructure Adapter
 
 1. Check if interface exists in `app/`
-2. Create adapter in `infra/` subdirectory
-3. Implement interface methods
-4. Add tests (use in-memory or temp files)
-5. Wire up in main.go
+1. Create adapter in `infra/` subdirectory
+1. Implement interface methods
+1. Add tests (use in-memory or temp files)
+1. Wire up in main.go
 
 ## Important Constraints
 
@@ -276,6 +290,7 @@ reader := filesystem.NewReader(fs)
 ### Project-Specific Conventions
 
 **Package Comments:**
+
 ```go
 // Package domain contains the core business logic for Shellforge.
 // It defines entities (Module, Manifest) and algorithms (topological sort).
@@ -283,10 +298,12 @@ package domain
 ```
 
 **Interface Naming:**
+
 - Use noun phrases: `ManifestParser`, `FileReader`, `FileWriter`
 - NOT verb phrases: `ParseManifest`, `ReadFile`
 
 **Constructor Pattern:**
+
 ```go
 func NewBuilderService(parser ManifestParser, reader FileReader, writer FileWriter) *BuilderService {
     return &BuilderService{
@@ -303,15 +320,15 @@ func NewBuilderService(parser ManifestParser, reader FileReader, writer FileWrit
 ### Must Maintain
 
 1. **Manifest YAML format**: 100% compatible with Python version
-2. **CLI interface**: Same command names, flags, and behavior
-3. **Error messages**: Same or better clarity
-4. **Output format**: Compatible with existing workflows
+1. **CLI interface**: Same command names, flags, and behavior
+1. **Error messages**: Same or better clarity
+1. **Output format**: Compatible with existing workflows
 
 ### Can Improve
 
 1. Performance (faster is better)
-2. Error messages (clearer is better)
-3. Internal implementation (as long as interface stays same)
+1. Error messages (clearer is better)
+1. Internal implementation (as long as interface stays same)
 
 ## Key Files Reference
 
@@ -327,18 +344,22 @@ func NewBuilderService(parser ManifestParser, reader FileReader, writer FileWrit
 ## Troubleshooting
 
 ### Build fails with "command not found"
+
 - Ensure Go 1.21+ is installed: `go version`
 - Check GOPATH: `echo $GOPATH`
 
 ### Tests fail with filesystem errors
+
 - Tests should use `afero.MemMapFs`, not real filesystem
 - Check test setup creates required files in memory
 
 ### Binary name doesn't match
+
 - Check Makefile: `BINARY_NAME=gz-shellforge`
 - After changes, run `make clean && make build`
 
 ### Import cycle detected
+
 - Domain should NEVER import app/infra/cli
 - App should NEVER import infra/cli
 - Infra should NEVER import cli

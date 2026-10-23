@@ -2,7 +2,7 @@
 
 > **Purpose**: Quick reference for AI coding assistants working with Shellforge codebase
 
----
+______________________________________________________________________
 
 ## Project Overview
 
@@ -12,11 +12,12 @@
 **Version**: 0.2.0-alpha
 **Purpose**: Modular shell configuration builder with automatic dependency resolution
 
----
+______________________________________________________________________
 
 ## Core Concepts
 
 ### What It Does
+
 - Converts monolithic `.zshrc`/`.bashrc` to modular structure
 - Resolves module dependencies (topological sort)
 - Filters modules by OS (Mac, Linux)
@@ -24,6 +25,7 @@
 - Provides backup/restore system
 
 ### Key Features
+
 - ✅ Dependency resolution (Kahn's algorithm)
 - ✅ OS-specific filtering
 - ✅ Migration from monolithic configs
@@ -31,11 +33,12 @@
 - ✅ Backup/restore with git versioning
 - ✅ Diff comparison (4 formats)
 
----
+______________________________________________________________________
 
 ## Quick Command Reference
 
 ### Build Commands (CRITICAL: Use make, not go build)
+
 ```bash
 make build          # Build binary to build/gz-shellforge
 make test           # Run all tests
@@ -45,6 +48,7 @@ make clean          # Remove build artifacts
 ```
 
 ### CLI Commands
+
 ```bash
 gz-shellforge build --manifest manifest.yaml --os Mac --output ~/.zshrc
 gz-shellforge validate --manifest manifest.yaml
@@ -56,11 +60,12 @@ gz-shellforge restore --file ~/.zshrc --snapshot <timestamp>
 gz-shellforge diff <file1> <file2> --format summary
 ```
 
----
+______________________________________________________________________
 
 ## Architecture (Hexagonal)
 
 ### 4-Layer Structure
+
 ```
 internal/
 ├── domain/      # Pure business logic (NO external deps)
@@ -70,29 +75,33 @@ internal/
 ```
 
 ### CRITICAL Dependency Rules
+
 1. **Domain**: NEVER imports app/infra/cli
-2. **App**: Only imports domain interfaces
-3. **Infra**: Implements app interfaces
-4. **CLI**: Depends on app layer
+1. **App**: Only imports domain interfaces
+1. **Infra**: Implements app interfaces
+1. **CLI**: Depends on app layer
 
 **Violation = Breaking change!**
 
----
+______________________________________________________________________
 
 ## Key Domain Logic
 
 ### Module Resolution
+
 - **Algorithm**: Topological sort (Kahn's BFS-based)
 - **Location**: `internal/domain/resolver.go`
 - **Complexity**: O(V + E) where V=modules, E=dependencies
 - **Cycle Detection**: Built-in, reports full cycle path
 
 ### OS Filtering
+
 - **Implementation**: `Module.AppliesTo(targetOS string) bool`
 - **Empty OS field**: Applies to all platforms
 - **Case-insensitive**: "Mac", "mac", "MAC" all valid
 
 ### File Organization
+
 ```
 manifest.yaml         # Module definitions
 modules/
@@ -101,37 +110,42 @@ modules/
 └── rc_post.d/       # Aliases, functions
 ```
 
----
+______________________________________________________________________
 
 ## Critical Rules for Development
 
 ### Build System
+
 - ✅ **ALWAYS use `make build`**
 - ❌ **NEVER use `go build` directly**
 - Binary name: `gz-shellforge`
 - Code path: `cmd/shellforge/`
 
 ### Testing
+
 - Domain layer: >80% coverage required
 - Use `afero.MemMapFs` for filesystem mocking
 - Table-driven tests preferred
 - Integration tests in `examples/`
 
 ### Error Handling
+
 - Wrap with context: `fmt.Errorf("context: %w", err)`
 - Custom domain errors: `ValidationError`, `CircularDependencyError`
 - CLI formats errors for users
 
 ### Naming Conventions
+
 - Binary: `gz-shellforge`
 - Module: `github.com/gizzahub/gzh-cli-shellforge`
 - Command in help: `shellforge` (not gz-shellforge)
 
----
+______________________________________________________________________
 
 ## File Paths Reference
 
 ### Source Code
+
 ```
 cmd/shellforge/main.go              # Entry point
 internal/domain/resolver.go         # Topological sort
@@ -142,6 +156,7 @@ internal/infra/yamlparser/parser.go # YAML parsing
 ```
 
 ### Documentation
+
 ```
 README.md                           # Main documentation (302 lines - simplified)
 CLAUDE.md                           # Development guide
@@ -151,6 +166,7 @@ docs/dev/                           # Developer documentation
 ```
 
 ### Examples
+
 ```
 examples/manifest.yaml              # Example manifest
 examples/modules/                   # Example shell modules
@@ -158,35 +174,39 @@ examples/sample.zshrc               # Sample RC file
 examples/workflow-demo.sh           # Automated demo
 ```
 
----
+______________________________________________________________________
 
 ## Common Tasks
 
 ### Adding New CLI Command
+
 1. Create `internal/cli/newcommand.go`
-2. Follow pattern from `build.go`
-3. Add to root in `internal/cli/root.go`
-4. Create tests in `internal/cli/newcommand_test.go`
-5. Update README.md command reference
+1. Follow pattern from `build.go`
+1. Add to root in `internal/cli/root.go`
+1. Create tests in `internal/cli/newcommand_test.go`
+1. Update README.md command reference
 
 ### Adding New Use Case
+
 1. Define interface in `internal/app/`
-2. Implement with injected dependencies
-3. Add tests with mocked infrastructure
-4. Wire up in CLI command
+1. Implement with injected dependencies
+1. Add tests with mocked infrastructure
+1. Wire up in CLI command
 
 ### Adding Infrastructure Adapter
-1. Check if interface exists in `app/`
-2. Create in `infra/` subdirectory
-3. Implement interface methods
-4. Add tests (in-memory or temp files)
-5. Wire up in `main.go`
 
----
+1. Check if interface exists in `app/`
+1. Create in `infra/` subdirectory
+1. Implement interface methods
+1. Add tests (in-memory or temp files)
+1. Wire up in `main.go`
+
+______________________________________________________________________
 
 ## Testing Patterns
 
 ### Domain Tests (Pure Logic)
+
 ```go
 func TestModule_AppliesTo(t *testing.T) {
     tests := []struct {
@@ -202,6 +222,7 @@ func TestModule_AppliesTo(t *testing.T) {
 ```
 
 ### App Tests (With Mocks)
+
 ```go
 fs := afero.NewMemMapFs()
 afero.WriteFile(fs, "test.yaml", []byte("..."), 0644)
@@ -209,87 +230,98 @@ reader := filesystem.NewReader(fs)
 // Test with mocked filesystem
 ```
 
----
+______________________________________________________________________
 
 ## Performance Benchmarks
 
-| Metric | Python | Go | Improvement |
-|--------|--------|----|----|
-| Startup | ~200ms | <10ms | 20x faster |
-| Build (10 modules) | ~300ms | <50ms | 6x faster |
-| Memory | ~80MB | <10MB | 8x lighter |
-| Binary size | ~40MB | ~8MB | 5x smaller |
+| Metric             | Python | Go     | Improvement |
+| ------------------ | ------ | ------ | ----------- |
+| Startup            | ~200ms | \<10ms | 20x faster  |
+| Build (10 modules) | ~300ms | \<50ms | 6x faster   |
+| Memory             | ~80MB  | \<10MB | 8x lighter  |
+| Binary size        | ~40MB  | ~8MB   | 5x smaller  |
 
----
+______________________________________________________________________
 
 ## For Detailed Information
 
 ### Development Tasks
+
 → See `DEVELOPMENT.md` (current CLAUDE.md)
+
 - Complete architecture details
 - Dependency injection patterns
 - Code style guidelines
 - Testing strategy
 
 ### User Assistance
+
 → See `docs/user/40-command-reference.md`
+
 - All command syntax
 - Real-world examples
 - Common workflows
 
 ### API Integration
+
 → See `docs/reference/api.md` (TODO)
+
 - Public API reference
 - Integration guide
 
----
+______________________________________________________________________
 
 ## Quick Debugging
 
 ### Build Fails
+
 ```bash
 make clean
 make build
 ```
 
 ### Tests Fail
+
 ```bash
 go test ./... -v
 go test ./internal/domain -v  # Specific package
 ```
 
 ### Check Coverage
+
 ```bash
 make test-coverage
 open coverage.html
 ```
 
----
+______________________________________________________________________
 
 ## Current Status
 
 **Version**: 0.2.0-alpha
 **Test Coverage**: 70.1% overall
+
 - Domain: 88.7%
 - Infrastructure: 77.6-100%
 - Application: 86.5%
 - CLI: 45.8%
 
 **Features**:
+
 - ✅ Build, validate, list, migrate, template, backup, restore, cleanup, diff
 - ⏳ Plugin system (planned)
 
----
+______________________________________________________________________
 
 ## Important Notes
 
 1. **NEVER commit without tests** for new features
-2. **NEVER push to remote** without user permission
-3. **ALWAYS validate manifest** before building
-4. **ALWAYS use make build**, never go build
-5. **ALWAYS check dependency rules** in architecture
+1. **NEVER push to remote** without user permission
+1. **ALWAYS validate manifest** before building
+1. **ALWAYS use make build**, never go build
+1. **ALWAYS check dependency rules** in architecture
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-01
 **For**: Claude Code and AI coding assistants

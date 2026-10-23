@@ -13,7 +13,7 @@ import (
 func TestNewRootCmd(t *testing.T) {
 	cmd := NewRootCmd()
 
-	assert.Equal(t, "shellforge", cmd.Use)
+	assert.Equal(t, "gz-shellforge", cmd.Use)
 	assert.Contains(t, cmd.Short, "Build tool for modular shell configurations")
 	assert.NotEmpty(t, cmd.Long)
 	assert.Equal(t, version, cmd.Version)
@@ -30,7 +30,7 @@ func TestMustMarkFlagRequiredPanicsForMissingFlag(t *testing.T) {
 func TestRootCmd_Version(t *testing.T) {
 	cmd := NewRootCmd()
 
-	assert.Equal(t, "0.5.1", cmd.Version)
+	assert.Equal(t, "0.6.0", cmd.Version)
 }
 
 func TestRootCmd_HasSubcommands(t *testing.T) {
@@ -84,7 +84,7 @@ func TestRootCmd_Version_Flag(t *testing.T) {
 	assert.NoError(t, err)
 
 	output := buf.String()
-	assert.Contains(t, output, "0.5.1")
+	assert.Contains(t, output, "0.6.0")
 }
 
 func TestRootCmd_LongDescription(t *testing.T) {
@@ -218,4 +218,15 @@ func TestRootCmd_HelpCommand(t *testing.T) {
 
 	output := buf.String()
 	assert.Contains(t, output, "Available Commands:", "help command should show available commands")
+}
+
+// BenchmarkNewRootCmd measures command registration separately from process launch.
+func BenchmarkNewRootCmd(b *testing.B) {
+	b.ReportAllocs()
+	for b.Loop() {
+		cmd := NewRootCmd()
+		if cmd.Use != shellforgeCommandName {
+			b.Fatal("unexpected command identity")
+		}
+	}
 }

@@ -4,20 +4,22 @@
 
 This document describes the public API for embedding Shellforge in your own Go applications.
 
----
+______________________________________________________________________
 
 ## Overview
 
 Shellforge can be used in two ways:
+
 1. **As a CLI tool** - The `gz-shellforge` binary
-2. **As a Go library** - Import `pkg/cmd` in your Go code
+1. **As a Go library** - Import `pkg/cmd` in your Go code
 
 The public API allows you to:
+
 - Embed Shellforge commands in your own CLI
 - Integrate Shellforge functionality into your Go applications
 - Build custom tools on top of Shellforge
 
----
+______________________________________________________________________
 
 ## Installation
 
@@ -31,7 +33,7 @@ go get github.com/gizzahub/gzh-cli-shellforge
 
 - **Go 1.21+** required
 
----
+______________________________________________________________________
 
 ## Public Package: `pkg/cmd`
 
@@ -48,14 +50,17 @@ import "github.com/gizzahub/gzh-cli-shellforge/pkg/cmd"
 Returns the root Shellforge command for embedding in other CLIs.
 
 **Signature:**
+
 ```go
 func NewRootCmd() *cobra.Command
 ```
 
 **Returns:**
+
 - `*cobra.Command` - The root command with all subcommands attached
 
 **Example:**
+
 ```go
 package main
 
@@ -84,6 +89,7 @@ func main() {
 ```
 
 **Usage:**
+
 ```bash
 # Your custom CLI with embedded shellforge
 mycli shellforge build --os Mac --output ~/.zshrc
@@ -91,7 +97,7 @@ mycli shellforge validate
 mycli shellforge list
 ```
 
----
+______________________________________________________________________
 
 ## Use Cases
 
@@ -127,6 +133,7 @@ func main() {
 ```
 
 **Result:**
+
 ```bash
 devtools deploy      # Your command
 devtools test        # Your command
@@ -144,6 +151,7 @@ rootCmd.AddCommand(shellforgeCmd)
 ```
 
 **Usage:**
+
 ```bash
 mycli shell build --os Mac
 mycli shell validate
@@ -188,18 +196,20 @@ func buildShellConfig(manifestPath, configDir, targetOS string) (string, error) 
 
 **⚠️ Warning**: Internal API may change without notice. Stick to `pkg/cmd` for stability.
 
----
+______________________________________________________________________
 
 ## Architecture for Library Users
 
 ### Recommended Approach
 
 **Use the public `pkg/cmd` API:**
+
 ```
 Your CLI → pkg/cmd.NewRootCmd() → Shellforge Commands
 ```
 
 **Benefits:**
+
 - ✅ Stable API
 - ✅ All commands work
 - ✅ Proper flag parsing
@@ -209,17 +219,19 @@ Your CLI → pkg/cmd.NewRootCmd() → Shellforge Commands
 ### Advanced Approach (Not Recommended)
 
 **Direct use of internal services:**
+
 ```
 Your Code → internal/app → internal/domain
 ```
 
 **Drawbacks:**
+
 - ⚠️ Unstable API
 - ⚠️ May break between versions
 - ⚠️ Requires understanding of internal architecture
 - ⚠️ More maintenance work
 
----
+______________________________________________________________________
 
 ## Examples
 
@@ -279,6 +291,7 @@ func main() {
 ```
 
 **Usage:**
+
 ```bash
 # Your custom commands
 devtools deploy
@@ -341,7 +354,7 @@ shellforgeCmd.SetUsageTemplate(customUsage)
 rootCmd.AddCommand(shellforgeCmd)
 ```
 
----
+______________________________________________________________________
 
 ## API Stability
 
@@ -359,7 +372,7 @@ rootCmd.AddCommand(shellforgeCmd)
 
 **Recommendation:** Always use `pkg/cmd` unless you have specific needs.
 
----
+______________________________________________________________________
 
 ## Versioning
 
@@ -370,6 +383,7 @@ Shellforge follows [Semantic Versioning](https://semver.org/):
 - **PATCH**: Bug fixes (backwards-compatible)
 
 **Import versioning:**
+
 ```go
 // Current (v0.x.x - unstable)
 import "github.com/gizzahub/gzh-cli-shellforge/pkg/cmd"
@@ -378,23 +392,25 @@ import "github.com/gizzahub/gzh-cli-shellforge/pkg/cmd"
 import "github.com/gizzahub/gzh-cli-shellforge/v1/pkg/cmd"
 ```
 
----
+______________________________________________________________________
 
 ## Dependencies
 
 When using Shellforge as a library, you'll pull in:
 
 ### Direct Dependencies
+
 - `github.com/spf13/cobra` - CLI framework
 - `github.com/spf13/afero` - Filesystem abstraction
 - `gopkg.in/yaml.v3` - YAML parsing
 
 ### Total Size
+
 - ~3-4 MB added to your binary
 - No C dependencies (pure Go)
 - Cross-compiles easily
 
----
+______________________________________________________________________
 
 ## Best Practices
 
@@ -454,18 +470,20 @@ func TestMyCLI(t *testing.T) {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
 ### Import Errors
 
 **Problem:**
+
 ```
 cannot find package "github.com/gizzahub/gzh-cli-shellforge/pkg/cmd"
 ```
 
 **Solution:**
+
 ```bash
 go get github.com/gizzahub/gzh-cli-shellforge
 go mod tidy
@@ -474,11 +492,13 @@ go mod tidy
 ### Version Conflicts
 
 **Problem:**
+
 ```
 conflicting versions of github.com/spf13/cobra
 ```
 
 **Solution:**
+
 ```bash
 # Update to compatible versions
 go get github.com/spf13/cobra@latest
@@ -490,6 +510,7 @@ go mod tidy
 **Problem:** Binary size increased significantly
 
 **Solution:**
+
 ```bash
 # Build with size optimization
 go build -ldflags="-s -w" -o mycli
@@ -497,19 +518,21 @@ go build -ldflags="-s -w" -o mycli
 # Result: ~3-4 MB added (reasonable for full CLI)
 ```
 
----
+______________________________________________________________________
 
 ## Migration Guide
 
 ### From Direct Binary Execution
 
 **Before:**
+
 ```bash
 # Running shellforge binary
 gz-shellforge build --os Mac
 ```
 
 **After (Embedded):**
+
 ```go
 // Programmatic execution
 cmd := cmd.NewRootCmd()
@@ -522,34 +545,37 @@ cmd.Execute()
 If you built custom shell config tooling:
 
 1. Replace with Shellforge embedded command
-2. Use `pkg/cmd.NewRootCmd()`
-3. Customize command name if needed
-4. Keep your other CLI features
+1. Use `pkg/cmd.NewRootCmd()`
+1. Customize command name if needed
+1. Keep your other CLI features
 
 **Benefits:**
+
 - ✅ Less code to maintain
 - ✅ Battle-tested dependency resolution
 - ✅ Free updates and bug fixes
 - ✅ Community support
 
----
+______________________________________________________________________
 
 ## Future API Additions
 
 Planned for future versions:
 
 ### v0.3.0
+
 - `pkg/builder` - Direct builder service API
 - `pkg/validator` - Direct validator service API
 
 ### v1.0.0
+
 - Stable public API with guarantees
 - More granular service access
 - Plugin system
 
 **Feedback Welcome!** Let us know what API you need: [GitHub Issues](https://github.com/gizzahub/gzh-cli-shellforge/issues)
 
----
+______________________________________________________________________
 
 ## Support
 
@@ -565,7 +591,7 @@ Planned for future versions:
 - **[Contributing](CONTRIBUTING.md)** - Contributing to the API
 - **[Tech Stack](50-tech-stack.md)** - Libraries used
 
----
+______________________________________________________________________
 
 ## Example Projects
 
@@ -573,7 +599,7 @@ Projects using Shellforge as a library:
 
 > Coming soon! Be the first - submit a PR to add your project here.
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-01
 **API Version**: v0.2.0 (unstable)

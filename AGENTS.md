@@ -2,7 +2,7 @@
 
 LLM-optimized guidance for working with this repository.
 
----
+______________________________________________________________________
 
 ## Project Context
 
@@ -18,20 +18,20 @@ LLM-optimized guidance for working with this repository.
 - **Dotfile management**: Safe handling, always backup
 - **Modular packages**: Separation of concerns
 
----
+______________________________________________________________________
 
 ## Shared Library (gzh-cli-core)
 
 **CRITICAL**: Use `gzh-cli-core` for common utilities. DO NOT duplicate locally.
 
-| Package | Purpose |
-|---------|---------|
-| logger | Structured logging |
-| testutil | Test helpers (TempDir, Assert*, Capture) |
-| errors | Error types and wrapping |
-| config | Config loading |
-| cli | CLI flags and output |
-| version | Version info |
+| Package  | Purpose                                   |
+| -------- | ----------------------------------------- |
+| logger   | Structured logging                        |
+| testutil | Test helpers (TempDir, Assert\*, Capture) |
+| errors   | Error types and wrapping                  |
+| config   | Config loading                            |
+| cli      | CLI flags and output                      |
+| version  | Version info                              |
 
 ```go
 import (
@@ -41,32 +41,32 @@ import (
 )
 ```
 
----
+______________________________________________________________________
 
 ## Package Architecture
 
 ### Internal Packages
 
-| Package | Purpose |
-|---------|---------|
-| `internal/app` | Application services (Builder, DeployService) |
-| `internal/cli` | Command handlers (build, deploy, validate, etc.) |
-| `internal/cli/errors` | CLI error handling |
-| `internal/cli/output` | Result formatting |
-| `internal/domain` | Module, Manifest, Graph |
-| `internal/infra` | File system, External services |
+| Package               | Purpose                                          |
+| --------------------- | ------------------------------------------------ |
+| `internal/app`        | Application services (Builder, DeployService)    |
+| `internal/cli`        | Command handlers (build, deploy, validate, etc.) |
+| `internal/cli/errors` | CLI error handling                               |
+| `internal/cli/output` | Result formatting                                |
+| `internal/domain`     | Module, Manifest, Graph                          |
+| `internal/infra`      | File system, External services                   |
 
 ### Public Packages (pkg/)
 
-| Package | Purpose |
-|---------|---------|
-| `pkg/dotfiles` | Dotfile management |
-| `pkg/shell` | Shell configuration |
-| `pkg/template` | Template engine |
-| `pkg/backup` | Backup operations |
-| `pkg/sync` | Synchronization |
+| Package        | Purpose             |
+| -------------- | ------------------- |
+| `pkg/dotfiles` | Dotfile management  |
+| `pkg/shell`    | Shell configuration |
+| `pkg/template` | Template engine     |
+| `pkg/backup`   | Backup operations   |
+| `pkg/sync`     | Synchronization     |
 
----
+______________________________________________________________________
 
 ## Development Workflow
 
@@ -93,7 +93,7 @@ make test-coverage
 - **Sanitize shell inputs** - prevent command injection
 - **Safe file operations** - validate paths, check permissions
 
----
+______________________________________________________________________
 
 ## CLI Commands
 
@@ -116,14 +116,14 @@ gz-shellforge build && gz-shellforge deploy --backup
 
 ### Key Commands
 
-| Command | Purpose |
-|---------|---------|
-| `build` | Generate shell config from modules (OS auto-detected, default: ./build/) |
-| `deploy` | Copy built files to actual paths (~/.zshrc, etc.) |
-| `validate` | Check manifest and module files |
-| `list` | List available modules |
-| `backup` | Backup current shell configurations |
-| `restore` | Restore from backup |
+| Command    | Purpose                                                                  |
+| ---------- | ------------------------------------------------------------------------ |
+| `build`    | Generate shell config from modules (OS auto-detected, default: ./build/) |
+| `deploy`   | Copy built files to actual paths (~/.zshrc, etc.)                        |
+| `validate` | Check manifest and module files                                          |
+| `list`     | List available modules                                                   |
+| `backup`   | Backup current shell configurations                                      |
+| `restore`  | Restore from backup                                                      |
 
 ### Build Options
 
@@ -139,7 +139,7 @@ gz-shellforge build && gz-shellforge deploy --backup
 - `--backup` - Backup existing files before overwriting
 - `--dry-run` - Preview without deploying
 
----
+______________________________________________________________________
 
 ## Code Style
 
@@ -158,7 +158,7 @@ gz-shellforge build && gz-shellforge deploy --backup
 **Types**: feat, fix, docs, refactor, test, chore
 **Scope**: REQUIRED (cmd, internal, pkg/dotfiles, pkg/shell)
 
----
+______________________________________________________________________
 
 ## Quick FAQ
 
@@ -168,6 +168,6 @@ gz-shellforge build && gz-shellforge deploy --backup
 **How to handle dotfiles?** → Use `pkg/dotfiles` with backups
 **AI-prohibited files?** → See `.claudeignore`
 
----
+______________________________________________________________________
 
 **Last Updated**: 2026-01-19 (Breaking change: removed legacy --single-output mode)

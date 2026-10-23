@@ -39,11 +39,14 @@ G1. **Multi-shell / multi-file build**
 G2. **Build performance**
 
 - Target: 기동 < 10ms, 10모듈 빌드 < 50ms, 메모리 < 10MB, 바이너리 ~8MB
-- Metric: macOS 에서 `make perf-startup` 으로 잰다. 기동은 `version` workload 의
-  warm median(같은 실행 파일을 반복 실행한 표본의 중앙값), 10모듈 빌드는
-  `build_10_modules` workload 의 warm median, 메모리는 `/usr/bin/time -l` 의
-  peak memory footprint 다. first-observed·새 inode 첫 실행 시간과 maximum RSS 는
-  참고값으로 기록하고 판정에 쓰지 않는다.
+- Metric: macOS 에서 릴리스 바이너리에
+  `scripts/startup-profile.py --binary <릴리스 바이너리>` 를 실행해 잰다
+  (`make perf-startup` 은 로컬 Make 빌드를 재는 개발용 참고값이다). 기동은
+  `version` workload 의 warm median(같은 실행 파일을 반복 실행한 표본의 중앙값),
+  10모듈 빌드는 `build_10_modules` workload 의 warm median, 메모리는 `version`
+  workload 의 `memory_samples` 중 `peak_footprint_bytes`(`/usr/bin/time -l` 의
+  peak memory footprint) 최댓값이다. first-observed·새 inode 첫 실행 시간과
+  maximum RSS 는 참고값으로 기록하고 판정에 쓰지 않는다.
 
 G3. **Safe deploy**
 

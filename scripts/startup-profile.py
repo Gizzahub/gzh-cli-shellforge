@@ -50,6 +50,10 @@ def memory(args, cwd):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--binary", type=Path, default=Path("build/gz-shellforge"))
+    parser.add_argument("--label", default="local Make development build")
+    parser.add_argument("--control-trimpath", action="store_true")
+    parser.add_argument("--control-ldflags", default="")
+    parser.add_argument("--control-cgo", choices=["0", "1"])
     parser.add_argument("--samples", type=int, default=30)
     parser.add_argument("--fresh-copies", type=int, default=5)
     parser.add_argument("--output", type=Path, required=True)
@@ -67,6 +71,7 @@ def main():
     tmp.mkdir(exist_ok=True)
     report = {
         "schema_version": 1,
+        "binary_label": args.label,
         "timestamp_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "platform": run(["sw_vers"]).stdout.decode().strip(),
         "cpu": run(["sysctl", "-n", "machdep.cpu.brand_string"]).stdout.decode().strip(),
@@ -89,7 +94,19 @@ def main():
         helper_source = work / "empty.go"
         helper_source.write_text("package main\nfunc main() {}\n")
         helper = work / "empty-go"
-        run(["go", "build", "-trimpath", "-o", str(helper), str(helper_source)], cwd=root)
+        helper_args = ["go", "build"]
+        if args.control_trimpath:
+            helper_args.append("-trimpath")
+        if args.control_ldflags:
+            helper_args.extend(["-ldflags", args.control_ldflags])
+        helper_args.extend(["-o", str(helper), str(helper_source)])
+        helper_env = os.environ.copy()
+        if args.control_cgo is not None:
+            helper_env["CGO_ENABLED"] = args.control_cgo
+        run(helper_args, cwd=root, env=helper_env)
+        report["control_build_command"] = helper_args
+        report["control_buildinfo"] = run(["go", "version", "-m", str(helper)]).stdout.decode()
+        report["control_cgo_override"] = args.control_cgo
         manifest = work / "manifest.yaml"
         manifest.write_text("modules:\n" + "".join(
             f"  - name: module{i}\n    file: module{i}.sh\n    target: zshrc\n" for i in range(10)))

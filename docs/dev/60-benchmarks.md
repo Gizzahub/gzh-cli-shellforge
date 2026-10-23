@@ -17,6 +17,8 @@ percentile, 메모리 metric과 MB 단위를 정하지 않았다. 아래는 그 
 macOS `/usr/bin/time -l`, `xattr`, `sysctl`, `sw_vers`가 필요하다.
 선택한 binary의 quarantine 속성이 있으면 거부하며 제거하지 않는다.
 현재 구현은 macOS 전용 관측기이며 다른 OS의 메모리 숫자로 바꾸어 출력하지 않는다.
+`--binary`로 이미 빌드된 파일을 선택할 수 있다. Make와 공개 release flags를
+혼동하지 않도록 `--label`과 binary/control buildinfo를 함께 기록한다.
 
 - 바이너리 SHA256·Go buildinfo·source HEAD·OS/build·CPU·시각을 기록한다.
   source HEAD와 실제 binary buildinfo를 모두 보존해 dirty build를 숨기지 않는다.
@@ -40,11 +42,53 @@ macOS `/usr/bin/time -l`, `xattr`, `sysctl`, `sw_vers`가 필요하다.
   직접 호출할 때 `--samples`, `--fresh-copies`, `--output`으로 관측 수와 출력만
   바꿀 수 있다. 임의의 count를 제품의 정식 수용 기준으로 간주하지 않는다.
 
-### 관측 결과
+### 공개 v0.6.0 바이너리 관측 — 주 제품 표본
+
+Make 개발 빌드는 debug 정보를 포함하지만 배포 설정 `.goreleaser.yaml`은
+`CGO_ENABLED=0`, `-trimpath`, `-s -w`를 사용한다. 따라서 아래 공개 artifact를
+주 제품 표본으로 따로 측정했고 Make 관측과 섞어 개선율을 계산하지 않았다.
+
+- URL: 공개 v0.6.0의 `gz-shellforge_0.6.0_darwin_arm64.tar.gz`.
+- archive SHA256: `3a15e20e043764c2c26672e5a5cfe22539f95934930b09e9ea2adc7769b8bf85`.
+- 추출 binary SHA256: `8b0954ef84349a368455541b97a1cafbe2aa41214f7be11fa0ca21cdb88b20b1`.
+- binary 5,710,418 bytes, Go 1.27.3, `vcs.revision=89baf366`, `vcs.modified=false`.
+  task tmp에만 다운로드·추출했으며 사용자 설치본과 공개 asset은 바꾸지 않았다.
+- 2026-10-23 14:49:56 UTC, 같은 Apple M5 Max / macOS 27.0.1.
+  workload별 첫 관측 1회·warm 30회·fresh-copy 5회·별도 메모리 5회다.
+- harness의 `--binary`로 해당 파일을 선택했다. 빈 Go 대조군도 같은 Go 1.27.3,
+  CGO=0, trimpath, `-s -w`로 빌드했다. flags는 공개 배포 설정에서 가져온 것이며
+  관측기는 `--control-trimpath`, `--control-ldflags`, `--control-cgo` 입력과
+  실제 control buildinfo를 모두 JSON에 보존한다. `--label`은 표본 설명이다.
+
+| workload                 | 첫 관측 ms | warm median ms | warm p95 ms | warm max ms |
+| ------------------------ | ---------: | -------------: | ----------: | ----------: |
+| 공개 binary `--version`  |    359.014 |         10.588 |      13.039 |      13.670 |
+| 공개 binary `--help`     |     11.255 |         11.214 |      15.733 |      16.757 |
+| 공개 binary 10모듈 build |     16.428 |         13.508 |      18.941 |      23.393 |
+| 배포 flags 빈 Go main    |    242.874 |          7.723 |      11.170 |      12.723 |
+
+공개 binary의 fresh-copy 원시 표본(ms)은
+113.560, 250.998, 117.317, 164.061, 112.931이며,
+대조군은 76.066, 73.559, 80.535, 104.728, 73.713이다.
+
+| workload                 | maximum RSS 범위 bytes | peak footprint 범위 bytes |
+| ------------------------ | ---------------------: | ------------------------: |
+| 공개 binary `--version`  |  11,468,800–11,649,024 |       5,063,304–5,243,528 |
+| 공개 binary `--help`     |  11,337,728–11,747,328 |       4,932,232–5,341,832 |
+| 공개 binary 10모듈 build |  12,140,544–12,500,992 |       5,325,424–5,702,280 |
+| 배포 flags 빈 Go main    |    4,341,760–4,489,216 |       3,113,488–3,293,760 |
+
+공개 binary는 이 표본에서 warm median도 10ms를 넘었고 maximum RSS도 10MB를
+넘었다. stripped 크기나 작은 footprint를 이유로 목표를 충족했다고 해석하지 않는다.
+다른 시각에 측정한 Make 표본과의 차이만으로 strip flags의 인과 효과를 주장하지 않는다.
+전체 raw 값은 `tmp/startup-profile-public-v0.6.0.json`에 남겼다.
+
+### Make 개발 바이너리 관측 — 보조 표본
 
 2026-10-23 14:41:33 UTC, Apple M5 Max, macOS 27.0.1 (26A434),
 Go 1.27.3 darwin/arm64, Python 3.14.5. 생산 소스는 `89baf366`이며
-Make 바이너리 크기는 8,463,778 bytes다. 이 후속에서는 생산 Go 코드를 바꾸지 않았다.
+Make 바이너리 크기는 8,463,778 bytes다. 이 후속에서는 생산 Go 코드를 바꾸지 않았다. 이 보조 표본의 빈 main은
+trimpath만 추가한 참고 대조군이었고, 위 공개 표본에서만 배포 flags를 맞췄다.
 측정 binary의 `vcs.modified=true`는 README·측정기 작업 diff를 포함한다. 공개 릴리스
 자산을 바꾼 것이 아니며, 해당 릴리스의 정확한 bytes를 측정했다고 주장하지 않는다.
 이전 25회 측정의 288.850ms 첫 호출과 다른 표본이므로 전후 개선율로 비교하지 않는다.
@@ -88,6 +132,7 @@ FlagSet이 사용하는 buffered writer다. 반복 benchmark의 누적 allocatio
 
 별도 inittrace의 initializer clock 합은 0.319ms, 약 99,304 bytes였다.
 그중 domain의 exported regexp 초기화는 0.050ms, YAML은 0.036ms였다.
+공개 바이너리의 별도 inittrace clock 합도 0.446ms였으며 allocation은 99,304 bytes였다.
 이 단일 traced 표본이나 command constructor의 0.08–0.10ms만으로
 100–284ms 첫 실행 tail을 설명할 수 없다. 빈 Go main에서도 큰 첫 실행 tail을
 관측했으므로 문제가 CLI command 등록에만 있다고 단정할 근거도 없다.

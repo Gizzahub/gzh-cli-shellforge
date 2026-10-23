@@ -5,10 +5,10 @@ This document records CLI startup and memory observations alongside diff compari
 ## CLI 시작·메모리 관측 — 2026-10-23
 
 PRODUCT.md G2 / Quality Gates의 startup \<10ms, 10모듈 build \<50ms,
-메모리 \<10MB 목표는 그대로 유지한다. PRODUCT는 cold/warm, 표본 수,
-percentile, 메모리 metric과 MB 단위를 정하지 않았다. 아래는 그 빈틈을 드러내는
-재현 가능한 **관측 방법**이며 승인된 수용 기준을 새로 정의하지 않는다.
-특히 warm median이나 footprint만 골라 전체 성능 PASS라고 해석하지 않는다.
+메모리 \<10MB 목표는 그대로 유지한다. 판정 기준은 PRODUCT.md G2 Metric이
+정한다. 이 관측 당시에는 metric이 정해지지 않았고, 이후 G2가 warm median과
+peak footprint를 판정값으로 정했다. 아래는 재현 가능한 **관측 방법**과 그
+기준에 따른 판정이다.
 
 ### 재현 방법과 경계
 
@@ -144,8 +144,8 @@ FlagSet이 사용하는 buffered writer다. 반복 benchmark의 누적 allocatio
 
 따라서 lazy registration이나 exported regexp의 변경을 추가하지 않았다.
 공개 API·CLI 도움말·배포 안전 계약을 바꾸는 추측성 최적화는 이 근거로 정당화되지 않는다.
-startup의 첫 실행과 maximum RSS는 목표보다 높으며 전체 성능 PASS는 아니다.
-수용 workload/metric 정의와 더 세분화한 launch tracing이 남는다.
+startup warm median 10.588ms가 목표보다 높으므로 전체 성능 PASS는 아니다.
+첫 실행 시간과 maximum RSS는 참고값이다. 더 세분화한 launch tracing이 남는다.
 아래의 기존 diff benchmark는 별도 workload의 과거 자료이며 이번 CLI 관측의 대용이 아니다.
 
 ## Running Benchmarks

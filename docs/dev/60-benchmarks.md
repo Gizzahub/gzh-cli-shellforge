@@ -78,8 +78,11 @@ Make 개발 빌드는 debug 정보를 포함하지만 배포 설정 `.goreleaser
 | 공개 binary 10모듈 build |  12,140,544–12,500,992 |       5,325,424–5,702,280 |
 | 배포 flags 빈 Go main    |    4,341,760–4,489,216 |       3,113,488–3,293,760 |
 
-공개 binary는 이 표본에서 warm median도 10ms를 넘었고 maximum RSS도 10MB를
-넘었다. stripped 크기나 작은 footprint를 이유로 목표를 충족했다고 해석하지 않는다.
+[PRODUCT.md G2 Metric](../../PRODUCT.md)으로 판정하면 공개 binary는 `version`
+warm median 10.588ms로 기동 목표(10ms 미만)를 충족하지 못했다. 메모리는 `version`
+peak footprint 최댓값 5,243,528 bytes로 10MB 목표를 충족한다. maximum RSS는
+10MB를 넘었지만 참고값이며 판정에 쓰지 않는다. 10모듈 build warm median
+13.508ms는 50ms 목표를 충족한다.
 다른 시각에 측정한 Make 표본과의 차이만으로 strip flags의 인과 효과를 주장하지 않는다.
 전체 raw 값은 `tmp/startup-profile-public-v0.6.0.json`에 남겼다.
 

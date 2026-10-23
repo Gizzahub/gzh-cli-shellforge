@@ -20,12 +20,12 @@ This is a feature-library project — a single PRODUCT.md is sufficient. It
 replaces the earlier marketing-style document; its product positioning now lives
 in [README.md](README.md).
 
-| 제공하는 것 (Is)                              | 되지 않을 것 (Is Not)                       |
-| --------------------------------------------- | ------------------------------------------- |
-| 다중 쉘 설정의 모듈형 빌드/배포               | 쉘 자체·쉘 런타임 대체                      |
-| 위상 정렬 의존성 해결·OS 필터링               | 모든 dotfile 대상 범용 동기화 도구          |
-| build ↔ deploy 분리·dry-run·git 스냅샷 롤백  | 원격 설정 저장소 호스팅                     |
-| 쉘 설정에 특화된 마이그레이션·검증           | GUI·웹·IDE 플러그인                         |
+| 제공하는 것 (Is)                            | 되지 않을 것 (Is Not)              |
+| ------------------------------------------- | ---------------------------------- |
+| 다중 쉘 설정의 모듈형 빌드/배포             | 쉘 자체·쉘 런타임 대체             |
+| 위상 정렬 의존성 해결·OS 필터링             | 모든 dotfile 대상 범용 동기화 도구 |
+| build ↔ deploy 분리·dry-run·git 스냅샷 롤백 | 원격 설정 저장소 호스팅            |
+| 쉘 설정에 특화된 마이그레이션·검증          | GUI·웹·IDE 플러그인                |
 
 ______________________________________________________________________
 

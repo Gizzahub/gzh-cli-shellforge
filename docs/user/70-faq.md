@@ -2,7 +2,7 @@
 
 Common questions about Shellforge answered.
 
----
+______________________________________________________________________
 
 ## General Questions
 
@@ -11,6 +11,7 @@ Common questions about Shellforge answered.
 Shellforge is a build tool that transforms your monolithic shell configuration files (`.zshrc`, `.bashrc`) into organized, modular structures with automatic dependency resolution and OS-specific filtering.
 
 **Key features:**
+
 - Automatic dependency resolution using topological sort
 - OS-specific module filtering (Mac/Linux)
 - Migration from existing configs
@@ -20,12 +21,14 @@ Shellforge is a build tool that transforms your monolithic shell configuration f
 ### Why should I use Shellforge?
 
 **Problems it solves:**
+
 - ❌ Manual script concatenation causes ordering errors
 - ❌ No dependency tracking leads to tools loading before their dependencies
 - ❌ OS-specific logic scattered everywhere
 - ❌ No validation until runtime errors
 
 **Benefits:**
+
 - ✅ Automatic dependency resolution
 - ✅ OS-specific filtering
 - ✅ Pre-deployment validation
@@ -42,33 +45,36 @@ Shellforge is a build tool that transforms your monolithic shell configuration f
 - **API** - May change in future releases
 
 **Recommendation:**
+
 - ✅ **Personal use** - Go ahead! Always backup first
 - ✅ **Team use** - Yes, with proper testing
 - ⚠️ **Enterprise** - Evaluate carefully, test thoroughly
 
 ### How is this different from other dotfile managers?
 
-| Feature | Shellforge | Dotbot | GNU Stow | yadm |
-|---------|------------|--------|----------|------|
-| **Dependency resolution** | ✅ Automatic | ❌ Manual | ❌ None | ❌ None |
-| **OS filtering** | ✅ Built-in | ⚠️ Manual | ❌ None | ⚠️ Manual |
-| **Validation** | ✅ Pre-build | ❌ None | ❌ None | ❌ None |
-| **Migration tools** | ✅ Automatic | ❌ Manual | ❌ Manual | ❌ Manual |
-| **Template system** | ✅ Built-in | ❌ None | ❌ None | ❌ None |
-| **Focus** | Shell configs | All dotfiles | All dotfiles | All dotfiles |
+| Feature                   | Shellforge    | Dotbot       | GNU Stow     | yadm         |
+| ------------------------- | ------------- | ------------ | ------------ | ------------ |
+| **Dependency resolution** | ✅ Automatic  | ❌ Manual    | ❌ None      | ❌ None      |
+| **OS filtering**          | ✅ Built-in   | ⚠️ Manual    | ❌ None      | ⚠️ Manual    |
+| **Validation**            | ✅ Pre-build  | ❌ None      | ❌ None      | ❌ None      |
+| **Migration tools**       | ✅ Automatic  | ❌ Manual    | ❌ Manual    | ❌ Manual    |
+| **Template system**       | ✅ Built-in   | ❌ None      | ❌ None      | ❌ None      |
+| **Focus**                 | Shell configs | All dotfiles | All dotfiles | All dotfiles |
 
 **Use Shellforge if:**
+
 - You have complex shell configurations
 - You need dependency management
 - You maintain configs for multiple OSes
 - You want automatic migration
 
 **Use others if:**
+
 - You manage all dotfiles (not just shell)
 - You prefer symlink-based approach
 - You need simpler solution
 
----
+______________________________________________________________________
 
 ## Installation & Setup
 
@@ -97,6 +103,7 @@ Once installed, `gz-shellforge` is a standalone binary. You can uninstall Go if 
 **Coming soon:** Pre-built binaries
 
 Currently, Go is required for installation. Future releases will provide:
+
 - Homebrew formula (macOS)
 - APT/RPM packages (Linux)
 - Pre-built binaries (all platforms)
@@ -104,30 +111,36 @@ Currently, Go is required for installation. Future releases will provide:
 ### Which shells are supported?
 
 **Fully supported:**
+
 - ✅ zsh 5.8+ (macOS default)
 - ✅ bash 4.0+ (Linux default)
 
 **Planned:**
+
 - ⏳ fish 3.0+
 - ⏳ PowerShell (experimental)
 
 **Not supported:**
+
 - ❌ csh/tcsh
 - ❌ ksh
 
 ### Which operating systems are supported?
 
 **Fully supported:**
+
 - ✅ macOS 10.15+ (Catalina and later)
 - ✅ Linux (Ubuntu 20.04+, Debian 11+, Arch, Fedora, CentOS)
 
 **Experimental:**
+
 - ⚠️ FreeBSD 13+ (basic features work)
 
 **Not supported:**
+
 - ❌ Windows (use WSL instead)
 
----
+______________________________________________________________________
 
 ## Usage Questions
 
@@ -136,10 +149,10 @@ Currently, Go is required for installation. Future releases will provide:
 Follow the [Quick Start Guide](00-quick-start.md):
 
 1. **Install**: `go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest`
-2. **Backup**: `gz-shellforge backup --file ~/.zshrc`
-3. **Migrate**: `gz-shellforge migrate ~/.zshrc`
-4. **Build**: `gz-shellforge build --os Mac --output ~/.zshrc.new`
-5. **Deploy**: `mv ~/.zshrc.new ~/.zshrc`
+1. **Backup**: `gz-shellforge backup --file ~/.zshrc`
+1. **Migrate**: `gz-shellforge migrate ~/.zshrc`
+1. **Build**: `gz-shellforge build --os Mac --output ~/.zshrc.new`
+1. **Deploy**: `mv ~/.zshrc.new ~/.zshrc`
 
 **Time to complete:** 5 minutes
 
@@ -148,11 +161,13 @@ Follow the [Quick Start Guide](00-quick-start.md):
 **Yes!** Shellforge integrates with existing setups:
 
 **Option 1: Migrate your existing config**
+
 ```bash
 gz-shellforge migrate ~/.zshrc
 ```
 
 **Option 2: Start fresh and copy sections**
+
 ```bash
 # Create new modular structure
 mkdir ~/shellforge
@@ -170,6 +185,7 @@ gz-shellforge build --os Mac --output ~/.zshrc
 ```
 
 **Option 3: Hybrid approach**
+
 ```bash
 # Use Shellforge for core config
 gz-shellforge build --os Mac --output ~/.zshrc.shellforge
@@ -203,20 +219,23 @@ gz-shellforge build --os Mac --dry-run
 ```
 
 **Incremental approach:**
+
 1. Migrate core PATH and env vars
-2. Add tool initialization (nvm, rbenv)
-3. Add aliases and functions
-4. Add custom configurations
+1. Add tool initialization (nvm, rbenv)
+1. Add aliases and functions
+1. Add custom configurations
 
 ### How do I add new modules?
 
 **Method 1: Use templates**
+
 ```bash
 gz-shellforge template generate alias my-aliases \
   -f aliases="alias k='kubectl'"
 ```
 
 **Method 2: Create manually**
+
 ```bash
 # Create file
 vim modules/rc_post.d/my-module.sh
@@ -233,27 +252,31 @@ gz-shellforge build --os Mac --output ~/.zshrc
 **Yes!** Multiple safe testing methods:
 
 **Method 1: Dry run**
+
 ```bash
 gz-shellforge build --os Mac --dry-run | less
 ```
 
 **Method 2: Output to different file**
+
 ```bash
 gz-shellforge build --os Mac --output ~/.zshrc.test
 ```
 
 **Method 3: Test in new shell**
+
 ```bash
 zsh -c 'source ~/.zshrc.test; echo "Test passed"'
 ```
 
 **Method 4: Test in new terminal**
+
 ```bash
 gz-shellforge build --os Mac --output ~/.zshrc.test
 # Open new terminal, run: source ~/.zshrc.test
 ```
 
----
+______________________________________________________________________
 
 ## Features Questions
 
@@ -262,6 +285,7 @@ gz-shellforge build --os Mac --output ~/.zshrc.test
 **Automatic ordering** of modules based on dependencies.
 
 **Example problem:**
+
 ```yaml
 # Without dependency resolution, you might load:
 1. nvm (needs brew-path)
@@ -270,6 +294,7 @@ gz-shellforge build --os Mac --output ~/.zshrc.test
 ```
 
 **With Shellforge:**
+
 ```yaml
 - name: brew-path
   requires: []
@@ -286,6 +311,7 @@ gz-shellforge build --os Mac --output ~/.zshrc.test
 **Load different modules** based on operating system.
 
 **Example:**
+
 ```yaml
 - name: brew-path
   file: init.d/brew-path.sh
@@ -301,6 +327,7 @@ gz-shellforge build --os Mac --output ~/.zshrc.test
 ```
 
 **Benefits:**
+
 - Maintain single manifest for multiple OSes
 - Deploy platform-specific configs easily
 - Avoid conditional logic in shell scripts
@@ -310,7 +337,9 @@ gz-shellforge build --os Mac --output ~/.zshrc.test
 **Automatic conversion** from monolithic to modular.
 
 **Process:**
+
 1. **Detect sections** using header patterns:
+
    ```bash
    # --- Section Name ---
    # === Section Name ===
@@ -318,16 +347,18 @@ gz-shellforge build --os Mac --output ~/.zshrc.test
    # SECTION NAME
    ```
 
-2. **Categorize** by content:
+1. **Categorize** by content:
+
    - PATH, env vars → `init.d/`
    - Tool init (nvm, rbenv) → `rc_pre.d/`
    - Aliases, functions → `rc_post.d/`
 
-3. **Infer dependencies:**
+1. **Infer dependencies:**
+
    - Uses `$MACHINE` → requires `os-detection`
    - Uses `brew` → requires `brew-path`
 
-4. **Generate manifest** with metadata
+1. **Generate manifest** with metadata
 
 **Result:** Organized modules with correct dependencies
 
@@ -336,13 +367,14 @@ gz-shellforge build --os Mac --output ~/.zshrc.test
 **6 built-in templates:**
 
 1. **path** - Add directory to PATH
-2. **env** - Set environment variable
-3. **alias** - Define shell aliases
-4. **conditional-source** - Source file if exists
-5. **tool-init** - Initialize development tool
-6. **os-specific** - OS-specific configuration
+1. **env** - Set environment variable
+1. **alias** - Define shell aliases
+1. **conditional-source** - Source file if exists
+1. **tool-init** - Initialize development tool
+1. **os-specific** - OS-specific configuration
 
 **Usage:**
+
 ```bash
 gz-shellforge template list
 gz-shellforge template generate <type> <name>
@@ -356,12 +388,14 @@ Not yet - planned for future release.
 **Git-backed versioning** with timestamps.
 
 **Features:**
+
 - Timestamped snapshots
 - Full git history
 - Retention policies
 - Safety backups on restore
 
 **Usage:**
+
 ```bash
 # Backup
 gz-shellforge backup --file ~/.zshrc
@@ -376,18 +410,20 @@ gz-shellforge restore --file ~/.zshrc --snapshot 2025-12-01_14-30-45
 gz-shellforge cleanup --file ~/.zshrc --keep-count 10
 ```
 
----
+______________________________________________________________________
 
 ## Troubleshooting Questions
 
 ### My shell takes longer to start after using Shellforge
 
 **Likely causes:**
+
 1. Too many modules loading
-2. Slow operations in modules (network calls, heavy computation)
-3. Unoptimized tool initialization
+1. Slow operations in modules (network calls, heavy computation)
+1. Unoptimized tool initialization
 
 **Solutions:**
+
 ```bash
 # Profile shell startup
 zsh -i -c exit
@@ -411,6 +447,7 @@ See [Troubleshooting Guide](60-troubleshooting.md#performance-issues) for detail
 **Cause:** Module A requires B, B requires C, C requires A (cycle!)
 
 **Solution:**
+
 ```bash
 # Find the cycle (error message shows it)
 Error: circular dependency detected
@@ -425,11 +462,13 @@ See [Troubleshooting Guide](60-troubleshooting.md#circular-dependency-detected).
 ### My custom functions don't work after migration
 
 **Possible causes:**
+
 1. Function defined after usage
-2. Missing dependency
-3. Incorrect categorization
+1. Missing dependency
+1. Incorrect categorization
 
 **Solutions:**
+
 ```bash
 # Check load order
 gz-shellforge list -v
@@ -450,12 +489,13 @@ gz-shellforge build --os Mac --dry-run | less
 ```
 
 Or compare with diff:
+
 ```bash
 gz-shellforge build --os Mac --output ~/.zshrc.new
 gz-shellforge diff ~/.zshrc ~/.zshrc.new
 ```
 
----
+______________________________________________________________________
 
 ## Advanced Questions
 
@@ -464,6 +504,7 @@ gz-shellforge diff ~/.zshrc ~/.zshrc.new
 **Yes!** Common use cases:
 
 **Automated testing:**
+
 ```bash
 #!/bin/bash
 # ci-test.sh
@@ -483,6 +524,7 @@ echo "CI passed!"
 ```
 
 **Automated deployment:**
+
 ```yaml
 # .github/workflows/deploy-shell-config.yml
 name: Deploy Shell Config
@@ -533,13 +575,14 @@ See [API Reference](../reference/api.md) for full documentation.
 **We welcome contributions!**
 
 1. Read [Contributing Guide](../developer/30-contributing.md)
-2. Check [open issues](https://github.com/gizzahub/gzh-cli-shellforge/issues)
-3. Fork repository
-4. Create feature branch
-5. Write tests
-6. Submit pull request
+1. Check [open issues](https://github.com/gizzahub/gzh-cli-shellforge/issues)
+1. Fork repository
+1. Create feature branch
+1. Write tests
+1. Submit pull request
 
 **Areas needing help:**
+
 - Documentation improvements
 - More templates
 - Platform-specific testing
@@ -560,6 +603,7 @@ ENTRYPOINT ["gz-shellforge"]
 ```
 
 **Usage:**
+
 ```bash
 docker run -v $(pwd):/workspace shellforge:latest \
   build --os Linux --output /workspace/output.sh
@@ -570,6 +614,7 @@ docker run -v $(pwd):/workspace shellforge:latest \
 **Not yet - planned for future release.**
 
 **Planned features:**
+
 - Custom validators
 - Custom templates
 - Custom module types
@@ -578,7 +623,7 @@ docker run -v $(pwd):/workspace shellforge:latest \
 **Current workaround:**
 Use template generation and custom modules.
 
----
+______________________________________________________________________
 
 ## Performance Questions
 
@@ -586,11 +631,11 @@ Use template generation and custom modules.
 
 **Yes!** Significantly faster than Python version:
 
-| Metric | Python | Go | Improvement |
-|--------|--------|----|----|
-| Startup | ~200ms | <10ms | 20x faster |
-| Build (10 modules) | ~300ms | <50ms | 6x faster |
-| Memory | ~80MB | <10MB | 8x lighter |
+| Metric             | Python | Go     | Improvement |
+| ------------------ | ------ | ------ | ----------- |
+| Startup            | ~200ms | \<10ms | 20x faster  |
+| Build (10 modules) | ~300ms | \<50ms | 6x faster   |
+| Memory             | ~80MB  | \<10MB | 8x lighter  |
 
 **Benchmarks:** See [Performance Benchmarks](../developer/60-benchmarks.md)
 
@@ -599,15 +644,17 @@ Use template generation and custom modules.
 **No!** Shellforge generates static shell scripts.
 
 **Impact on shell startup:**
+
 - Zero - Shellforge runs at build time, not shell startup
 - Generated config is same as handwritten script
 - No performance overhead
 
 **Only build time matters:**
+
 - Build happens manually when you change modules
 - Not every shell startup
 
----
+______________________________________________________________________
 
 ## Security Questions
 
@@ -616,6 +663,7 @@ Use template generation and custom modules.
 **Yes**, with standard precautions:
 
 **Security features:**
+
 - ✅ No network calls during build
 - ✅ No arbitrary code execution
 - ✅ Git-backed versioning for rollback
@@ -623,6 +671,7 @@ Use template generation and custom modules.
 - ✅ Open source (audit anytime)
 
 **Best practices:**
+
 - Always backup before changes
 - Review generated config before deploying
 - Use version control for modules
@@ -633,6 +682,7 @@ Use template generation and custom modules.
 **No**, unless you put secrets in modules.
 
 **Safe practice:**
+
 ```bash
 # DON'T put secrets directly
 export API_KEY="secret-key-here"  # ❌ Bad
@@ -650,6 +700,7 @@ export API_KEY=$(security find-generic-password -s "API_KEY" -w)  # ✅ Best
 ### Does Shellforge phone home?
 
 **No.** Shellforge:
+
 - ❌ No telemetry
 - ❌ No analytics
 - ❌ No network calls
@@ -657,7 +708,7 @@ export API_KEY=$(security find-generic-password -s "API_KEY" -w)  # ✅ Best
 
 **Completely offline** - all operations are local.
 
----
+______________________________________________________________________
 
 ## Compatibility Questions
 
@@ -666,12 +717,14 @@ export API_KEY=$(security find-generic-password -s "API_KEY" -w)  # ✅ Best
 **Yes!** Two approaches:
 
 **Approach 1: Migrate oh-my-zsh config**
+
 ```bash
 gz-shellforge migrate ~/.zshrc
 # Includes oh-my-zsh if present
 ```
 
 **Approach 2: Keep oh-my-zsh, use Shellforge for custom**
+
 ```bash
 # In manifest.yaml
 - name: oh-my-zsh
@@ -715,12 +768,13 @@ gz-shellforge build --os Mac --output ~/.zshrc  # or Linux
 ```
 
 **Benefits for teams:**
+
 - Version control friendly
 - Easy to review changes
 - Platform-specific configs
 - Shared and personal modules
 
----
+______________________________________________________________________
 
 ## Still Have Questions?
 
@@ -730,6 +784,6 @@ gz-shellforge build --os Mac --output ~/.zshrc  # or Linux
 - **GitHub Discussions**: [Ask a question](https://github.com/gizzahub/gzh-cli-shellforge/discussions)
 - **GitHub Issues**: [Report a bug](https://github.com/gizzahub/gzh-cli-shellforge/issues)
 
----
+______________________________________________________________________
 
 **Last Updated**: 2025-12-01

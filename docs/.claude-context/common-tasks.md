@@ -43,21 +43,21 @@ modules:
 
 ## CLI Commands
 
-| Command | Purpose |
-|---------|---------|
-| `shellforge build` | Build shell config from manifest |
-| `shellforge deploy` | Deploy config to system |
-| `shellforge diff` | Show changes vs current config |
-| `shellforge backup` | Backup current shell config |
-| `shellforge doctor` | Diagnose system prerequisites |
-| `shellforge validate` | Validate manifest file |
+| Command               | Purpose                          |
+| --------------------- | -------------------------------- |
+| `shellforge build`    | Build shell config from manifest |
+| `shellforge deploy`   | Deploy config to system          |
+| `shellforge diff`     | Show changes vs current config   |
+| `shellforge backup`   | Backup current shell config      |
+| `shellforge doctor`   | Diagnose system prerequisites    |
+| `shellforge validate` | Validate manifest file           |
 
 ## Adding a New Infrastructure Adapter
 
 1. Create package under `internal/infra/<name>/`
-2. Define interface in `internal/app/` that the adapter satisfies
-3. Implement the adapter
-4. Wire in `cmd/shellforge/main.go` or service constructors
+1. Define interface in `internal/app/` that the adapter satisfies
+1. Implement the adapter
+1. Wire in `cmd/shellforge/main.go` or service constructors
 
 ## Validation Pipeline
 

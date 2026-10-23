@@ -4,54 +4,57 @@
 **Status**: Analysis & Planning
 **Purpose**: Separate human-focused and LLM-focused documentation
 
----
+______________________________________________________________________
 
 ## 1. Current Documentation Analysis
 
 ### 1.1 Existing Documentation Inventory
 
-| File | Target Audience | Content Type | Quality | Issues |
-|------|----------------|--------------|---------|--------|
-| **README.md** | Human Users | User Guide | ⭐⭐⭐⭐☆ | Mixed audience, too long (837 lines) |
-| **CLAUDE.md** | LLM (Claude) | Development Guide | ⭐⭐⭐⭐⭐ | Good, but dev-focused |
-| **ARCHITECTURE.md** | Developers | Architecture | ⭐⭐⭐⭐☆ | Technical, good structure |
-| **PRD.md** | Product/Dev | Requirements | ⭐⭐⭐☆☆ | Not read yet |
-| **REQUIREMENTS.md** | Developers | Functional Spec | ⭐⭐⭐☆☆ | Not read yet |
-| **TECH_STACK.md** | Developers | Tech Decisions | ⭐⭐⭐⭐☆ | Good for devs |
-| **examples/WORKFLOW.md** | Human Users | Tutorial | ⭐⭐⭐⭐⭐ | Excellent workflow guide |
-| **examples/CLI-EXAMPLES.md** | Human Users | Quick Reference | ⭐⭐⭐⭐⭐ | Excellent command reference |
-| **docs/BENCHMARKS.md** | Developers/Users | Performance | ⭐⭐⭐☆☆ | Niche audience |
-| **CHANGELOG.md** | Users | Release Notes | ⭐⭐⭐☆☆ | Standard |
-| **TODO.md** | Developers | Planning | ⭐⭐☆☆☆ | Development artifact |
+| File                         | Target Audience  | Content Type      | Quality    | Issues                               |
+| ---------------------------- | ---------------- | ----------------- | ---------- | ------------------------------------ |
+| **README.md**                | Human Users      | User Guide        | ⭐⭐⭐⭐☆  | Mixed audience, too long (837 lines) |
+| **CLAUDE.md**                | LLM (Claude)     | Development Guide | ⭐⭐⭐⭐⭐ | Good, but dev-focused                |
+| **ARCHITECTURE.md**          | Developers       | Architecture      | ⭐⭐⭐⭐☆  | Technical, good structure            |
+| **PRD.md**                   | Product/Dev      | Requirements      | ⭐⭐⭐☆☆   | Not read yet                         |
+| **REQUIREMENTS.md**          | Developers       | Functional Spec   | ⭐⭐⭐☆☆   | Not read yet                         |
+| **TECH_STACK.md**            | Developers       | Tech Decisions    | ⭐⭐⭐⭐☆  | Good for devs                        |
+| **examples/WORKFLOW.md**     | Human Users      | Tutorial          | ⭐⭐⭐⭐⭐ | Excellent workflow guide             |
+| **examples/CLI-EXAMPLES.md** | Human Users      | Quick Reference   | ⭐⭐⭐⭐⭐ | Excellent command reference          |
+| **docs/BENCHMARKS.md**       | Developers/Users | Performance       | ⭐⭐⭐☆☆   | Niche audience                       |
+| **CHANGELOG.md**             | Users            | Release Notes     | ⭐⭐⭐☆☆   | Standard                             |
+| **TODO.md**                  | Developers       | Planning          | ⭐⭐☆☆☆    | Development artifact                 |
 
 ### 1.2 Critical Findings
 
 #### ✅ **Strengths**
+
 1. **Excellent CLI documentation**: CLI-EXAMPLES.md and WORKFLOW.md are comprehensive
-2. **Good architecture docs**: CLAUDE.md provides clear dev guidance
-3. **Comprehensive README**: Covers all features and commands
-4. **Real examples**: examples/ directory with working code
+1. **Good architecture docs**: CLAUDE.md provides clear dev guidance
+1. **Comprehensive README**: Covers all features and commands
+1. **Real examples**: examples/ directory with working code
 
 #### ❌ **Problems**
+
 1. **No clear separation**: Human vs LLM documentation mixed
-2. **README too long**: 837 lines - information overload
-3. **Missing docs**:
+1. **README too long**: 837 lines - information overload
+1. **Missing docs**:
    - Quick start guide (5-minute setup)
    - Troubleshooting guide
    - API reference (if used as library)
    - Contributing guide
    - Security documentation
-4. **Poor discoverability**: Users don't know where to find what
-5. **LLM context pollution**: Human docs consume LLM context unnecessarily
-6. **No user personas**: Documentation not targeted to specific user types
+1. **Poor discoverability**: Users don't know where to find what
+1. **LLM context pollution**: Human docs consume LLM context unnecessarily
+1. **No user personas**: Documentation not targeted to specific user types
 
----
+______________________________________________________________________
 
 ## 2. User Personas & Documentation Needs
 
 ### 2.1 Human User Personas
 
 #### **Persona 1: New User (First-time user)**
+
 - **Goal**: Quick setup and first successful build
 - **Needs**:
   - 5-minute quick start guide
@@ -61,6 +64,7 @@
 - **Current pain**: README is too long, overwhelming
 
 #### **Persona 2: Regular User (Daily user)**
+
 - **Goal**: Efficient workflow, command reference
 - **Needs**:
   - Quick command reference
@@ -70,6 +74,7 @@
 - **Current pain**: Must search through long README
 
 #### **Persona 3: Advanced User (Power user)**
+
 - **Goal**: Automation, integration, customization
 - **Needs**:
   - Advanced features
@@ -79,6 +84,7 @@
 - **Current pain**: No advanced usage documentation
 
 #### **Persona 4: Contributor (Developer)**
+
 - **Goal**: Understand codebase, contribute features
 - **Needs**:
   - Architecture overview
@@ -90,6 +96,7 @@
 ### 2.2 LLM User Personas
 
 #### **Persona 5: LLM Developer Assistant (Claude Code)**
+
 - **Goal**: Understand codebase structure, make changes correctly
 - **Needs**:
   - Architecture patterns (Hexagonal)
@@ -100,6 +107,7 @@
 - **Current state**: CLAUDE.md is excellent
 
 #### **Persona 6: LLM User Assistant (General AI)**
+
 - **Goal**: Help users with commands and workflows
 - **Needs**:
   - Command syntax
@@ -108,7 +116,7 @@
   - Feature availability
 - **Current pain**: Must parse long README
 
----
+______________________________________________________________________
 
 ## 3. Proposed Documentation Structure
 
@@ -165,6 +173,7 @@ docs/
 ```
 
 **CONTEXT.md** (New LLM landing page):
+
 ```markdown
 # Shellforge Context for LLM
 
@@ -202,7 +211,8 @@ See: docs/user/command-reference.md (command syntax)
 ```
 
 **New README.md** (Simplified):
-```markdown
+
+````markdown
 # Shellforge
 
 Build tool for modular shell configurations with automatic dependency resolution.
@@ -231,7 +241,7 @@ Build tool for modular shell configurations with automatic dependency resolution
 
 ```bash
 go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
-```
+````
 
 [Detailed installation →](docs/user/10-installation.md)
 
@@ -244,7 +254,8 @@ go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
 ## License
 
 MIT
-```
+
+````
 
 ---
 
@@ -309,7 +320,8 @@ MIT
 - [ ] Create new directory structure
   ```bash
   mkdir -p docs/{user,developer,reference,design/decisions}
-  ```
+````
+
 - [ ] Move existing files:
   - [ ] examples/WORKFLOW.md → docs/user/30-workflows.md
   - [ ] examples/CLI-EXAMPLES.md → docs/user/40-command-reference.md
@@ -327,10 +339,12 @@ MIT
 - [ ] Update all internal links in moved files
 
 ### Phase 2: Create Missing Human Documentation (Week 1-2)
+
 **Priority**: HIGH
 **Effort**: 4-6 hours
 
 #### Critical (Must have)
+
 - [ ] **docs/user/00-quick-start.md** (5-minute guide)
   - Install in 1 command
   - Migrate sample file
@@ -352,6 +366,7 @@ MIT
   - What to read first
 
 #### Important (Should have)
+
 - [ ] **docs/user/20-basic-usage.md** (essential commands)
   - validate, build, list basics
   - Common flags
@@ -367,6 +382,7 @@ MIT
   - Common misconceptions
 
 ### Phase 3: Create Missing Developer Documentation (Week 2)
+
 **Priority**: MEDIUM
 **Effort**: 3-4 hours
 
@@ -394,6 +410,7 @@ MIT
   - Error handling
 
 ### Phase 4: Create Reference Documentation (Week 2-3)
+
 **Priority**: MEDIUM
 **Effort**: 4-5 hours
 
@@ -419,6 +436,7 @@ MIT
   - Solutions
 
 ### Phase 5: Create LLM Documentation (Week 3)
+
 **Priority**: MEDIUM
 **Effort**: 2-3 hours
 
@@ -438,6 +456,7 @@ MIT
   - Error message reference
 
 ### Phase 6: Simplify Root README (Week 3)
+
 **Priority**: HIGH
 **Effort**: 1-2 hours
 
@@ -454,6 +473,7 @@ MIT
   - Quick contribution checklist
 
 ### Phase 7: Documentation Automation (Week 4)
+
 **Priority**: LOW
 **Effort**: 2-3 hours
 
@@ -468,21 +488,21 @@ MIT
   - Track which features are documented
   - Identify missing docs
 
----
+______________________________________________________________________
 
 ## 6. Documentation Maintenance Guidelines
 
 ### 6.1 When to Update Documentation
 
-| Change Type | Documentation to Update |
-|-------------|------------------------|
-| New feature | User guide, Command reference, API reference, LLM context |
-| Bug fix | Troubleshooting guide (if user-facing) |
-| Breaking change | Migration guide, CHANGELOG, Quick start |
-| New command | Command reference, LLM commands, CLI examples |
-| Architecture change | Architecture doc, LLM development doc |
-| Performance improvement | Benchmarks |
-| New error message | Error codes reference, Troubleshooting |
+| Change Type             | Documentation to Update                                   |
+| ----------------------- | --------------------------------------------------------- |
+| New feature             | User guide, Command reference, API reference, LLM context |
+| Bug fix                 | Troubleshooting guide (if user-facing)                    |
+| Breaking change         | Migration guide, CHANGELOG, Quick start                   |
+| New command             | Command reference, LLM commands, CLI examples             |
+| Architecture change     | Architecture doc, LLM development doc                     |
+| Performance improvement | Benchmarks                                                |
+| New error message       | Error codes reference, Troubleshooting                    |
 
 ### 6.2 Documentation Review Checklist
 
@@ -493,13 +513,14 @@ Before merging any PR that adds/changes documentation:
 - [ ] Are all code examples tested and working?
 - [ ] Are all links valid?
 - [ ] Is the language appropriate? (Korean for policies, English for technical)
-- [ ] Is it following the file size limits? (<10KB for LLM docs)
+- [ ] Is it following the file size limits? (\<10KB for LLM docs)
 - [ ] Are there screenshots where helpful? (user docs)
 - [ ] Is it indexed in the parent README?
 
 ### 6.3 Documentation Style Guide
 
 #### User Documentation
+
 - **Tone**: Friendly, helpful, encouraging
 - **Structure**: Problem → Solution → Example
 - **Length**: As long as needed, use sections
@@ -507,6 +528,7 @@ Before merging any PR that adds/changes documentation:
 - **Images**: Use when beneficial (screenshots, diagrams)
 
 #### Developer Documentation
+
 - **Tone**: Technical, precise, authoritative
 - **Structure**: Concept → Implementation → Rationale
 - **Length**: Detailed but focused
@@ -514,48 +536,51 @@ Before merging any PR that adds/changes documentation:
 - **Diagrams**: Use for architecture and flows
 
 #### LLM Documentation
+
 - **Tone**: Imperative, rule-based
 - **Structure**: Rule → Example → Exception
-- **Length**: Token-optimized (<10KB)
+- **Length**: Token-optimized (\<10KB)
 - **Code examples**: Only essential patterns
 - **Diagrams**: No (not readable by LLM)
 
----
+______________________________________________________________________
 
 ## 7. Success Metrics
 
 ### 7.1 User Success Metrics
 
-- [ ] **New user success**: 80% complete quick-start in <10 minutes
-- [ ] **Command discoverability**: Users find any command in <1 minute
+- [ ] **New user success**: 80% complete quick-start in \<10 minutes
+- [ ] **Command discoverability**: Users find any command in \<1 minute
 - [ ] **Issue resolution**: 80% of issues have documented solutions
 - [ ] **Documentation feedback**: 4+ star rating on documentation clarity
 
 ### 7.2 Developer Success Metrics
 
-- [ ] **Onboarding time**: New contributors make first PR in <2 hours
+- [ ] **Onboarding time**: New contributors make first PR in \<2 hours
 - [ ] **Architecture understanding**: Developers correctly follow layer rules
 - [ ] **Test coverage**: All new features have tests (enforced by docs)
 
 ### 7.3 LLM Success Metrics
 
-- [ ] **Context efficiency**: LLM docs <30KB total
+- [ ] **Context efficiency**: LLM docs \<30KB total
 - [ ] **Accuracy**: LLM generates correct commands 95% of time
 - [ ] **Rule compliance**: LLM follows architecture rules 100%
 
----
+______________________________________________________________________
 
 ## 8. Migration Strategy
 
 ### 8.1 Backward Compatibility
 
 During transition period (1 month):
+
 - Keep old files with deprecation notice
 - Create symlinks to new locations
 - Update all internal links
 - Add redirects in README
 
 Example deprecation notice:
+
 ```markdown
 ⚠️ **DEPRECATED**: This file has moved to `docs/user/30-workflows.md`
 
@@ -565,6 +590,7 @@ This file will be removed in v0.6.0. Please update your bookmarks.
 ### 8.2 Communication Plan
 
 1. **GitHub Release Note** (v0.5.1):
+
    ```markdown
    ## Documentation Reorganization
 
@@ -576,21 +602,22 @@ This file will be removed in v0.6.0. Please update your bookmarks.
    Old links redirected for 1 month. Please update bookmarks.
    ```
 
-2. **README Banner** (1 month):
+1. **README Banner** (1 month):
+
    ```markdown
    > 📚 **Documentation has been reorganized!** See the new structure in [docs/](docs/)
    ```
 
-3. **PR Template Update**:
+1. **PR Template Update**:
    Add documentation checklist to PR template.
 
----
+______________________________________________________________________
 
 ## 9. Appendix: Documentation Templates
 
 ### Template 1: User Guide Page
 
-```markdown
+````markdown
 # [Feature Name]
 
 > Quick one-line description
@@ -608,14 +635,16 @@ This file will be removed in v0.6.0. Please update your bookmarks.
 ```bash
 # Simple example that works
 gz-shellforge command --flag value
-```
+````
 
 ## Step-by-Step Guide
 
 ### Step 1: [Action]
+
 [Instructions]
 
 ### Step 2: [Action]
+
 [Instructions]
 
 ## Advanced Usage
@@ -625,8 +654,8 @@ gz-shellforge command --flag value
 ## Common Issues
 
 | Problem | Solution |
-|---------|----------|
-| [Issue] | [Fix] |
+| ------- | -------- |
+| [Issue] | [Fix]    |
 
 ## Related Commands
 
@@ -636,7 +665,8 @@ gz-shellforge command --flag value
 ## Next Steps
 
 - [What to do next]
-```
+
+````
 
 ### Template 2: Developer Guide Page
 
@@ -669,7 +699,7 @@ gz-shellforge command --flag value
 
 ```go
 // Code example
-```
+````
 
 ## Testing
 
@@ -681,7 +711,8 @@ gz-shellforge command --flag value
 
 - [Related doc]
 - [External resource]
-```
+
+````
 
 ### Template 3: LLM Context Page
 
@@ -702,38 +733,42 @@ gz-shellforge command --flag value
 
 ## Error Patterns
 [Common mistakes to avoid]
-```
+````
 
----
+______________________________________________________________________
 
 ## 10. Review Checklist
 
 Before considering documentation complete:
 
 ### Content Completeness
+
 - [ ] All features documented
 - [ ] All commands documented
 - [ ] All errors documented
 - [ ] All workflows documented
 
 ### Quality
+
 - [ ] All code examples tested
 - [ ] All links verified
 - [ ] Spelling/grammar checked
 - [ ] Screenshots up to date
 
 ### Organization
+
 - [ ] Clear information architecture
 - [ ] Logical file naming
 - [ ] Proper cross-linking
 - [ ] Search-friendly structure
 
 ### Accessibility
+
 - [ ] New users can start in 5 minutes
 - [ ] Regular users can find commands quickly
 - [ ] Developers can understand architecture
 - [ ] LLM can find rules efficiently
 
----
+______________________________________________________________________
 
 **End of Documentation Review and Improvement Plan**

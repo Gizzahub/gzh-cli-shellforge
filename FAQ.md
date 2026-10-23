@@ -9,6 +9,7 @@ Shellforge is a build tool that transforms modular shell scripts into unified sh
 ### Why should I use Shellforge instead of manually managing my shell config?
 
 **Problems Shellforge solves:**
+
 - **Dependency management**: Automatically loads modules in the correct order
 - **OS compatibility**: Easy multi-OS configuration (Mac/Linux) with filtering
 - **Modularity**: Organize your shell config into logical, reusable pieces
@@ -19,24 +20,27 @@ Shellforge is a build tool that transforms modular shell scripts into unified sh
 ### Is Shellforge compatible with my current shell configuration?
 
 Yes! Shellforge supports:
+
 - **Zsh** (5.8+)
 - **Bash** (4.0+)
 - **Fish** (3.0+)
 
 The `migrate` command can convert your existing monolithic `.zshrc` or `.bashrc` into modular structure automatically.
 
----
+______________________________________________________________________
 
 ## Installation & Setup
 
 ### How do I install Shellforge?
 
 **Option 1: From source (requires Go 1.21+)**
+
 ```bash
 go install github.com/gizzahub/gzh-cli-shellforge/cmd/shellforge@latest
 ```
 
 **Option 2: Build locally**
+
 ```bash
 git clone https://github.com/gizzahub/gzh-cli-shellforge.git
 cd gzh-cli-shellforge
@@ -52,12 +56,13 @@ The `gz-` prefix is part of the Gizzahub CLI tool family naming convention. It h
 ### Do I need Git installed?
 
 Git is **optional** but recommended:
+
 - ✅ **Required for**: Backup/restore features with version control
 - ❌ **Not required for**: Build, validate, migrate, template commands
 
 You can disable git features with the `--no-git` flag.
 
----
+______________________________________________________________________
 
 ## Usage Questions
 
@@ -94,13 +99,15 @@ Module C requires Module A  ← Circular!
 ```
 
 **How to fix:**
+
 1. Run `gz-shellforge validate --verbose` to see the cycle
-2. Edit `manifest.yaml` and remove one dependency from the loop
-3. Re-run `gz-shellforge validate` to confirm the fix
+1. Edit `manifest.yaml` and remove one dependency from the loop
+1. Re-run `gz-shellforge validate` to confirm the fix
 
 ### How do I add a new module?
 
 **Option 1: From template**
+
 ```bash
 gz-shellforge template list  # See available templates
 gz-shellforge template generate alias my-aliases \
@@ -108,6 +115,7 @@ gz-shellforge template generate alias my-aliases \
 ```
 
 **Option 2: Manual creation**
+
 ```bash
 # Create the file
 vim modules/rc_post.d/my-module.sh
@@ -122,6 +130,7 @@ modules:
 ```
 
 Then rebuild:
+
 ```bash
 gz-shellforge build --os Mac --output ~/.zshrc
 ```
@@ -145,7 +154,7 @@ modules:
 
 Leave `os` empty (or omit it) for modules that work on all platforms.
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
@@ -154,16 +163,19 @@ Leave `os` empty (or omit it) for modules that work on all platforms.
 **Check these common issues:**
 
 1. **File path is wrong**: Ensure the `file` path in `manifest.yaml` matches the actual location
+
    ```bash
    gz-shellforge validate  # Will report missing files
    ```
 
-2. **OS filtering**: Module might be filtered out for your OS
+1. **OS filtering**: Module might be filtered out for your OS
+
    ```bash
    gz-shellforge list --filter Mac  # See which modules apply
    ```
 
-3. **Dependency not met**: A required module might be missing
+1. **Dependency not met**: A required module might be missing
+
    ```bash
    gz-shellforge validate --verbose  # Shows dependency issues
    ```
@@ -188,21 +200,24 @@ source ~/.zshrc
 Yes, some differences are expected:
 
 **Normal differences:**
+
 - ✅ Module headers added (`# --- module-name ---`)
 - ✅ Generated metadata at top (timestamp, OS, module count)
 - ✅ Module order changed (dependency-based sorting)
 - ✅ OS-specific sections filtered out
 
 **Unexpected differences:**
+
 - ❌ Missing content (check with `--verbose` during migration)
 - ❌ Syntax errors (validate your original file first)
 
 Use `gz-shellforge diff` to review changes:
+
 ```bash
 gz-shellforge diff ~/.zshrc ~/.zshrc.new --format side-by-side
 ```
 
----
+______________________________________________________________________
 
 ## Advanced Usage
 
@@ -234,6 +249,7 @@ jobs:
 ### How do I share my modular config with my team?
 
 1. **Initialize git repository**:
+
    ```bash
    cd ~/dotfiles
    git init
@@ -243,7 +259,8 @@ jobs:
    git push -u origin main
    ```
 
-2. **Team members clone and use**:
+1. **Team members clone and use**:
+
    ```bash
    git clone git@github.com:team/shell-config.git ~/dotfiles
    cd ~/dotfiles
@@ -251,7 +268,8 @@ jobs:
    source ~/.zshrc
    ```
 
-3. **Update workflow**:
+1. **Update workflow**:
+
    ```bash
    # Make changes
    vim modules/rc_post.d/team-aliases.sh
@@ -281,7 +299,7 @@ gz-shellforge build -m manifest.personal.yaml -o ~/.zshrc
 
 Or use OS filtering and environment variables in your modules.
 
----
+______________________________________________________________________
 
 ## Performance & Compatibility
 
@@ -289,11 +307,11 @@ Or use OS filtering and environment variables in your modules.
 
 Shellforge (Go) is significantly faster:
 
-| Metric | Python | Go | Improvement |
-|--------|--------|----|----|
-| Startup time | ~200ms | <10ms | **20x faster** |
-| Build (10 modules) | ~300ms | <50ms | **6x faster** |
-| Memory usage | ~80MB | <10MB | **8x lighter** |
+| Metric             | Python | Go     | Improvement    |
+| ------------------ | ------ | ------ | -------------- |
+| Startup time       | ~200ms | \<10ms | **20x faster** |
+| Build (10 modules) | ~300ms | \<50ms | **6x faster**  |
+| Memory usage       | ~80MB  | \<10MB | **8x lighter** |
 
 ### Does Shellforge work on Windows?
 
@@ -306,7 +324,7 @@ Not directly. Use **WSL (Windows Subsystem for Linux)** to run Shellforge on Win
 - ⏳ **BSD**: FreeBSD 13+ (planned)
 - ❌ **Windows**: Use WSL
 
----
+______________________________________________________________________
 
 ## Getting Help
 
@@ -329,12 +347,13 @@ Not directly. Use **WSL (Windows Subsystem for Linux)** to run Shellforge on Win
 ### How can I contribute?
 
 See [docs/dev/CONTRIBUTING.md](docs/dev/CONTRIBUTING.md) for:
+
 - Development setup
 - Code style guidelines
 - Testing requirements
 - Pull request process
 
----
+______________________________________________________________________
 
 ## Still have questions?
 

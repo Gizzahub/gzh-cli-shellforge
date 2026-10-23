@@ -2,7 +2,7 @@
 
 Welcome to Shellforge developer documentation! Everything you need to contribute to the project.
 
----
+______________________________________________________________________
 
 ## 🚀 Quick Start for Contributors
 
@@ -49,23 +49,26 @@ git push origin feature/my-feature
 
 **See:** [Contributing Guide](CONTRIBUTING.md)
 
----
+______________________________________________________________________
 
 ## 📚 Documentation Index
 
 ### Architecture & Design
 
 - **[Architecture Overview](00-architecture.md)** 📐
+
   - Hexagonal architecture
   - Layer dependencies
   - Design patterns
 
 - **[Tech Stack](50-tech-stack.md)** ⚙️
+
   - Go libraries used
   - Rationale for choices
   - Alternatives considered
 
 - **[Performance Benchmarks](60-benchmarks.md)** 📊
+
   - Benchmark results
   - Performance comparisons
   - Optimization notes
@@ -73,17 +76,19 @@ git push origin feature/my-feature
 ### Development Guides
 
 - **[Contributing Guide](CONTRIBUTING.md)** 🤝
+
   - Code of conduct
   - Development workflow
   - PR process
   - Testing requirements
 
 - **[API Documentation](API.md)** 📖
+
   - Public API (`pkg/cmd`)
   - Embedding Shellforge
   - Integration examples
 
----
+______________________________________________________________________
 
 ## 🏗️ Project Structure
 
@@ -104,7 +109,7 @@ gzh-cli-shellforge/
 
 See [Architecture Document](00-architecture.md) for details.
 
----
+______________________________________________________________________
 
 ## 🧪 Testing
 
@@ -129,12 +134,13 @@ go test -race ./...
 **Current Coverage:** 70.1% (235 tests)
 
 **Testing Strategy:**
+
 - Domain layer: Pure logic tests (no mocks)
 - App layer: Use `afero.MemMapFs` for filesystem mocking
 - Infra layer: Integration tests with real implementations
 - CLI layer: Command behavior tests
 
----
+______________________________________________________________________
 
 ## 🛠️ Development Workflow
 
@@ -180,34 +186,34 @@ go mod tidy
 go mod verify
 ```
 
----
+______________________________________________________________________
 
 ## 📋 Common Development Tasks
 
 ### Adding a New CLI Command
 
 1. Create `internal/cli/newcommand.go`
-2. Follow pattern from `build.go` or `validate.go`
-3. Add to root command in `internal/cli/root.go`
-4. Create test file `internal/cli/newcommand_test.go`
-5. Update user documentation
+1. Follow pattern from `build.go` or `validate.go`
+1. Add to root command in `internal/cli/root.go`
+1. Create test file `internal/cli/newcommand_test.go`
+1. Update user documentation
 
 ### Adding a New Use Case
 
 1. Define interface in `internal/app/`
-2. Implement service with injected dependencies
-3. Add tests with mocked infrastructure
-4. Wire up in `cmd/shellforge/main.go`
+1. Implement service with injected dependencies
+1. Add tests with mocked infrastructure
+1. Wire up in `cmd/shellforge/main.go`
 
 ### Adding Infrastructure Adapter
 
 1. Check if interface exists in `app/`
-2. Create adapter in `infra/` subdirectory
-3. Implement interface methods
-4. Add tests (use in-memory or temp files)
-5. Wire up in `main.go`
+1. Create adapter in `infra/` subdirectory
+1. Implement interface methods
+1. Add tests (use in-memory or temp files)
+1. Wire up in `main.go`
 
----
+______________________________________________________________________
 
 ## 🎯 Architecture Rules (Critical)
 
@@ -226,24 +232,28 @@ Domain Layer (internal/domain/)
 ### Layer Constraints
 
 1. **Domain Layer** - NO external dependencies
+
    - Pure Go business logic
    - NEVER import from app/infra/cli
    - Contains: Module, Manifest, Graph, Resolver
 
-2. **App Layer** - Depends ONLY on domain interfaces
+1. **App Layer** - Depends ONLY on domain interfaces
+
    - Defines interfaces for infrastructure
    - Orchestrates domain logic
    - Contains: BuilderService, ValidatorService
 
-3. **Infrastructure Layer** - Implements app interfaces
+1. **Infrastructure Layer** - Implements app interfaces
+
    - Uses external libraries (yaml.v3, afero)
    - Contains: YAML parser, filesystem, git wrappers
 
-4. **CLI Layer** - Depends on app services
+1. **CLI Layer** - Depends on app services
+
    - Handles flag parsing and output
    - Injects services via constructors
 
----
+______________________________________________________________________
 
 ## 📖 Documentation
 
@@ -253,7 +263,7 @@ Domain Layer (internal/domain/)
 - **Performance Data**: See [60-benchmarks.md](60-benchmarks.md)
 - **API Reference**: See [API.md](API.md)
 
----
+______________________________________________________________________
 
 ## 🤔 FAQ
 
@@ -295,26 +305,26 @@ open coverage.html
 # Focus on domain and app layers (target >70%)
 ```
 
----
+______________________________________________________________________
 
 ## 🗺️ Developer Documentation Roadmap
 
 ### ✅ Completed
 
 1. Architecture Overview (00-architecture.md)
-2. Tech Stack (50-tech-stack.md)
-3. Performance Benchmarks (60-benchmarks.md)
-4. Contributing Guide (CONTRIBUTING.md)
-5. API Documentation (API.md)
+1. Tech Stack (50-tech-stack.md)
+1. Performance Benchmarks (60-benchmarks.md)
+1. Contributing Guide (CONTRIBUTING.md)
+1. API Documentation (API.md)
 
 ### 📝 Future Enhancements
 
 1. Development Setup Guide (detailed environment setup)
-2. Testing Guide (comprehensive testing strategies)
-3. Code Style Guide (Go-specific conventions)
-4. Release Process Guide (versioning, changelog, deployment)
+1. Testing Guide (comprehensive testing strategies)
+1. Code Style Guide (Go-specific conventions)
+1. Release Process Guide (versioning, changelog, deployment)
 
----
+______________________________________________________________________
 
 ## 💬 Getting Help
 
@@ -322,7 +332,7 @@ open coverage.html
 - **Bug?** File an [Issue](https://github.com/gizzahub/gzh-cli-shellforge/issues)
 - **Contributing?** Read [CONTRIBUTING.md](CONTRIBUTING.md) first
 
----
+______________________________________________________________________
 
 **Last Updated:** 2025-12-01
 **Maintained by:** Shellforge Contributors

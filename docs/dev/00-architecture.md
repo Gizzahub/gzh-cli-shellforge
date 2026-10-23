@@ -4,19 +4,20 @@
 **Status**: Draft
 **Last Updated**: 2025-11-27
 
----
+______________________________________________________________________
 
 ## Overview
 
 This document describes the high-level architecture of the Shellforge Go implementation, following Go best practices and standard project layout.
 
----
+______________________________________________________________________
 
 ## Architecture Principles
 
 ### 1. Standard Go Project Layout
 
 Follow [golang-standards/project-layout](https://github.com/golang-standards/project-layout):
+
 - `cmd/`: Main applications
 - `internal/`: Private application code
 - `pkg/`: Public libraries (if needed)
@@ -25,6 +26,7 @@ Follow [golang-standards/project-layout](https://github.com/golang-standards/pro
 ### 2. Clean Architecture Layers
 
 Separate concerns into distinct layers:
+
 - **Domain**: Pure business logic, no external dependencies
 - **Application**: Use cases orchestrating domain logic
 - **Infrastructure**: Adapters for external systems (filesystem, git, YAML)
@@ -49,7 +51,7 @@ Separate concerns into distinct layers:
 - Use well-established libraries (Cobra, yaml.v3)
 - Implement simple algorithms (topological sort) instead of heavy libraries
 
----
+______________________________________________________________________
 
 ## Project Structure
 
@@ -129,11 +131,12 @@ gzh-cli-shellforge/
 └── .gitignore
 ```
 
----
+______________________________________________________________________
 
 ## Domain Layer
 
 ### Purpose
+
 Pure business logic with no external dependencies. Defines core types and interfaces.
 
 ### Components
@@ -176,7 +179,7 @@ func (m *Module) Validate() error {
 }
 ```
 
----
+______________________________________________________________________
 
 #### 2. Manifest (`internal/domain/manifest.go`)
 
@@ -219,7 +222,7 @@ func (m *Manifest) Validate() []error {
 }
 ```
 
----
+______________________________________________________________________
 
 #### 3. Graph (`internal/domain/graph.go`)
 
@@ -270,7 +273,7 @@ func (g *Graph) Size() int {
 }
 ```
 
----
+______________________________________________________________________
 
 #### 4. Resolver (`internal/domain/resolver.go`)
 
@@ -370,7 +373,7 @@ func (r *Resolver) detectCycle(graph *Graph, inDegree map[string]int) error {
 }
 ```
 
----
+______________________________________________________________________
 
 #### 5. Shell Metadata (`internal/domain/shellmeta.go`)
 
@@ -432,7 +435,7 @@ func (sm *ShellMetadata) GetRecommendedTarget(os, shell, session string) string 
 }
 ```
 
----
+______________________________________________________________________
 
 #### 6. Domain Errors (`internal/domain/errors.go`)
 
@@ -476,11 +479,12 @@ func (e *FileNotFoundError) Error() string {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Application Layer
 
 ### Purpose
+
 Orchestrate domain logic to implement use cases. Each use case is a distinct operation.
 
 ### Components
@@ -591,7 +595,7 @@ func (s *BuilderService) Build(opts BuildOptions) (string, error) {
 }
 ```
 
----
+______________________________________________________________________
 
 #### 2. Validator (`internal/app/validator.go`)
 
@@ -702,41 +706,47 @@ func (s *ValidatorService) calculateStats(manifest *domain.Manifest) ValidationS
 }
 ```
 
----
+______________________________________________________________________
 
 #### 3. Other Application Services
 
 **Deployer** (`internal/app/deployer.go`):
+
 - Orchestrates: build → create snapshot → git commit → deploy
 - Uses: GitBackup, FileWriter, BuilderService
 
 **Migrator** (`internal/app/migrator.go`):
+
 - Parse monolithic RC file
 - Detect sections
 - Categorize modules
 - Create modular structure
 
 **Initializer** (`internal/app/initializer.go`):
+
 - Scan directories
 - Infer dependencies
 - Generate manifest
 
 **Differ** (`internal/app/differ.go`):
+
 - Build config
 - Read existing file
 - Generate diff (use github.com/sergi/go-diff)
 - Calculate statistics
 
 **Templates** (`internal/app/templates.go`):
+
 - Define template types
 - Field substitution
 - Generate module files
 
----
+______________________________________________________________________
 
 ## Infrastructure Layer
 
 ### Purpose
+
 Implement interfaces defined by application layer. Adapters for external systems.
 
 ### Components
@@ -772,11 +782,12 @@ func (p *Parser) Parse(path string) (*domain.Manifest, error) {
 }
 ```
 
----
+______________________________________________________________________
 
 #### 2. Filesystem (`internal/infra/filesystem/`)
 
 **Reader** (`reader.go`):
+
 ```go
 package filesystem
 
@@ -807,6 +818,7 @@ func (r *Reader) FileExists(path string) bool {
 ```
 
 **Writer** (`writer.go`):
+
 ```go
 package filesystem
 
@@ -829,7 +841,7 @@ func (w *Writer) WriteFile(path string, content string) error {
 }
 ```
 
----
+______________________________________________________________________
 
 #### 3. Git Backup (`internal/infra/git/backup.go`)
 
@@ -899,7 +911,7 @@ func (b *Backup) Commit(message string) error {
 }
 ```
 
----
+______________________________________________________________________
 
 #### 4. Shell Data Loader (`internal/infra/shelldata/loader.go`)
 
@@ -930,11 +942,12 @@ func (l *Loader) Load() (*domain.ShellMetadata, error) {
 }
 ```
 
----
+______________________________________________________________________
 
 ## CLI Layer
 
 ### Purpose
+
 Handle user interaction via Cobra commands. Parse flags, call application services, format output.
 
 ### Structure
@@ -976,7 +989,7 @@ func NewRootCmd() *cobra.Command {
 }
 ```
 
----
+______________________________________________________________________
 
 #### Build Command (`internal/cli/build.go`)
 
@@ -1089,7 +1102,7 @@ func formatError(err error) error {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Data Flow
 
@@ -1120,13 +1133,14 @@ Application Layer (BuilderService)
 User Output (Terminal)
 ```
 
----
+______________________________________________________________________
 
 ## Testing Strategy
 
 ### Unit Tests
 
 **Domain Layer** (100% coverage):
+
 - Module.AppliesTo()
 - Manifest.Validate()
 - Graph construction
@@ -1134,16 +1148,19 @@ User Output (Terminal)
 - Cycle detection
 
 **Application Layer** (>80% coverage):
+
 - BuilderService.Build() with mock dependencies
 - ValidatorService.Validate()
 - Each use case independently
 
 **Infrastructure Layer** (>70% coverage):
+
 - YAML parser with sample files
 - Filesystem with afero.MemMapFs
 - Git backup with mock exec (or integration test)
 
 **CLI Layer** (>60% coverage):
+
 - Flag parsing
 - Error formatting
 - Command execution (integration-style)
@@ -1196,7 +1213,7 @@ func TestTopologicalSort(t *testing.T) {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Error Handling
 
@@ -1236,7 +1253,7 @@ func main() {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Appendix
 
@@ -1266,7 +1283,7 @@ func main() {
 }
 ```
 
----
+______________________________________________________________________
 
 **Document Status**: Ready for review
 **Next Steps**: Write TECH_STACK.md with library decisions

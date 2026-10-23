@@ -13,25 +13,27 @@ Thank you for your interest in contributing to Shellforge! This guide will help 
 - [Pull Request Process](#pull-request-process)
 - [Project Structure](#project-structure)
 
----
+______________________________________________________________________
 
 ## Code of Conduct
 
 We are committed to providing a welcoming and inspiring community for all. Please be respectful and constructive in all interactions.
 
 **Expected Behavior:**
+
 - Be respectful of differing viewpoints and experiences
 - Accept constructive criticism gracefully
 - Focus on what is best for the community
 - Show empathy towards other community members
 
 **Unacceptable Behavior:**
+
 - Harassment, trolling, or discriminatory language
 - Personal attacks or insults
 - Public or private harassment
 - Publishing others' private information
 
----
+______________________________________________________________________
 
 ## Getting Started
 
@@ -47,11 +49,11 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
 Good places to start:
 
 1. **Good First Issues**: Look for issues labeled `good-first-issue`
-2. **Help Wanted**: Issues labeled `help-wanted` need contributors
-3. **Documentation**: Improvements to docs are always welcome
-4. **Bug Reports**: Try to reproduce and fix reported bugs
+1. **Help Wanted**: Issues labeled `help-wanted` need contributors
+1. **Documentation**: Improvements to docs are always welcome
+1. **Bug Reports**: Try to reproduce and fix reported bugs
 
----
+______________________________________________________________________
 
 ## Development Setup
 
@@ -100,7 +102,7 @@ open coverage.html
 go test ./internal/domain -run TestModule_AppliesTo -v
 ```
 
----
+______________________________________________________________________
 
 ## Development Workflow
 
@@ -116,6 +118,7 @@ git checkout -b feature/your-feature-name
 ```
 
 **Branch Naming Convention:**
+
 - `feature/` - New features
 - `fix/` - Bug fixes
 - `docs/` - Documentation changes
@@ -125,11 +128,13 @@ git checkout -b feature/your-feature-name
 ### Making Changes
 
 1. **Write Code**
+
    - Follow the [code style](#code-style)
    - Add tests for new functionality
    - Update documentation as needed
 
-2. **Test Your Changes**
+1. **Test Your Changes**
+
    ```bash
    # Run tests
    make test
@@ -141,7 +146,8 @@ git checkout -b feature/your-feature-name
    go vet ./...
    ```
 
-3. **Commit Your Changes**
+1. **Commit Your Changes**
+
    ```bash
    # Stage changes
    git add .
@@ -151,6 +157,7 @@ git checkout -b feature/your-feature-name
    ```
 
 **Commit Message Format:**
+
 ```
 <type>(<scope>): <subject>
 
@@ -160,6 +167,7 @@ git checkout -b feature/your-feature-name
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -171,6 +179,7 @@ git checkout -b feature/your-feature-name
 **Scope**: The area of code affected (e.g., `domain`, `cli`, `app`, `infra`)
 
 **Examples:**
+
 ```
 feat(cli): add list command for modules
 fix(resolver): handle circular dependencies correctly
@@ -191,7 +200,7 @@ git rebase upstream/master
 git push --force-with-lease origin feature/your-feature-name
 ```
 
----
+______________________________________________________________________
 
 ## Code Style
 
@@ -308,7 +317,7 @@ func TestModule_AppliesTo(t *testing.T) {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Testing
 
@@ -331,12 +340,14 @@ internal/
 ### Test Requirements
 
 **For Pull Requests:**
+
 - ✅ All existing tests must pass
 - ✅ New features must include tests
 - ✅ Bug fixes must include regression tests
 - ✅ Code coverage should not decrease
 
 **Coverage Targets:**
+
 - Domain layer: >80%
 - Application layer: >70%
 - Infrastructure layer: >60%
@@ -411,13 +422,14 @@ func TestModule_AppliesTo(t *testing.T) {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Pull Request Process
 
 ### Before Submitting
 
 **Checklist:**
+
 - [ ] Code follows project style
 - [ ] All tests pass (`make test`)
 - [ ] Code is formatted (`go fmt ./...`)
@@ -429,17 +441,20 @@ func TestModule_AppliesTo(t *testing.T) {
 ### Submitting a PR
 
 1. **Push to Your Fork**
+
    ```bash
    git push origin feature/your-feature-name
    ```
 
-2. **Create Pull Request**
+1. **Create Pull Request**
+
    - Go to GitHub and create a PR from your fork
    - Use a clear, descriptive title
    - Fill out the PR template
    - Link related issues (e.g., "Closes #123")
 
-3. **PR Title Format**
+1. **PR Title Format**
+
    ```
    <type>(<scope>): <description>
 
@@ -449,7 +464,8 @@ func TestModule_AppliesTo(t *testing.T) {
    docs(readme): update installation guide
    ```
 
-4. **PR Description Template**
+1. **PR Description Template**
+
    ```markdown
    ## Description
    Brief description of changes
@@ -474,17 +490,18 @@ func TestModule_AppliesTo(t *testing.T) {
 ### Review Process
 
 1. **Automated Checks**: CI/CD runs tests and linters
-2. **Code Review**: Maintainers review your code
-3. **Feedback**: Address any requested changes
-4. **Approval**: Once approved, a maintainer will merge
+1. **Code Review**: Maintainers review your code
+1. **Feedback**: Address any requested changes
+1. **Approval**: Once approved, a maintainer will merge
 
 **Responding to Feedback:**
+
 - Be open to suggestions
 - Ask questions if unclear
 - Make requested changes
 - Push updates to the same branch
 
----
+______________________________________________________________________
 
 ## Project Structure
 
@@ -505,24 +522,29 @@ internal/
 **Critical Rules:**
 
 1. **Domain Layer** (`internal/domain/`)
+
    - NO imports from other internal packages
    - NO imports of external libraries (except stdlib)
    - Pure Go business logic only
 
-2. **Application Layer** (`internal/app/`)
+1. **Application Layer** (`internal/app/`)
+
    - Depends ONLY on domain interfaces
    - Defines interfaces for infrastructure
    - Orchestrates domain logic
 
-3. **Infrastructure Layer** (`internal/infra/`)
+1. **Infrastructure Layer** (`internal/infra/`)
+
    - Implements interfaces defined by app layer
    - Uses external libraries (yaml.v3, afero)
 
-4. **CLI Layer** (`internal/cli/`)
+1. **CLI Layer** (`internal/cli/`)
+
    - Depends on app layer services
    - Handles flag parsing and output
 
 **Example Violation (DON'T DO THIS):**
+
 ```go
 // domain/module.go
 package domain
@@ -531,6 +553,7 @@ import "github.com/gizzahub/gzh-cli-shellforge/internal/app" // ❌ WRONG!
 ```
 
 **Correct Approach:**
+
 ```go
 // app/builder.go
 package app
@@ -543,9 +566,9 @@ import "github.com/gizzahub/gzh-cli-shellforge/internal/domain" // ✅ CORRECT
 When adding a new feature:
 
 1. **Domain Layer**: Add entities and business logic
-2. **Application Layer**: Add use case service
-3. **Infrastructure Layer**: Add adapters if needed
-4. **CLI Layer**: Add command
+1. **Application Layer**: Add use case service
+1. **Infrastructure Layer**: Add adapters if needed
+1. **CLI Layer**: Add command
 
 **Example: Adding a new command**
 
@@ -564,19 +587,21 @@ internal/app/newservice_test.go
 internal/cli/root.go
 ```
 
----
+______________________________________________________________________
 
 ## Documentation
 
 ### When to Update Docs
 
 **Always update docs when:**
+
 - Adding new features
 - Changing CLI interface
 - Modifying configuration format
 - Fixing bugs that affect user behavior
 
 **Documentation Files:**
+
 - `README.md` - Overview and quick start
 - `QUICK_START.md` - 5-minute tutorial
 - `FAQ.md` - Common questions
@@ -591,7 +616,7 @@ internal/cli/root.go
 - Provide real-world scenarios
 - Keep sections focused and concise
 
----
+______________________________________________________________________
 
 ## Getting Help
 
@@ -608,12 +633,12 @@ internal/cli/root.go
 - **[Tech Stack](50-tech-stack.md)** - Library choices
 - **[CLAUDE.md](../../CLAUDE.md)** - Development guidelines
 
----
+______________________________________________________________________
 
 ## License
 
 By contributing to Shellforge, you agree that your contributions will be licensed under the MIT License.
 
----
+______________________________________________________________________
 
 **Thank you for contributing to Shellforge!** 🚀

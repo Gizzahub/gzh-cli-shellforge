@@ -2,19 +2,20 @@
 
 Get started with Shellforge in 5 minutes.
 
----
+______________________________________________________________________
 
 ## What is Shellforge?
 
 Shellforge transforms your monolithic shell configuration (`.zshrc`, `.bashrc`) into organized, modular files with automatic dependency resolution and OS-specific filtering.
 
 **Why use it?**
+
 - ✅ Automatic dependency resolution - modules load in correct order
 - ✅ OS-specific filtering - Mac and Linux modules managed separately
 - ✅ Modular structure - easy to maintain and share
 - ✅ Version control friendly - track changes module by module
 
----
+______________________________________________________________________
 
 ## Installation
 
@@ -39,7 +40,7 @@ gz-shellforge --version
 # Should output: shellforge version 0.2.0-alpha
 ```
 
----
+______________________________________________________________________
 
 ## 5-Minute Tutorial
 
@@ -62,11 +63,13 @@ gz-shellforge migrate ~/.zshrc
 ```
 
 **What happens:**
+
 - Detects sections in your `.zshrc`
 - Creates organized modules in `modules/` directory
 - Generates `manifest.yaml` with dependencies
 
 **Generated structure:**
+
 ```
 ~/shellforge/
 ├── manifest.yaml          # Module definitions and dependencies
@@ -84,6 +87,7 @@ gz-shellforge validate --verbose
 ```
 
 **Expected output:**
+
 ```
 ✓ Validation successful!
   Modules: 6
@@ -98,6 +102,7 @@ gz-shellforge build --os Mac --output ~/.zshrc.new
 ```
 
 **What happens:**
+
 - Filters modules by target OS
 - Resolves dependencies (topological sort)
 - Generates unified `.zshrc` in correct load order
@@ -125,7 +130,7 @@ zsh -c 'echo "Shell config loaded: $SHELL"'
 
 **🎉 Done!** Your shell config is now modular and maintainable.
 
----
+______________________________________________________________________
 
 ## What You Just Learned
 
@@ -136,7 +141,7 @@ zsh -c 'echo "Shell config loaded: $SHELL"'
 ✅ **Compare**: Verify changes before deploying
 ✅ **Deploy**: Apply new configuration
 
----
+______________________________________________________________________
 
 ## Common First Tasks
 
@@ -177,7 +182,7 @@ gz-shellforge build --os Linux --output ~/.zshrc.linux
 gz-shellforge build --os Mac --dry-run
 ```
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
@@ -219,7 +224,7 @@ vim modules/rc_post.d/custom.sh
 vim manifest.yaml
 ```
 
----
+______________________________________________________________________
 
 ## Next Steps
 
@@ -238,7 +243,7 @@ vim manifest.yaml
 
 See **[Advanced Usage Guide](50-advanced-usage.md)** for details.
 
----
+______________________________________________________________________
 
 ## Getting Help
 
@@ -255,10 +260,11 @@ gz-shellforge help
 ```
 
 **Need more help?**
+
 - [Documentation](README.md)
 - [GitHub Issues](https://github.com/gizzahub/gzh-cli-shellforge/issues)
 - [Examples](../../examples/)
 
----
+______________________________________________________________________
 
 **Happy shell config management!** 🚀

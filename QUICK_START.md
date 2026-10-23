@@ -48,6 +48,7 @@ gz-shellforge migrate ~/.zshrc
 ```
 
 This creates:
+
 - `manifest.yaml` - Module configuration
 - `modules/` - Individual shell modules organized by category
 
@@ -188,6 +189,6 @@ gz-shellforge migrate --help
 
 For more detailed information, see the [complete documentation](README.md).
 
----
+______________________________________________________________________
 
 **You're all set!** Your shell configuration is now modular, version-controlled, and maintainable. 🚀

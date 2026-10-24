@@ -66,7 +66,10 @@ def main():
     binary = args.binary.resolve(strict=True)
     attrs = run(["xattr", str(binary)]).stdout.decode().splitlines()
     if "com.apple.quarantine" in attrs:
-        parser.error("use a locally built binary; quarantine is never removed by this tool")
+        parser.error(
+            "binary has com.apple.quarantine; use a local build or a release fetched with "
+            "`gh release download` or `curl` (quarantine is never removed by this tool)"
+        )
     tmp = root / "tmp"
     tmp.mkdir(exist_ok=True)
     report = {

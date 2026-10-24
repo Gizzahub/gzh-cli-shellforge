@@ -1026,13 +1026,13 @@ ______________________________________________________________________
 
 ### PR-001: Startup Time
 
-**Target**: \<50ms from command invocation to first output
+**Target**: \<10ms startup (PRODUCT.md G2)
 
 **Rationale**: Near-instant CLI responsiveness (Python version: ~200ms)
 
-**Measurement**: Time from shell invocation to first output line
+**Measurement**: Warm median of the `version` workload on the release binary (PRODUCT.md G2 Metric)
 
-**Validation**: `time shellforge --help` should complete in \<50ms
+**Validation**: `python3 scripts/startup-profile.py --binary <release binary>` on macOS
 
 ______________________________________________________________________
 
@@ -1050,13 +1050,13 @@ ______________________________________________________________________
 
 ### PR-003: Memory Usage
 
-**Target**: \<50MB RAM during execution
+**Target**: \<10MB peak memory footprint (PRODUCT.md G2)
 
 **Rationale**: Lightweight, suitable for resource-constrained environments
 
-**Measurement**: Peak RSS (Resident Set Size) during build
+**Measurement**: Largest `peak_footprint_bytes` of the `version` workload (maximum RSS is reference only)
 
-**Validation**: Use `/usr/bin/time -v shellforge build ...` to measure maxresident
+**Validation**: The same `scripts/startup-profile.py` run as PR-001
 
 ______________________________________________________________________
 

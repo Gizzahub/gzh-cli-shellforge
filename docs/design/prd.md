@@ -101,9 +101,9 @@ ______________________________________________________________________
 
 1. **Performance**:
 
-   - Startup time \<50ms (Python: ~200ms)
+   - Startup time \<10ms (Python: ~200ms) — judged by PRODUCT.md G2
    - Build time \<500ms for 50 modules
-   - Memory usage \<50MB
+   - Memory usage \<10MB peak footprint — judged by PRODUCT.md G2
    - Binary size \<10MB
 
 1. **Go Quality**:
@@ -395,10 +395,13 @@ ______________________________________________________________________
 
 | Metric                  | Target  | Rationale                            |
 | ----------------------- | ------- | ------------------------------------ |
-| Startup time            | \<50ms  | Faster than Python (~200ms)          |
+| Startup time            | \<10ms  | Faster than Python (~200ms)          |
 | Build time (50 modules) | \<500ms | Near-instant feedback                |
-| Memory usage            | \<50MB  | Lightweight, suitable for containers |
+| Memory usage            | \<10MB  | Lightweight, suitable for containers |
 | Binary size             | \<10MB  | Easy distribution, fast download     |
+
+Startup and memory are judged by the PRODUCT.md G2 Metric (warm median of the `version`
+workload and its peak memory footprint); PRODUCT.md is canonical if the two differ.
 
 ### Quality Targets
 
@@ -462,8 +465,8 @@ ______________________________________________________________________
 
 - Build time improvement: >50% faster than Python
 - Binary size: \<10MB (vs Python's ~40MB virtualenv)
-- Memory usage: \<50MB (vs Python's ~80MB)
-- Startup time: \<50ms (vs Python's ~200ms)
+- Memory usage: \<10MB peak footprint (vs Python's ~80MB)
+- Startup time: \<10ms (vs Python's ~200ms)
 
 ______________________________________________________________________
 

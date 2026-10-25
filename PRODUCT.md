@@ -38,17 +38,29 @@ G1. **Multi-shell / multi-file build**
 
 G2. **Build performance**
 
-- Target: 기동 < 10ms, 10모듈 빌드 < 50ms, 메모리 < 10MB, 바이너리 ~8MB
+- Target: 기동은 matched empty-Go control 대비 중앙값 차이 \<= 3ms,
+  10모듈 빌드 < 50ms, 메모리 < 10MB, 바이너리 ~8MB
 - Metric: macOS 에서 릴리스 바이너리에
-  `python3 scripts/startup-profile.py --binary <릴리스 바이너리> --output tmp/startup-profile.json`
-  을 실행해 잰다. 스크립트는 `com.apple.quarantine` 속성이 붙은 바이너리를
+  `make perf-startup-qualify STARTUP_ARGS='<검증한 바이너리·provenance·witness·output 인자>'`
+  로 잰다. 정확한 인자는 [측정 프로토콜](docs/dev/60-benchmarks.md)의 현재 판정 절을 따른다.
+  스크립트는 `com.apple.quarantine` 속성이 붙은 바이너리를
   거부하므로 릴리스 산출물은 `gh release download` 나 `curl` 로 받는다
-  (`make perf-startup` 은 로컬 Make 빌드를 재는 개발용 참고값이다). 기동은
-  `version` workload 의 warm median(같은 실행 파일을 반복 실행한 표본의 중앙값),
-  10모듈 빌드는 `build_10_modules` workload 의 warm median, 메모리는 `version`
-  workload 의 `memory_samples` 중 `peak_footprint_bytes`(`/usr/bin/time -l` 의
-  peak memory footprint) 최댓값이다. first-observed·새 inode 첫 실행 시간과
-  maximum RSS 는 참고값으로 기록하고 판정에 쓰지 않는다.
+  (`make perf-startup`과 기본 script 실행은 개발용 관측이며 판정하지 않는다).
+  각 세션은 version/control warm 30쌍을 AB/BA 교차하며 세션 시작 순서를 반전한다.
+  `delta_s = median(version 30개) - median(control 30개)`를 계산하고 처음 유효한
+  3세션의 `median(delta_1, delta_2, delta_3) <= 3ms`로 판정한다. paired-difference
+  median은 별도 참고값이며 각 세션 모두 \<= 3ms라는 규칙과도 구분한다.
+  시도 종료부터 다음 시작까지 최소 60초, 최대 5시도다. 유효 3세션 부족은 판정 불가다.
+  세션 시작/종료·워크로드 경계·warm pair 경계에서 load1/5/15와 논리 CPU 수를 기록하며
+  `load1/CPU > 1.0` 또는 소유 heavy 작업 겹침은 해당 시도를 무효로 남긴다.
+  소유 heavy 상태는 유효기간·owner·execution ID가 있는 parent 관리 witness로 확인한다.
+  누락·만료·불일치도 무효이며 전역 프로세스 탐지를 보증하지 않는다.
+  모든 원문·무효 사유·부분 실패를 보존하고 좋은 결과를 골라 재시도하지 않는다.
+  공개 release/control/harness provenance 변경·검증 불가나 소유 process 정리 실패는
+  전체 batch를 판정 불가로 중단한다. interruption·setup 실패도 부분 결과와 함께 남긴다.
+  10모듈 빌드는 각 유효 세션의 warm median < 50ms, 메모리는 유효 세션 전체 version
+  memory 표본(각 5개)의 peak_footprint_bytes 최댓값 < 10,000,000 bytes로 판정한다.
+  first-observed·새 inode 첫 실행(각 5개)·maximum RSS는 참고값이다.
 
 G3. **Safe deploy**
 
@@ -109,7 +121,7 @@ ______________________________________________________________________
 
 **Performance**
 
-- 기동 < 10ms; 10모듈 빌드 < 50ms — G2 Metric 정의로 판정한다
+- 기동 control 대비 \<= 3ms; 10모듈 빌드 < 50ms — G2 Metric 정의로 판정한다
 
 **Docs**
 

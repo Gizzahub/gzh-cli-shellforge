@@ -2,11 +2,137 @@
 
 This document records CLI startup and memory observations alongside diff comparison benchmarks.
 
+## 현재 G2 판정 — control 상대값과 안정화된 세션
+
+2026-10-26 사용자가 채택한 프로토콜이다. 기존 절대 warm 10ms 기준의 관측·미달은 아래에
+보존하며 새 estimator로 소급 PASS 처리하지 않는다. 생산 Go 코드 최적화나 다른 플랫폼의
+성능 보증을 포함하지 않는다. `make perf-startup`과 기본 script 실행은 기존 개발 관측이다.
+
+정식 판정은 `make perf-startup-qualify`가 호출하는 script의 `--qualify` 모드다.
+operator는 익명 공개 release archive/checksums를 먼저 검증하고 추출 binary의 SHA256,
+정확한 release/source를 입력한다. script는 hash, stable module version, vcs.revision,
+vcs.modified=false, macOS/architecture, CGO=0, trimpath와 현재 Go compiler 일치를 요구한다.
+control은 같은 compiler/target으로 `-trimpath -ldflags '-s -w'`, CGO=0 빌드하고 실제
+buildinfo를 다시 대조한다. strip flag의 배포 provenance는 검증한 공개 artifact SHA와
+소유 release 설정으로 묶는다. compiler 불일치는 판정 불가이며 이전 Go 강제 설치나
+전역 PATH 변경으로 우회하지 않는다. quarantine 속성을 제거하지도 않는다.
+
+필수 script 인자는 `--qualify`, `--binary`, `--expected-binary-sha256`,
+`--expected-source-sha`, `--release-version`, `--own-heavy-state-file`,
+`--own-heavy-owner`, `--output`이다. `--preflight-only`를 추가하면 metadata만 확인하고
+control build·제품 실행·witness 검증은 하지 않는다. 입력 hash는 예시나 설치본 추정값이
+아니라 실제 공개 다운로드 검증 결과를 사용한다.
+
+parent가 관리하는 witness JSON은 다음 필드를 요구한다: `schema_version: 1`,
+`owner`(입력 owner와 일치), 비어 있지 않은 `execution_id`, `valid_until_epoch`
+(유효한 Unix seconds), `active_heavy_jobs`(소유 heavy job ID 배열).
+측정 자체는 배열에서 제외한다. parent는 covered execution 동안 다른 소유 heavy job을
+시작하기 전에 witness를 갱신해야 한다. 각 checkpoint에서 원문을 읽어 보존하고 누락,
+잘못된 형식, 만료, owner/execution 변경 또는 active job이 있으면 시도를 무효로 중단한다.
+이는 parent 소유 작업에 관한 증언이며 미등록 작업·다른 세션·VM의 전역 탐지가 아니다.
+
+한 batch는 최대 5시도이며 처음 유효한 3세션을 사용한다. 시도 종료부터 다음 시도 시작까지
+최소 60초다. 간격은 재현 가능한 분리 규칙일 뿐 cache 초기화나 부하 해소 보증이 아니다.
+각 세션의 version/control warm 30쌍은 AB/BA 교대하고 다음 세션의 시작 순서를 반전한다.
+세션 시작/종료, workload 경계, warm pair 경계의 load1/5/15와 logical CPU를 보존한다.
+어느 checkpoint라도 load1/CPU >1.0이면 그 시도를 무효로 중단한다. 정확히 1.0은 허용한다.
+명령 실패·필수 metric 누락도 무효이며 부분 stdout/stderr와 얻은 표본을 즉시 저장한다.
+공개 binary의 기대 hash와 control build 직후 hash, 시작 시 harness hash를 모든 identity
+checkpoint에서 다시 확인한다. provenance 변경·검증 불가 또는 process cleanup 실패는
+해당 시도뿐 아니라 전체 batch를 INCONCLUSIVE로 중단한다. 원래 bytes로 복구한 뒤
+다음 세션을 통과시켜 같은 batch를 살리지 않는다. setup·간격 대기·측정 중 interruption도
+최종 failure metadata와 기존 원문을 보존한다. 실패 시도도 5시도에 포함한다. 좋은 결과를 선택하거나 budget 초과를
+무효 사유로 삼지 않는다. 유효 세션이 3개보다 적으면 INCONCLUSIVE다.
+
+각 세션의 `delta_s = median(version warm) - median(control warm)`를 구한 뒤
+`median(delta_1, delta_2, delta_3) <= 3ms`로 기동을 판정한다. 이는 paired difference의
+median이나 세 delta 모두 \<=3ms 조건과 다르다. 각 delta와 paired median을 별도로
+공개한다. 각 유효 세션의 10모듈 build warm median은 \<50ms, 유효 세션 전체 version
+memory 표본(각 5개)의 peak footprint 최댓값은 \<10,000,000 bytes여야 한다.
+first-observed·새 inode 5표본·RSS·inittrace는 참고 관측이며 기동 판정으로 바꾸지 않는다.
+schema2는 raw pair 순서/값, 무효 checkpoint/이유, partial failure, input hash와 집계를
+모두 보존한다. write는 `.partial` 뒤 atomic replace를 사용한다.
+subprocess는 각자의 새 process session/group에서 실행한다. timeout·interruption·종료 뒤
+소유 group만 TERM/KILL로 제한 시간 안에 정리하고 direct child를 reap한다. group 확인은
+해당 PGID의 상태만 조회하며 EPERM을 종료 증거로 간주하지 않는다. live/unknown 또는
+조회 실패는 fail-closed다. 다른 process/group을 중지하지 않으며 global process dump도 남기지 않는다.
+기동의 scored elapsed는 Popen 직전부터 communicate 완료(자식 종료·출력 회수)까지다.
+이후 group/poll/reap 검증 비용은 별도 `cleanup_elapsed_ms_unscored`로 보존하며 기동에
+더하지 않는다. cleanup이 검증되기 전 다음 호출로 진행하지 않는다. malformed ps 행이나
+비정상 witness JSON의 NaN/Infinity는 unknown/invalid로 남기고 실패 metadata를 직렬화한다.
+
+`make test-startup-protocol`은 가짜 clock/load/측정값으로 순서·경계·무효 처리·첫 유효
+선택·estimator·부분 보존을 검사하고 `make quality`에도 포함된다. 실제 측정은 독립 소스
+리뷰와 소유 CPU 조정 뒤 한 batch로 수행하며, 측정 후 관련 evidence/docs를 동결하고
+최종 소유 quality/coverage/build gate를 통과해야 인도 검증이 완료된다.
+
+## 채택 프로토콜의 단일 batch 관측 — 2026-10-26 KST
+
+실제 실행은 2026-10-25 16:12:13 UTC에 시작한 기록이며 재측정하지 않았다.
+Apple M5 Max, macOS 27.0.1, logical CPU 18개, Python 3.14.5, Go 1.27.3이다.
+공개 v0.6.0 darwin/arm64 archive와 공개 checksums를 익명 다운로드로 대조했다.
+archive SHA256 `3a15e20e043764c2c26672e5a5cfe22539f95934930b09e9ea2adc7769b8bf85`,
+binary SHA256 `8b0954ef84349a368455541b97a1cafbe2aa41214f7be11fa0ca21cdb88b20b1`,
+source `89baf366d806f694d4e6530bbf13a30f760b021c`이며 binary bytes는 과거 관측과 같다.
+control도 현재 Go 1.27.3, darwin/arm64, CGO=0, trimpath, `-s -w`로 빌드했다.
+strip flag provenance는 검증한 공개 bytes·해당 release source 설정으로 묶은 것이며
+buildinfo가 strip flag 자체를 증명한다고 주장하지 않는다.
+
+측정 시 repository HEAD는 `f07733851968da261d082865070939111359c545`였지만 새 harness는
+그 HEAD의 코드가 아니라 독립 리뷰를 마친 작업 트리 입력이었다. tracked diff SHA256은
+`a244e34920ab1ddbd9e4b499290b15c0f6a75336580d8ba417bd0a3772798e92`다.
+실행한 harness 파일 SHA256은 다음과 같으며 최종 기록 commit에서도 같은 bytes를 유지한다.
+
+| 파일                          | 측정 입력 SHA256                                                   |
+| ----------------------------- | ------------------------------------------------------------------ |
+| `scripts/startup-profile.py`  | `6d5a7a2953939205870e0afdaadc02f62ad95f130ced0c0428a9547f9b7e411b` |
+| `scripts/startup_protocol.py` | `39bb85806f5ba58dcf343518915081b6f86b4eb28fc6b7cfc8fe9f10afa35376` |
+| `scripts/startup_process.py`  | `667276db30bc324895123fc65d3478a9cc372d131ef332399f1326f2d63adb81` |
+
+한 batch에서 처음 세 시도가 모두 유효했다. 각 세션 warm 30쌍, memory 5개·fresh-copy
+5개를 그대로 수집했고 무효 시도나 추가 시도는 없었다. 결과를 골라 재실행하지 않았다.
+
+| 세션 | version median ms | control median ms | delta ms  | paired median 참고 ms | build median ms | version 최대 footprint bytes |
+| ---- | ----------------- | ----------------- | --------- | --------------------- | --------------- | ---------------------------- |
+| 1    | 5.445500          | 3.481146          | 1.964354  | 2.009771              | 5.5790415       | 5,390,984                    |
+| 2    | 5.414063          | 3.361542          | 2.052521  | 2.0581035             | 6.3170625       | 5,210,784                    |
+| 3    | 5.266125          | 3.2271875         | 2.0389375 | 2.039479              | 5.8863545       | 5,374,600                    |
+
+판정 estimator는 세 delta의 median **2.0389375ms \<=3ms**다. build 세 median은 모두
+\<50ms, 전체 version peak footprint 최댓값은 **5,390,984 bytes \<10,000,000**다.
+따라서 이 정확한 macOS 공개 binary·harness·조건의 measurement outcome은 PASS다.
+이는 모든 환경의 안정성이나 생산 코드 최적화 효과를 증명하지 않는다.
+
+129개 load/witness checkpoint의 최대 load1/CPU는 0.5322265625였다.
+session-end checkpoint에서 다음 session-start checkpoint까지의 관측 간격은
+60.130709초·60.120758초다. attempt 완료 시각을 별도로 기록한 값은 아니다.
+harness는 attempt 완료 후 다음 시작까지 최소 60초 대기를 별도로 강제한다.
+witness의 소유 heavy job은 비어 있었으며 유효 owner/execution을
+유지했다. 다른 세션·VM의 전역 작업 부재를 증명하는 자료는 아니다. 462개 실행의 소유
+group cleanup 기록은 모두 running_members_after=false다. 가장 큰 unscored cleanup은
+0.086542ms이며 scored elapsed에 더하지 않았다. coordinator 실행 PID와 소유 control
+임시 fixture도 실행 후 부재를 확인했다. 제거된 control의 현재 hash를 다시 잰 것이 아니라
+원문의 buildinfo/hash와 실행 중 identity 검증 결과를 독립 검토했다.
+
+참고값도 버리지 않았다. 세션 첫 version은 292.032166/9.599833/5.675291ms이고,
+새 inode version의 15표본은 84.557125–228.547ms다. version maximum RSS는
+11,370,496–11,780,096 bytes로 10MB를 넘지만 판정 metric인 peak footprint와 구분한다.
+과거 10.588ms 미달 및 다른 30×3·25×3 계열은 이 estimator로 소급 판정하거나 이번
+counterbalanced 계열에 섞지 않는다. OS loader·cache·보안 검사의 인과 효과도 분리하지 않았다.
+
+[원문 JSON](startup-qualification-2026-10-26.json)은 parent가 수집한 276,100 bytes를
+수정 없이 보존한다. SHA256은
+`4ded8b3f15628f16715d3daf10f3ec8c5a1881f5aa6281532aaaedc1c77adba3`다.
+warm/fresh/first/memory 전체 표본과 실행 순서·source/control identity·witness·cleanup을
+포함한다. full process 목록이나 환경 dump는 없다. 별도 strong reviewer가 원문으로
+표본 수·산술·부하·provenance를 재계산해 PASS로 판정했다. 이 문서의 측정 PASS는
+최종 소유 quality/coverage/build gate와 source 통합 완료를 선기록하는 것이 아니다.
+
 ## CLI 시작·메모리 관측 — 2026-10-23
 
-PRODUCT.md G2 / Quality Gates의 startup \<10ms, 10모듈 build \<50ms,
-메모리 \<10MB 목표는 그대로 유지한다. 판정 기준은 PRODUCT.md G2 Metric이
-정한다. 이 관측 당시에는 metric이 정해지지 않았고, 이후 G2가 warm median과
+당시 PRODUCT.md G2 / Quality Gates의 startup \<10ms, 10모듈 build \<50ms,
+메모리 \<10MB 목표에 대한 역사적 관측이다. 이 관측 당시에는 metric이 정해지지 않았고,
+이후 당시 G2가 warm median과
 peak footprint를 판정값으로 정했다. 아래는 재현 가능한 **관측 방법**과 그
 기준에 따른 판정이다.
 
@@ -78,7 +204,7 @@ Make 개발 빌드는 debug 정보를 포함하지만 배포 설정 `.goreleaser
 | 공개 binary 10모듈 build |  12,140,544–12,500,992 |       5,325,424–5,702,280 |
 | 배포 flags 빈 Go main    |    4,341,760–4,489,216 |       3,113,488–3,293,760 |
 
-[PRODUCT.md G2 Metric](../../PRODUCT.md)으로 판정하면 공개 binary는 `version`
+당시 G2의 절대 warm median 기준으로 판정하면 공개 binary는 `version`
 warm median 10.588ms로 기동 목표(10ms 미만)를 충족하지 못했다. 메모리는 `version`
 peak footprint 최댓값 5,243,528 bytes로 10MB 목표를 충족한다. maximum RSS는
 10MB를 넘었지만 참고값이며 판정에 쓰지 않는다. 10모듈 build warm median

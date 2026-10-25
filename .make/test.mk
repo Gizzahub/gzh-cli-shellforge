@@ -37,3 +37,10 @@ bench: ## Run benchmarks
 .PHONY: perf-startup
 perf-startup: build ## Observe macOS startup, ten-module build and memory without changing acceptance thresholds
 	python3 scripts/startup-profile.py --binary "$(BUILD_DIR)/$(BINARY_NAME)" --output tmp/startup-profile.json
+
+.PHONY: test-startup-protocol perf-startup-qualify
+test-startup-protocol: ## Deterministic startup protocol regressions (no timing workload)
+	python3 -m unittest discover -s scripts -p test_startup_profile.py
+
+perf-startup-qualify: ## Qualify a verified release; explicit binary/provenance/witness arguments required
+	python3 scripts/startup-profile.py --qualify $(STARTUP_ARGS)

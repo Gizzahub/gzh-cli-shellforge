@@ -26,7 +26,7 @@ vet: ## Run go vet
 	@echo "Running go vet..."
 	$(GOVET) ./...
 
-quality: fmt lint test format-md-check mdformat-install-test markdown-selector-test ## Run all quality checks (fmt + lint + test + Markdown contract)
+quality: fmt lint test format-md-check mdformat-install-test markdown-selector-test test-startup-protocol ## Run all quality checks (fmt + lint + test + Markdown contract)
 	@echo "✅ All quality checks passed"
 
 check: vet lint ## Quick check (vet + lint, no tests)

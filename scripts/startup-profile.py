@@ -87,7 +87,10 @@ def qualify_inputs(args, binary):
     settings = info["settings"]
     compiler = run(["go", "version"]).stdout.decode().split()[2]
     target = run(["go", "env", "GOOS", "GOARCH"]).stdout.decode().splitlines()
-    expected = {"GOOS": "darwin", "GOARCH": platform.machine().replace("aarch64", "arm64"),
+    host_arch = {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64"}.get(platform.machine())
+    if host_arch is None:
+        raise ValueError("unsupported Darwin host architecture")
+    expected = {"GOOS": "darwin", "GOARCH": host_arch,
                 "CGO_ENABLED": "0", "-trimpath": "true", "vcs.revision": args.expected_source_sha,
                 "vcs.modified": "false"}
     if digest(binary) != args.expected_binary_sha256 or info["compiler"] != compiler:

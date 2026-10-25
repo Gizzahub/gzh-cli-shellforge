@@ -81,13 +81,19 @@ buildinfo가 strip flag 자체를 증명한다고 주장하지 않는다.
 측정 시 repository HEAD는 `f07733851968da261d082865070939111359c545`였지만 새 harness는
 그 HEAD의 코드가 아니라 독립 리뷰를 마친 작업 트리 입력이었다. tracked diff SHA256은
 `a244e34920ab1ddbd9e4b499290b15c0f6a75336580d8ba417bd0a3772798e92`다.
-실행한 harness 파일 SHA256은 다음과 같으며 최종 기록 commit에서도 같은 bytes를 유지한다.
+이 측정 입력을 보존한 controller commit은 `88c7421197f242e423a1ef4e9695ce47fc18933e`다.
+아래 SHA256은 해당 측정 당시의 harness를 가리키며 이후 launcher와 구분한다.
 
 | 파일                          | 측정 입력 SHA256                                                   |
 | ----------------------------- | ------------------------------------------------------------------ |
 | `scripts/startup-profile.py`  | `6d5a7a2953939205870e0afdaadc02f62ad95f130ced0c0428a9547f9b7e411b` |
 | `scripts/startup_protocol.py` | `39bb85806f5ba58dcf343518915081b6f86b4eb28fc6b7cfc8fe9f10afa35376` |
 | `scripts/startup_process.py`  | `667276db30bc324895123fc65d3478a9cc372d131ef332399f1326f2d63adb81` |
+
+측정 후 macOS Intel preflight의 host architecture `x86_64`를 Go의 `amd64`로 정규화하는
+수리를 추가했다. 기존 `aarch64`/`arm64` 경로와 timing·estimator·collection은 유지한다.
+수정된 launcher는 재측정하지 않았으며 아래 ARM64 관측을 새 launcher의 측정으로
+재표기하지 않는다. 원문 SHA256 `4ded8b3f…adba3`와 위 측정 harness 해시는 그대로다.
 
 한 batch에서 처음 세 시도가 모두 유효했다. 각 세션 warm 30쌍, memory 5개·fresh-copy
 5개를 그대로 수집했고 무효 시도나 추가 시도는 없었다. 결과를 골라 재실행하지 않았다.

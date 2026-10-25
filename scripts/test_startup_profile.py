@@ -217,6 +217,38 @@ class ProtocolTests(unittest.TestCase):
         self.assertEqual(record["stderr"], "diagnostic")
         self.assertEqual(record["elapsed_ms"], 7)
 
+    def test_preflight_architecture_aliases_and_wrong_targets(self):
+        cases = [
+            ("x86_64", "amd64", "amd64", True),
+            ("amd64", "amd64", "amd64", True),
+            ("arm64", "arm64", "arm64", True),
+            ("aarch64", "arm64", "arm64", True),
+            ("x86_64", "arm64", "arm64", False),
+            ("arm64", "amd64", "amd64", False),
+            ("x86_64", "amd64", "arm64", False),
+            ("unknown", "arm64", "arm64", False),
+            ("mips", "mips", "mips", False),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            binary = Path(directory) / "release"
+            binary.write_bytes(b"verified fixture bytes")
+            for host, control, release, accepted in cases:
+                with self.subTest(host=host, control=control, release=release):
+                    args = SimpleNamespace(expected_binary_sha256=cli.digest(binary), expected_source_sha="a" * 40,
+                        release_version="v0.6.0", own_heavy_state_file=Path(directory) / "witness",
+                        own_heavy_owner="codex/mbp", samples=30, fresh_copies=5)
+                    info = {"raw": "mod\tgithub.com/gizzahub/gzh-cli-shellforge\tv0.6.0\t\n",
+                            "compiler": "go1.27.3", "settings": {"GOOS": "darwin", "GOARCH": release,
+                            "CGO_ENABLED": "0", "-trimpath": "true", "vcs.modified": "false", "vcs.revision": "a" * 40}}
+                    def metadata(command):
+                        return SimpleNamespace(stdout=("go version go1.27.3 darwin/" + control + "\n" if command[1] == "version" else "darwin\n" + control + "\n").encode())
+                    with patch.object(cli, "build_info", return_value=info), patch.object(cli, "run", side_effect=metadata), patch.object(cli.platform, "machine", return_value=host):
+                        if accepted:
+                            cli.qualify_inputs(args, binary)
+                        else:
+                            with self.assertRaises(ValueError):
+                                cli.qualify_inputs(args, binary)
+
     def test_memory_parse_failure_keeps_successful_command_output(self):
         result = subprocess.CompletedProcess(["time"], 0, b"product stdout", b"42 maximum resident set size\n")
         with patch.object(cli, "run", return_value=result):

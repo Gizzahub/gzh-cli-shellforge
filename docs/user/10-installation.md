@@ -44,6 +44,9 @@ cd gzh-cli-shellforge
 make install
 ```
 
+`make install` installs one copy to `~/.local/share/ce/bin` by default. Set
+`BINDIR` to choose another directory, and include that directory in `PATH`.
+
 ______________________________________________________________________
 
 ## Platform-Specific Installation

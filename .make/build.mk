@@ -3,6 +3,8 @@
 
 .PHONY: build build-all install run
 
+BINDIR ?= $(HOME)/.local/share/ce/bin
+
 build: ## Build the binary
 	@echo "Building $(BINARY_NAME)..."
 	@mkdir -p $(BUILD_DIR)
@@ -20,27 +22,11 @@ build-all: ## Build for multiple platforms
 	@echo "Built binaries:"
 	@ls -lh $(BUILD_DIR)/
 
-install: build ## Install the binary to GOPATH/bin and ~/.local/bin
-	@GOBIN=$$(go env GOBIN); \
-	GOPATH=$$(go env GOPATH); \
-	if [ -z "$$GOBIN" ]; then \
-		BINDIR="$$GOPATH/bin"; \
-	else \
-		BINDIR="$$GOBIN"; \
-	fi; \
-	USERBIN="$$HOME/.local/bin"; \
-	printf "Installing $(BINARY_NAME) to $$BINDIR\n"; \
-	mkdir -p "$$BINDIR"; \
-	mkdir -p "$$USERBIN"; \
-	cp $(BUILD_DIR)/$(BINARY_NAME) "$$USERBIN/$(BINARY_NAME)"; \
-	mv $(BUILD_DIR)/$(BINARY_NAME) "$$BINDIR/$(BINARY_NAME)"; \
-	printf "✅ Installed $(BINARY_NAME) to $$BINDIR/$(BINARY_NAME)\n"; \
-	printf "✅ Installed $(BINARY_NAME) to $$USERBIN/$(BINARY_NAME)\n"; \
-	echo ""; \
-	printf "Verifying installation...\n"; \
-	"$$BINDIR/$(BINARY_NAME)" --version || echo "Note: Binary installed but --version flag not implemented"; \
-	echo ""; \
-	printf "🎉 Installation complete! Run '$(BINARY_NAME) --help' to get started.\n"
+install: build ## Install the binary to BINDIR
+	@mkdir -p "$(BINDIR)"
+	@cp "$(BUILD_DIR)/$(BINARY_NAME)" "$(BINDIR)/$(BINARY_NAME)"
+	@"$(BINDIR)/$(BINARY_NAME)" --version
+	@printf "Installed $(BINARY_NAME) to %s\n" "$(BINDIR)/$(BINARY_NAME)"
 
 run: ## Run the application
 	@echo "Running $(BINARY_NAME)..."

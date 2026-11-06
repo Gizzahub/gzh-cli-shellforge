@@ -123,7 +123,6 @@ jobs:
   build-all-platforms:
     name: Build All Platforms
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
 
     steps:
       - name: Checkout code

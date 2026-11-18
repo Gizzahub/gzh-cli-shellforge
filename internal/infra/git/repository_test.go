@@ -94,6 +94,23 @@ func TestRepository_ConfigUser(t *testing.T) {
 	})
 }
 
+func TestRepository_InitDirectoryThatLooksLikeOption(t *testing.T) {
+	if !IsGitInstalled() {
+		t.Skip("git is not installed")
+	}
+
+	workDir := t.TempDir()
+	t.Chdir(workDir)
+
+	// Without "--", git would read "--bare" as an option and create a bare
+	// repository in the current directory instead of a "--bare" directory.
+	repo := NewRepository("--bare")
+	require.NoError(t, repo.Init())
+
+	assert.DirExists(t, filepath.Join(workDir, "--bare", ".git"))
+	assert.NoFileExists(t, filepath.Join(workDir, "HEAD"))
+}
+
 func TestRepository_Add(t *testing.T) {
 	if !IsGitInstalled() {
 		t.Skip("git is not installed")

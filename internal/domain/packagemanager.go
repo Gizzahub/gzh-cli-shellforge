@@ -53,7 +53,7 @@ type OsCommandRunner struct{}
 
 // Run executes name with args through the operating system.
 func (OsCommandRunner) Run(ctx context.Context, name string, args ...string) ([]byte, error) {
-	out, err := exec.CommandContext(ctx, name, args...).CombinedOutput() // #nosec G204 -- name and args come from the user's own manifest and are passed as argv without a shell
+	out, err := exec.CommandContext(ctx, name, args...).CombinedOutput() // #nosec G204 -- name is a fixed package-manager binary from this package; args are fixed subcommands plus a manifest package name checked by validatePackageName; no shell
 	if ctxErr := ctx.Err(); ctxErr != nil {
 		return out, ctxErr
 	}
@@ -62,7 +62,7 @@ func (OsCommandRunner) Run(ctx context.Context, name string, args ...string) ([]
 
 // RunWithOutput executes name with its stdout and stderr streamed to output.
 func (OsCommandRunner) RunWithOutput(ctx context.Context, output io.Writer, name string, args ...string) error {
-	cmd := exec.CommandContext(ctx, name, args...) // #nosec G204 G702 -- name and args come from the user's own manifest and are passed as argv without a shell
+	cmd := exec.CommandContext(ctx, name, args...) // #nosec G204 G702 -- name is a fixed package-manager binary from this package; args are fixed subcommands plus a manifest package name checked by validatePackageName; no shell
 	cmd.Stdout = output
 	cmd.Stderr = output
 	err := cmd.Run()
@@ -70,6 +70,20 @@ func (OsCommandRunner) RunWithOutput(ctx context.Context, output io.Writer, name
 		return ctxErr
 	}
 	return err
+}
+
+// validatePackageName rejects manifest package names that the package
+// manager CLI would read as an option. Names come from the user's manifest
+// and are passed after fixed subcommands such as "install -y", so a name
+// like "-oAPT::Update::Pre-Invoke::=cmd" would change what apt-get runs.
+func validatePackageName(pkg string) error {
+	if pkg == "" {
+		return errors.New("package name is empty")
+	}
+	if strings.HasPrefix(pkg, "-") {
+		return fmt.Errorf("package name %q starts with '-' and would be read as an option", pkg)
+	}
+	return nil
 }
 
 // BrewFormulaManager manages Homebrew formulae (manifest key "brew").
@@ -88,6 +102,9 @@ func (m *BrewFormulaManager) Name() string { return brewCommand }
 
 // IsInstalled reports whether the Homebrew formula is installed.
 func (m *BrewFormulaManager) IsInstalled(ctx context.Context, pkg string) (bool, error) {
+	if err := validatePackageName(pkg); err != nil {
+		return false, err
+	}
 	_, err := m.Runner.Run(ctx, brewCommand, "list", "--formula", "--versions", pkg)
 	if ctxErr := ctx.Err(); ctxErr != nil {
 		return false, ctxErr
@@ -100,6 +117,9 @@ func (m *BrewFormulaManager) IsInstalled(ctx context.Context, pkg string) (bool,
 
 // Install installs the Homebrew formula.
 func (m *BrewFormulaManager) Install(ctx context.Context, pkg string) error {
+	if err := validatePackageName(pkg); err != nil {
+		return err
+	}
 	err := runInstall(ctx, m.Runner, m.Output, brewCommand, "install", pkg)
 	if err != nil {
 		return fmt.Errorf("brew install %s: %w", pkg, err)
@@ -123,6 +143,9 @@ func (m *BrewCaskManager) Name() string { return caskPackageManagerID }
 
 // IsInstalled reports whether the Homebrew cask is installed.
 func (m *BrewCaskManager) IsInstalled(ctx context.Context, pkg string) (bool, error) {
+	if err := validatePackageName(pkg); err != nil {
+		return false, err
+	}
 	_, err := m.Runner.Run(ctx, brewCommand, "list", "--cask", "--versions", pkg)
 	if ctxErr := ctx.Err(); ctxErr != nil {
 		return false, ctxErr
@@ -135,6 +158,9 @@ func (m *BrewCaskManager) IsInstalled(ctx context.Context, pkg string) (bool, er
 
 // Install installs the Homebrew cask.
 func (m *BrewCaskManager) Install(ctx context.Context, pkg string) error {
+	if err := validatePackageName(pkg); err != nil {
+		return err
+	}
 	err := runInstall(ctx, m.Runner, m.Output, brewCommand, "install", "--cask", pkg)
 	if err != nil {
 		return fmt.Errorf("brew install --cask %s: %w", pkg, err)
@@ -158,6 +184,9 @@ func (m *AptManager) Name() string { return aptPackageManagerID }
 
 // IsInstalled reports whether the Debian or Ubuntu package is installed.
 func (m *AptManager) IsInstalled(ctx context.Context, pkg string) (bool, error) {
+	if err := validatePackageName(pkg); err != nil {
+		return false, err
+	}
 	out, err := m.Runner.Run(ctx, "dpkg-query", "-W", "-f=${Status}", pkg)
 	if ctxErr := ctx.Err(); ctxErr != nil {
 		return false, ctxErr
@@ -179,6 +208,9 @@ func (m *AptManager) IsInstalled(ctx context.Context, pkg string) (bool, error) 
 
 // Install installs the Debian or Ubuntu package.
 func (m *AptManager) Install(ctx context.Context, pkg string) error {
+	if err := validatePackageName(pkg); err != nil {
+		return err
+	}
 	err := runInstall(ctx, m.Runner, m.Output, "apt-get", "install", "-y", pkg)
 	if err != nil {
 		return fmt.Errorf("apt-get install -y %s: %w", pkg, err)

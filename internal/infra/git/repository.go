@@ -65,7 +65,7 @@ func (r *Repository) Init() error {
 		return nil // Already initialized
 	}
 
-	cmd := exec.CommandContext(context.Background(), "git", "init", r.dir) // #nosec G204 -- fixed git argv; r.dir is the configured backup directory passed as one argument, no shell
+	cmd := exec.CommandContext(context.Background(), "git", "init", "--", r.dir) // #nosec G204 -- fixed git argv, no shell; "--" keeps a backup directory such as "--bare" from being read as an option
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("git init failed: %w (%s)", err, strings.TrimSpace(string(output)))

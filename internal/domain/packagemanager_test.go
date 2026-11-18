@@ -105,6 +105,23 @@ func TestBrewFormulaManager(t *testing.T) {
 	require.NoError(t, m.Install(context.Background(), "missing-pkg"))
 }
 
+func TestPackageManagersRejectOptionLikeNames(t *testing.T) {
+	runner := &fakeRunner{ok: map[string]bool{}}
+	managers := []PackageManager{
+		&BrewFormulaManager{Runner: runner},
+		&BrewCaskManager{Runner: runner},
+		&AptManager{Runner: runner},
+	}
+	for _, m := range managers {
+		for _, pkg := range []string{"-oAPT::Update::Pre-Invoke::=id", "--force", ""} {
+			_, err := m.IsInstalled(context.Background(), pkg)
+			require.Error(t, err, "%s IsInstalled(%q)", m.Name(), pkg)
+			require.Error(t, m.Install(context.Background(), pkg), "%s Install(%q)", m.Name(), pkg)
+		}
+	}
+	assert.Empty(t, runner.calls, "no command may run for a rejected package name")
+}
+
 func TestBrewFormulaManager_InstallFailure(t *testing.T) {
 	runner := &fakeRunner{ok: map[string]bool{}}
 	m := &BrewFormulaManager{Runner: runner}

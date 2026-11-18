@@ -24,7 +24,7 @@ func NewRepository(dir string) *Repository {
 // runGitCommand executes a git command and returns any error.
 func (r *Repository) runGitCommand(subcommand string, args ...string) error {
 	allArgs := append([]string{"-C", r.dir, subcommand}, args...)
-	cmd := exec.CommandContext(context.Background(), "git", allArgs...)
+	cmd := exec.CommandContext(context.Background(), "git", allArgs...) // #nosec G204 -- fixed "git" binary, no shell; subcommand is a literal from this package and r.dir/args are separate argv elements
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("git %s failed: %w (%s)", subcommand, err, strings.TrimSpace(string(output)))
@@ -35,7 +35,7 @@ func (r *Repository) runGitCommand(subcommand string, args ...string) error {
 // runGitCommandWithOutput executes a git command and returns its output.
 func (r *Repository) runGitCommandWithOutput(subcommand string, args ...string) (string, error) {
 	allArgs := append([]string{"-C", r.dir, subcommand}, args...)
-	cmd := exec.CommandContext(context.Background(), "git", allArgs...)
+	cmd := exec.CommandContext(context.Background(), "git", allArgs...) // #nosec G204 -- fixed "git" binary, no shell; subcommand is a literal from this package and r.dir/args are separate argv elements
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("git %s failed: %w (%s)", subcommand, err, strings.TrimSpace(string(output)))
@@ -51,7 +51,7 @@ func IsGitInstalled() bool {
 
 // IsInitialized checks if the directory is already a git repository.
 func (r *Repository) IsInitialized() bool {
-	cmd := exec.CommandContext(context.Background(), "git", "-C", r.dir, "rev-parse", "--git-dir")
+	cmd := exec.CommandContext(context.Background(), "git", "-C", r.dir, "rev-parse", "--git-dir") // #nosec G204 -- fixed git argv; r.dir is the configured backup directory passed as one argument, no shell
 	return cmd.Run() == nil
 }
 
@@ -65,7 +65,7 @@ func (r *Repository) Init() error {
 		return nil // Already initialized
 	}
 
-	cmd := exec.CommandContext(context.Background(), "git", "init", r.dir)
+	cmd := exec.CommandContext(context.Background(), "git", "init", r.dir) // #nosec G204 -- fixed git argv; r.dir is the configured backup directory passed as one argument, no shell
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("git init failed: %w (%s)", err, strings.TrimSpace(string(output)))
@@ -79,12 +79,13 @@ func (r *Repository) Add(paths ...string) error {
 	if len(paths) == 0 {
 		paths = []string{"."}
 	}
-	return r.runGitCommand("add", paths...)
+	// "--" keeps a path that starts with "-" from being read as a git option.
+	return r.runGitCommand("add", append([]string{"--"}, paths...)...)
 }
 
 // Commit creates a commit with the given message.
 func (r *Repository) Commit(message string) error {
-	cmd := exec.CommandContext(context.Background(), "git", "-C", r.dir, "commit", "-m", message)
+	cmd := exec.CommandContext(context.Background(), "git", "-C", r.dir, "commit", "-m", message) // #nosec G204 -- fixed git argv; the message is the value of -m, so it cannot become an option, and no shell is used
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		outputStr := string(output)

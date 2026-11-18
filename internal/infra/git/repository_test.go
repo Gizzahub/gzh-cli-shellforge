@@ -3,6 +3,7 @@ package git
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -137,6 +138,20 @@ func TestRepository_Add(t *testing.T) {
 		status, err := repo.GetStatus()
 		require.NoError(t, err)
 		assert.Contains(t, status, "test2.txt")
+	})
+
+	t.Run("adds a path that starts with a dash", func(t *testing.T) {
+		dashFile := filepath.Join(tmpDir, "-n")
+		err := os.WriteFile(dashFile, []byte("dash"), 0o644)
+		require.NoError(t, err)
+
+		// Without "--", git would read "-n" as --dry-run and stage nothing.
+		err = repo.Add("-n")
+		require.NoError(t, err)
+
+		staged, err := repo.runGitCommandWithOutput("diff", "--cached", "--name-only")
+		require.NoError(t, err)
+		assert.Contains(t, strings.Split(staged, "\n"), "-n")
 	})
 
 	t.Run("adds multiple files", func(t *testing.T) {

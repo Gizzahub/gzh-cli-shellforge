@@ -53,7 +53,7 @@ type OsCommandRunner struct{}
 
 // Run executes name with args through the operating system.
 func (OsCommandRunner) Run(ctx context.Context, name string, args ...string) ([]byte, error) {
-	out, err := exec.CommandContext(ctx, name, args...).CombinedOutput() //nolint:gosec // args come from the manifest, not user input at runtime
+	out, err := exec.CommandContext(ctx, name, args...).CombinedOutput() // #nosec G204 -- name and args come from the user's own manifest and are passed as argv without a shell
 	if ctxErr := ctx.Err(); ctxErr != nil {
 		return out, ctxErr
 	}
@@ -62,7 +62,7 @@ func (OsCommandRunner) Run(ctx context.Context, name string, args ...string) ([]
 
 // RunWithOutput executes name with its stdout and stderr streamed to output.
 func (OsCommandRunner) RunWithOutput(ctx context.Context, output io.Writer, name string, args ...string) error {
-	cmd := exec.CommandContext(ctx, name, args...) //nolint:gosec // args come from the manifest, not user input at runtime
+	cmd := exec.CommandContext(ctx, name, args...) // #nosec G204 G702 -- name and args come from the user's own manifest and are passed as argv without a shell
 	cmd.Stdout = output
 	cmd.Stderr = output
 	err := cmd.Run()

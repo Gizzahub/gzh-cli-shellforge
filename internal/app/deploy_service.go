@@ -4,6 +4,7 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -43,8 +44,12 @@ func (c *osPermissionChecker) CheckWritable(path string) error {
 		}
 		return fmt.Errorf("cannot write to %s: %w", path, err)
 	}
-	f.Close()
-	os.Remove(f.Name())
+	if err := f.Close(); err != nil {
+		return fmt.Errorf("close write probe %s: %w", f.Name(), errors.Join(err, os.Remove(f.Name())))
+	}
+	if err := os.Remove(f.Name()); err != nil {
+		return fmt.Errorf("remove write probe %s: %w", f.Name(), err)
+	}
 	return nil
 }
 
